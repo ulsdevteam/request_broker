@@ -1,0 +1,4 @@
+Django==2.2.8
+djangorestframework
+health-check
+psycopg2-binary
