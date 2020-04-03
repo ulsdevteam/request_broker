@@ -1,11 +1,11 @@
 version: '3'
 
 services:
-  request_broker-db:
+  db:
     image: postgres:10.4
     volumes:
-      - request_broker-db:/var/lib/postgresql/data/
-  request_broker-web:
+      - dbvolume:/var/lib/postgresql/data/
+  web:
     build: .
     entrypoint: /code/entrypoint.sh
     volumes:
@@ -13,7 +13,7 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - request_broker-db
+      - db
 
 volumes:
   dbvolume:
