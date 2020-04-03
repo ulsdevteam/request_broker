@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
+import request_broker.config as CF
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'process_request',
 ]
 
 MIDDLEWARE = [
@@ -73,12 +75,7 @@ WSGI_APPLICATION = 'request_broker.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+DATABASES = CF.DATABASES
 
 
 # Password validation
@@ -99,6 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'process_request.MachineUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

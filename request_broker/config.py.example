@@ -1,0 +1,16 @@
+DEBUG = True
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'HOST': 'request-broker-db',
+        'PORT': 5432,
+    }
+}
+
+ALLOWED_HOSTS = ['request-broker-web', 'localhost']
+
+
+STATIC_ROOT = '/static'
