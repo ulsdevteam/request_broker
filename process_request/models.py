@@ -1,5 +1,6 @@
+from django.contrib.auth.models import AbstractBaseUser, AbstractUser
 from django.db import models
-from django.contrib.auth.models import (AbstractUser, AbstractBaseUser)
+
 
 class User(AbstractUser):
 
@@ -25,6 +26,7 @@ class User(AbstractUser):
         Returns the full name and email of a user.
         """
         return '{} <{}>'.format(self.full_name, self.email)
+
 
 class MachineUser(AbstractBaseUser):
     username = None
