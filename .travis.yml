@@ -10,9 +10,19 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - cp pleiades/config.py.example pleiades/config.py
+  - cp request_broker/config.py.example request_broker/config.py
   - docker-compose up -d
   - sleep 20s
+  - docker-compose exec request-broker-web pip install coverage pre-commit
+  - docker-compose exec request-broker-web pre-commit install
 install: true
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 script:
-  - docker-compose exec web python manage.py test
+  - docker-compose exec request-broker-web pre-commit run --all-files --show-diff-on-failure
+  - docker-compose exec request-broker-web coverage run manage.py test
+after_script:
+  - docker-compose exec request-broker-web coverage xml
+  - ./cc-test-reporter after-build --debug --exit-code $TRAVIS_TEST_RESULT
