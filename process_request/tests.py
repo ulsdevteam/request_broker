@@ -4,7 +4,6 @@ from .models import MachineUser, User
 
 # Create your tests here.
 
-
 class TestPackage(TestCase):
 
     def setUp(self):
