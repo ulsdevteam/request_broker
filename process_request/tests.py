@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .models import __str__, full_name
+from .models import MachineUser, User
 
 # Create your tests here.
 
