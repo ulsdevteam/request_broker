@@ -2,28 +2,18 @@ from django.test import TestCase
 
 from .models import MachineUser, User
 
-# Create your tests here.
 
+class TestUsers(TestCase):
 
-class TestPackage(TestCase):
-
-    def setUp(self):
-        pass
-
-    def test_full_name(self):
-        name = 'Patrick Galligan'
-        user = User.objects.create(first_name="Patrick", last_name="Galligan")
-        self.assertEqual(user.full_name, name)
-
-    def test_user_str(self):
-        full_email = 'Patrick Galligan <pgalligan@rockarch.org>'
-        user = User.objects.create(
+    def test_user(self):
+        user = User(
             first_name="Patrick",
             last_name="Galligan",
             email="pgalligan@rockarch.org")
-        self.assertEqual(str(user), full_email)
+        self.assertEqual(user.full_name, "Patrick Galligan")
+        self.assertEqual(str(user), "Patrick Galligan <pgalligan@rockarch.org>")
 
-    def test_machineuser_str(self):
+    def test_machineuser(self):
         system = 'Zodiac'
-        user = MachineUser.objects.create(system_name="Zodiac")
+        user = MachineUser(system_name="Zodiac")
         self.assertEqual(str(user), system)
