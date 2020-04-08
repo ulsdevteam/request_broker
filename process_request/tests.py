@@ -10,21 +10,20 @@ class TestPackage(TestCase):
     def setUp(self):
         pass
 
-    def test_user_methods(self):
+    def test_full_name(self):
+        name = 'Patrick Galligan'
+        user = User.objects.create(first_name="Patrick", last_name="Galligan")
+        self.assertEqual(user.full_name, name)
+
+    def test_user_str(self):
+        full_email = 'Patrick Galligan <pgalligan@rockarch.org>'
         user = User.objects.create(
-            email="pgalligan@rockarch.org",
             first_name="Patrick",
             last_name="Galligan",
-            username="pgalligan")
-        name = 'Patrick Galligan'
-        full_email = 'Patrick Galligan <pgalligan@rockarch.org>'
-        self.assertEqual(user.full_name, name)
+            email="pgalligan@rockarch.org")
         self.assertEqual(str(user), full_email)
 
     def test_machineuser_str(self):
         system = 'Zodiac'
-        user = MachineUser.objects.create(
-            system_name="Zodiac",
-            host_location='http://127.0.0.1',
-            api_key='key')
+        user = MachineUser.objects.create(system_name="Zodiac")
         self.assertEqual(str(user), system)

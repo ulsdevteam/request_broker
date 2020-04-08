@@ -8,10 +8,10 @@ class User(AbstractUser):
     donor_group = [u"rac_donors"]
     researcher_group = [u"rac_researchers"]
 
-    email = models.CharField(blank=True, null=True, max_length=255)
-    first_name = models.CharField(blank=True, null=True, max_length=255)
-    last_name = models.CharField(blank=True, null=True, max_length=255)
-    username = models.CharField(blank=True, null=True, max_length=255, unique=True)
+    AbstractUser._meta.get_field("email").blank = False
+    AbstractUser._meta.get_field("first_name").blank = False
+    AbstractUser._meta.get_field("last_name").blank = False
+    AbstractUser._meta.get_field("username").blank = False
 
     @property
     def full_name(self):
@@ -30,9 +30,9 @@ class User(AbstractUser):
 
 class MachineUser(AbstractBaseUser):
     username = None
-    system_name = models.CharField(blank=True, null=True, max_length=255, unique=True)
-    host_location = models.URLField(blank=True, null=True)
-    api_key = models.CharField(blank=True, null=True, max_length=255)
+    system_name = models.CharField(blank=False, max_length=255, unique=True)
+    host_location = models.URLField(blank=False)
+    api_key = models.CharField(blank=False, max_length=255)
 
     is_active = models.BooleanField(
         default=True,
