@@ -7,6 +7,11 @@ class ProcessRequest(object):
     # Read through list of requested archival objects
     pass
 
+class GetObject(object):
+    # Gets archival object information from ArchivesSpace
+    # TO DO: write connections to ArchivesSpace
+    pass
+
 class ProcessObject(object):
     # TO DO: main section where processing happens
     # Push requests to submitted or unsubmitted
@@ -27,4 +32,11 @@ class DeliveryFormats(object):
     # 1. Digital
     # 2. Microfilm
     # 3. Mixed materials
-    pass
+    containers = []
+    if object.instances:
+        for instance in instances:
+    # TO DO: Write code that grabs all instance types and then container for desired format.
+            pass
+    else:
+    # TO DO: Write add to unsubmitted list
+        pass
