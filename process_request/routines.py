@@ -2,6 +2,7 @@ from .models import MachineUser, User
 
 
 # adding pseudocode
+unsubmitted = []
 
 class ProcessRequest(object):
     # Read through list of requested archival objects
@@ -47,7 +48,7 @@ class DeliveryFormats(object):
             return containers[key]
         else:
     # TO DO: Add code to add to unsubmitted list
-            pass
+            unsubmitted.apend(object)
     else:
     # TO DO: Write add to unsubmitted list
-        pass
+        unsubmitted.apend(object)
