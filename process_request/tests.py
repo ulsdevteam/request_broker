@@ -39,8 +39,5 @@ class TestRoutines(TestCase):
             ("object_no_instance.json"),
             ("object_av.json")]:
             archival_object = self.obj_from_fixture(fixture)
-            result = data_helpers.indicates_restriction(statement)
-            self.assertEqual(
-                status, outcome,
-                "Restriction status for {} expected {}, got {} instead".format(
-                    fixture, outcome, status))
+            result = DeliveryFormats.check_instances(archival_object)
+            self.assertEqual(result, outcome)
