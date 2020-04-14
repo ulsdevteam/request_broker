@@ -2,6 +2,7 @@ import json
 import os
 
 from asnake.aspace import ASpace
+from asnake.jsonmodel import JSONModelObject, wrap_json_object
 from django.test import TestCase
 
 from .models import MachineUser, User
