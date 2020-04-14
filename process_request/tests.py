@@ -1,6 +1,11 @@
+import json
+import os
+
+from asnake.aspace import ASpace
 from django.test import TestCase
 
 from .models import MachineUser, User
+from .routines import DeliveryFormats
 
 
 class TestUsers(TestCase):
@@ -17,3 +22,25 @@ class TestUsers(TestCase):
         system = 'Zodiac'
         user = MachineUser(system_name="Zodiac")
         self.assertEqual(str(user), system)
+
+class TestRoutines(TestCase):
+
+    def obj_from_fixture(self, filename, client=None):
+        with open(os.path.join("fixtures", filename)) as json_file:
+            data = json.load(json_file)
+            obj = wrap_json_object(data, client=client)
+            return obj
+
+    def test_check_instances(self):
+        for fixture, outcome in [
+            ("object_mixed.json", "/repositories/2/top_containers/191156"),
+            ("object_digital.json"),
+            ("object_microform.json"),
+            ("object_no_instance.json"),
+            ("object_av.json")]:
+            archival_object = self.obj_from_fixture(fixture)
+            result = data_helpers.indicates_restriction(statement)
+            self.assertEqual(
+                status, outcome,
+                "Restriction status for {} expected {}, got {} instead".format(
+                    fixture, outcome, status))
