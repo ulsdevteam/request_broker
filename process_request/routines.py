@@ -26,33 +26,33 @@ class CheckRestrictions(object):
     # 3. Next closest conditions governing access notes (inherited)
     pass
 
-class DeliveryFormats(object):
+class DeliveryFormats:
     # TO DO: add code to check through an archival object's instances
     # Check for instances, prioritize digital objects
     # Preference for delivery formats:
     # 1. Digital
     # 2. Microfilm
     # 3. Mixed materials
-    containers = {}
 
-    def check_instances(self):
+    def check_instances(object):
+        containers = {}
         if object.instances:
-            for instance in instances:
+            for instance in object.instances:
                 type = instance.instance_type
                 if instance.sub_container:
                     ref = instance.sub_container.top_container.ref
                 else:
                     ref = instance.digital_object.ref
                 containers.update({type : ref})
-            if 'digital_object' in key.containers:
-                return containers[key]
-            elif 'microform' in key.containers:
-                return containers[key]
-            elif 'mixed materials' in key.containers:
-                return containers[key]
+            if 'digital_object' in containers:
+                return containers['digital_object']
+            elif 'microform' in containers:
+                return containers['microform']
+            elif 'mixed_materials' in containers:
+                return containers['mixed_materials']
             else:
     # TO DO: Add code to add to unsubmitted list
-                unsubmitted.apend(object)
+                unsubmitted.append(object)
         else:
     # TO DO: Write add to unsubmitted list
-            unsubmitted.apend(object)
+            unsubmitted.append(object)
