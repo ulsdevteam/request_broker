@@ -34,7 +34,7 @@ class TestRoutines(TestCase):
 
     def test_check_instances(self):
         for fixture, outcome in [
-            ("object_mixed.json", "/repositories/2/top_containers/191156"),
+            ("object_mixed.json", "/repositories/2/top_containers/191156")
             ("object_digital.json"),
             ("object_microform.json"),
             ("object_no_instance.json"),

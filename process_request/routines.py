@@ -48,8 +48,8 @@ class DeliveryFormats:
                 return containers['digital_object']
             elif 'microform' in containers:
                 return containers['microform']
-            elif 'mixed_materials' in containers:
-                return containers['mixed_materials']
+            elif 'mixed materials' in containers:
+                return containers['mixed materials']
             else:
     # TO DO: Add code to add to unsubmitted list
                 unsubmitted.append(object)
