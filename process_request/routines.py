@@ -39,9 +39,9 @@ class DeliveryFormats:
         if object.instances:
             for instance in object.instances:
                 type = instance.instance_type
-                if instance.sub_container:
+                try:
                     ref = instance.sub_container.top_container.ref
-                else:
+                except KeyError:
                     ref = instance.digital_object.ref
                 containers.update({type : ref})
             if 'digital_object' in containers:
