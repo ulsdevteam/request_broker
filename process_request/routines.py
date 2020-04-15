@@ -1,4 +1,5 @@
 from .models import MachineUser, User
+#from rac_aspace.data_helpers import indicates_restriction, is_restricted
 
 
 # adding pseudocode
@@ -13,27 +14,23 @@ class GetObject(object):
     # TO DO: write connections to ArchivesSpace
     pass
 
-class ProcessObject(object):
+class GetRestrictions:
     # TO DO: main section where processing happens
     # Push requests to submitted or unsubmitted
     # If open and delivery formats, mark as submittable
-    pass
 
-class CheckRestrictions(object):
     # TO DO: add code to read through the rights in order
     # 1. PREMIS rights statements first
     # 2. Conditions governing access notes
     # 3. Next closest conditions governing access notes (inherited)
     pass
+    #def check_restrictions(self, object):
+        #if data_helpers.is_restricted(object):
+            #unsubmitted.append(object.title)
+        #else:
+            #pass
 
 class DeliveryFormats:
-    # TO DO: add code to check through an archival object's instances
-    # Check for instances, prioritize digital objects
-    # Preference for delivery formats:
-    # 1. Digital
-    # 2. Microfilm
-    # 3. Mixed materials
-
     def check_instances(object):
         containers = {}
         if object.instances:
@@ -51,8 +48,6 @@ class DeliveryFormats:
             elif 'mixed materials' in containers:
                 return containers['mixed materials']
             else:
-    # TO DO: Add code to add to unsubmitted list
-                unsubmitted.append(object)
+                unsubmitted.append(object.title)
         else:
-    # TO DO: Write add to unsubmitted list
-            unsubmitted.append(object)
+            unsubmitted.append(object.title)

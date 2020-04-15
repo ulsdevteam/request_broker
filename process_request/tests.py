@@ -40,6 +40,6 @@ class TestRoutines(TestCase):
             ("object_microform.json", "/repositories/2/top_containers/191157")]:
             #("object_av.json", ""),
             #("object_no_instance.json", "")]:
-            archival_object = self.obj_from_fixture(fixture)
-            result = DeliveryFormats.check_instances(archival_object)
+            object = self.obj_from_fixture(fixture)
+            result = DeliveryFormats.check_instances(object)
             self.assertEqual(result, outcome)
