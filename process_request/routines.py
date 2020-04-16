@@ -46,20 +46,15 @@ class DeliveryFormats:
         Returns:
             bool: True on any match with delivery formats. None on no match or instances.
         """
-        types = []
         if object.instances:
             for instance in object.instances:
-                types.append(instance.instance_type)
-            if any(elem in DeliveryFormats.formats for elem in types):
-                return True
-            else:
-                return None
+                if instance.instance_type in DeliveryFormats.formats:
+                    return True
+                else:
+                    return None
         else:
             return None
 
     def return_formats(object):
-        containers = {}
         for instance in object.instances:
-            containers.update({object.title : ref})
-            if 'digital_object' in containers:
-                return
+                pass
