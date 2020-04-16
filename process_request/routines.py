@@ -29,6 +29,13 @@ class GetRestrictions:
             #pass
 
 class DeliveryFormats:
+
+    formats = [
+        "digital_object",
+        "microform",
+        "mixed materials"
+    ]
+
     def check_formats(object):
         """Parses instances and creates a list of instance types. Matches list against
         list of acceptable delivery formats.
@@ -40,15 +47,10 @@ class DeliveryFormats:
             bool: True on any match with delivery formats. None on no match or instances.
         """
         types = []
-        formats = [
-            "digital_object",
-            "microform",
-            "mixed materials"
-        ]
         if object.instances:
             for instance in object.instances:
                 types.append(instance.instance_type)
-            if any(elem in formats for elem in types):
+            if any(elem in DeliveryFormats.formats for elem in types):
                 return True
             else:
                 return None
@@ -57,5 +59,7 @@ class DeliveryFormats:
 
     def return_formats(object):
         containers = {}
-
-        pass
+        for instance in object.instances:
+            containers.update({object.title : ref})
+            if 'digital_object' in containers:
+                return
