@@ -30,8 +30,16 @@ class GetRestrictions:
             #pass
 
 class DeliveryFormats:
-    # TO DO: Add some docstrings
     def check_formats(object):
+        """Parses instances and creates a list of instance types. Matches list against
+        list of acceptable delivery formats.
+
+        Args:
+            object (JSONModelObject): an ArchivesSpace archival object.
+
+        Returns:
+            bool: True on any match with delivery formats. None on no match or instances.
+        """
         types = []
         formats = [
             "digital_object",
@@ -48,5 +56,6 @@ class DeliveryFormats:
         else:
             return None
 
-        def return_formats(object):
-            pass
+    def return_formats(object):
+        containers = {}
+        pass
