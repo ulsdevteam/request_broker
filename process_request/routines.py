@@ -1,4 +1,3 @@
-from .models import MachineUser, User
 
 
 # adding pseudocode
@@ -58,4 +57,5 @@ class DeliveryFormats:
 
     def return_formats(object):
         containers = {}
+
         pass
