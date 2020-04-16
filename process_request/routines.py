@@ -1,5 +1,4 @@
 from .models import MachineUser, User
-#from rac_aspace.data_helpers import indicates_restriction, is_restricted
 
 
 # adding pseudocode
@@ -31,23 +30,23 @@ class GetRestrictions:
             #pass
 
 class DeliveryFormats:
-    def check_instances(object):
-        containers = {}
+    # TO DO: Add some docstrings
+    def check_formats(object):
+        types = []
+        formats = [
+            "digital_object",
+            "microform",
+            "mixed materials"
+        ]
         if object.instances:
             for instance in object.instances:
-                type = instance.instance_type
-                try:
-                    ref = instance.sub_container.top_container.ref
-                except KeyError:
-                    ref = instance.digital_object.ref
-                containers.update({type : ref})
-            if 'digital_object' in containers:
-                return containers['digital_object']
-            elif 'microform' in containers:
-                return containers['microform']
-            elif 'mixed materials' in containers:
-                return containers['mixed materials']
+                types.append(instance.instance_type)
+            if any(elem in formats for elem in types):
+                return True
             else:
-                unsubmitted.append(object.title)
+                return None
         else:
-            unsubmitted.append(object.title)
+            return None
+
+        def return_formats(object):
+            pass

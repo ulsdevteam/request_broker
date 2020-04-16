@@ -34,12 +34,12 @@ class TestRoutines(TestCase):
 
     def test_check_instances(self):
         for fixture, outcome in [
-            ("object_all.json", "/repositories/2/digital_objects/3348"),
-            ("object_mixed.json", "/repositories/2/top_containers/191156"),
-            ("object_digital.json", "/repositories/2/digital_objects/3348"),
-            ("object_microform.json", "/repositories/2/top_containers/191157")]:
-            #("object_av.json", ""),
-            #("object_no_instance.json", "")]:
+            ("object_all.json", True),
+            ("object_mixed.json",True),
+            ("object_digital.json", True),
+            ("object_microform.json", True),
+            ("object_av.json", None),
+            ("object_no_instance.json", None)]:
             object = self.obj_from_fixture(fixture)
-            result = DeliveryFormats.check_instances(object)
+            result = DeliveryFormats.check_formats(object)
             self.assertEqual(result, outcome)
