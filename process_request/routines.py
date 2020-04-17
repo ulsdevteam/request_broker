@@ -25,7 +25,6 @@ class GetRestrictions:
     # 2. Conditions governing access notes
     # 3. Next closest conditions governing access notes (inherited)
 
-
     def indicates_restriction(rights_statement):
         """Parses a rights statement to determine if it indicates a restriction.
 
