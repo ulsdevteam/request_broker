@@ -3,14 +3,17 @@ from datetime import datetime
 # adding pseudocode
 unsubmitted = []
 
+
 class ProcessRequest(object):
     # Read through list of requested archival objects
     pass
+
 
 class GetObject(object):
     # Gets archival object information from ArchivesSpace
     # TO DO: write connections to ArchivesSpace
     pass
+
 
 class GetRestrictions:
     # TO DO: main section where processing happens
@@ -73,6 +76,7 @@ class GetRestrictions:
     def inherit_restrictions(object):
         # TO DO: Add code to look up and inherit accessrestrict notes
         pass
+
 
 class DeliveryFormats:
 

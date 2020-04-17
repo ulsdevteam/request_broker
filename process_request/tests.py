@@ -23,6 +23,7 @@ class TestUsers(TestCase):
         user = MachineUser(system_name="Zodiac")
         self.assertEqual(str(user), system)
 
+
 class TestRoutines(TestCase):
 
     def obj_from_fixture(self, filename, client=None):
@@ -34,11 +35,11 @@ class TestRoutines(TestCase):
     def test_check_instances(self):
         for fixture, outcome in [
             ("object_all.json", True),
-            ("object_mixed.json",True),
+            ("object_mixed.json", True),
             ("object_digital.json", True),
             ("object_microform.json", True),
             ("object_av.json", None),
-            ("object_no_instance.json", None)]:
+                ("object_no_instance.json", None)]:
             object = self.obj_from_fixture(fixture)
             result = DeliveryFormats.check_formats(object)
             self.assertEqual(result, outcome)
