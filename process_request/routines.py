@@ -25,29 +25,6 @@ class GetRestrictions:
     # 2. Conditions governing access notes
     # 3. Next closest conditions governing access notes (inherited)
 
-    def is_restricted(object):
-        """Parses an archival object to determine if it is restricted.
-
-        Iterates through notes, looking for a conditions governing access note
-        which contains a particular set of strings.
-        Also looks for associated rights statements which indicate object may be
-        restricted.
-
-        Args:
-            object (JSONModelObject): an ArchivesSpace archival_object.
-
-        Returns:
-            bool: True if archival object is restricted, False if not.
-        """
-        query_string = "materials are restricted"
-        for rights_statement in object.rights_statements:
-            if indicates_restriction(rights_statement):
-                return True
-        for note in object.notes:
-            if note.type == 'accessrestrict':
-                if text_in_note(note, query_string):
-                    return True
-        return False
 
     def indicates_restriction(rights_statement):
         """Parses a rights statement to determine if it indicates a restriction.
@@ -71,6 +48,48 @@ class GetRestrictions:
             if (act.get("restriction") in [
                     "disallow", "conditional"] and not is_expired(act.get("end_date"))):
                 return True
+        return False
+
+    def text_in_note(note, query_string):
+        """Performs fuzzy searching against note text.
+
+        Args:
+            note (JSONModelObject): an ArchivesSpace note object.
+            query_string (str): a string to match against.
+
+        Returns:
+            bool: True if a match is found for `query_string`, False if no match is
+                found.
+        """
+        CONFIDENCE_RATIO = 97
+        """int: Minimum confidence ratio to match against."""
+        note_content = get_note_text(note)
+        ratio = fuzz.token_sort_ratio(
+            " ".join([n.lower() for n in note_content]), query_string.lower())
+        return (True if ratio > CONFIDENCE_RATIO else False)
+
+    def is_restricted(object):
+        """Parses an archival object to determine if it is restricted.
+
+        Iterates through notes, looking for a conditions governing access note
+        which contains a particular set of strings.
+        Also looks for associated rights statements which indicate object may be
+        restricted.
+
+        Args:
+            object (JSONModelObject): an ArchivesSpace archival_object.
+
+        Returns:
+            bool: True if archival object is restricted, False if not.
+        """
+        query_string = "materials are restricted"
+        for rights_statement in object.rights_statements:
+            if indicates_restriction(rights_statement):
+                return True
+        for note in object.notes:
+            if note.type == 'accessrestrict':
+                if text_in_note(note, query_string):
+                    return True
         return False
 
     def inherit_restrictions(object):
