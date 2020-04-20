@@ -3,3 +3,4 @@ Django==2.2.10
 djangorestframework
 health-check
 psycopg2-binary
+rapidfuzz==0.7.3
