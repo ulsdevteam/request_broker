@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from rapidfuzz import fuzz
 
 # adding pseudocode
@@ -89,7 +90,7 @@ class GetRestrictions:
         """
         CONFIDENCE_RATIO = 97
         """int: Minimum confidence ratio to match against."""
-        note_content = get_note_text(note)
+        note_content = GetRestrictions.get_note_text(note)
         ratio = fuzz.token_sort_ratio(
             " ".join([n.lower() for n in note_content]),
             query_string.lower(),
@@ -137,10 +138,10 @@ class GetRestrictions:
         query_string = "materials are restricted"
         for note in object.notes:
             if note.type == 'accessrestrict':
-                if text_in_note(note, query_string):
+                if GetRestrictions.text_in_note(note, query_string):
                     return True
         for rights_statement in object.rights_statements:
-            if indicates_restriction(rights_statement):
+            if GetRestrictions.indicates_restriction(rights_statement):
                 return True
         return False
 
