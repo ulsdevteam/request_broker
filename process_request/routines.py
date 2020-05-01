@@ -36,46 +36,56 @@ class GetRestrictions:
         Returns:
             list: a list containing note content.
         """
-        def parse_subnote(subnote):
-            """Parses note content from subnotes.
+        def get_note_text(note):
+            """Parses note content from different note types.
 
             Args:
-                subnote (JSONModelObject): an ArchivesSpace subnote object.
+                note (array): an ArchivesSpace note.
 
             Returns:
-                list: a list containing subnote content.
+                list: a list containing note content.
             """
-            if subnote.jsonmodel_type in [
-                    'note_orderedlist', 'note_index']:
-                content = subnote.items
-            elif subnote.jsonmodel_type in ['note_chronology', 'note_definedlist']:
-                content = []
-                for k in subnote.items:
-                    for i in k:
-                        content += k.get(i) if isinstance(k.get(i),
-                                                          list) else [k.get(i)]
-            else:
-                content = subnote.content if isinstance(
-                    subnote.content, list) else [subnote.content]
-            return content
+            def parse_subnote(subnote):
+                """Parses note content from subnotes.
 
-        if note.jsonmodel_type == "note_singlepart":
-            content = note.content
-        elif note.jsonmodel_type == 'note_bibliography':
-            data = []
-            data += note.content
-            data += note.items
-            content = data
-        elif note.jsonmodel_type == "note_index":
-            data = []
-            for item in note.items:
-                data.append(item.value)
-            content = data
-        else:
-            subnote_content_list = list(parse_subnote(sn) for sn in note.subnotes)
-            content = [
-                c for subnote_content in subnote_content_list for c in subnote_content]
-        return content
+                Args:
+                    subnote (array): an ArchivesSpace subnote.
+
+                Returns:
+                    list: a list containing subnote content.
+                """
+                if subnote["jsonmodel_type"] in [
+                        "note_orderedlist", "note_index"]:
+                    content = subnote["items"]
+                elif subnote["jsonmodel_type"] in ["note_chronology", "note_definedlist"]:
+                    content = []
+                    for k in subnote["items"]:
+                        for i in k:
+                            content += k.get(i) if isinstance(k.get(i),
+                                                              list) else [k.get(i)]
+                else:
+                    content = subnote["content"] if isinstance(
+                        subnote["content"], list) else [subnote["content"]]
+                return content
+
+            if note["jsonmodel_type"] == "note_singlepart":
+                content = note["content"]
+            elif note["jsonmodel_type"] == "note_bibliography":
+                data = []
+                data += note["content"]
+                data += note["items"]
+                content = data
+            elif note["jsonmodel_type"] == "note_index":
+                data = []
+                for item in note["items"]:
+                    data.append(item["value"])
+                content = data
+            else:
+                subnote_content_list = list(parse_subnote(sn)
+                                            for sn in note["subnotes"])
+                content = [
+                    c for subnote_content in subnote_content_list for c in subnote_content]
+            return content
 
     def text_in_note(note, query_string):
         """Performs fuzzy searching against note text.
@@ -97,7 +107,7 @@ class GetRestrictions:
             score_cutoff=CONFIDENCE_RATIO)
         return bool(ratio)
 
-    def indicates_restriction(rights_statement):
+    def indicates_restriction(rights_statement, restriction_acts):
         """Parses a rights statement to determine if it indicates a restriction.
 
         Args:
@@ -112,16 +122,15 @@ class GetRestrictions:
             return False if (
                 datetime.strptime(date, "%Y-%m-%d") >= today) else True
 
-        rights_json = rights_statement.json()
-        if is_expired(rights_json.get("end_date")):
+        if is_expired(rights_statement.get("end_date")):
             return False
-        for act in rights_json.get("acts"):
-            if (act.get("restriction") in [
-                    "disallow", "conditional"] and not is_expired(act.get("end_date"))):
+        for act in rights_statement.get("acts"):
+            if (act.get("restriction")
+                    in restriction_acts and not is_expired(act.get("end_date"))):
                 return True
         return False
 
-    def is_restricted(object):
+    def is_restricted(archival_object, query_string, restriction_acts):
         """Parses an archival object to determine if it is restricted.
 
         Iterates through notes, looking for a conditions governing access note
@@ -130,18 +139,18 @@ class GetRestrictions:
         restricted.
 
         Args:
-            object (JSONModelObject): an ArchivesSpace archival_object.
+            archival_object (JSONModelObject): an ArchivesSpace archival_object.
+            restriction_acts (list): a list of strings to match restriction act against.
 
         Returns:
             bool: True if archival object is restricted, False if not.
         """
-        query_string = "materials are restricted"
-        for note in object.notes:
-            if note.type == 'accessrestrict':
-                if GetRestrictions.text_in_note(note, query_string):
+        for note in archival_object["notes"]:
+            if note["type"] == "accessrestrict":
+                if GetRestrictions.text_in_note(note, query_string.lower()):
                     return True
-        for rights_statement in object.rights_statements:
-            if GetRestrictions.indicates_restriction(rights_statement):
+        for rights_statement in archival_object["rights_statements"]:
+            if GetRestrictions.indicates_restriction(rights_statement, restriction_acts):
                 return True
         return False
 
