@@ -8,7 +8,14 @@ unsubmitted = []
 
 class ProcessRequest(object):
     # Read through list of requested archival objects
-    pass
+    for object in objects:
+        if DeliveryFormats.check_formats:
+    # run necessary checks
+    # add object to submission list
+            pass
+        else:
+    # Add object to unsubmitted list
+            pass
 
 
 class GetObject(object):
@@ -189,3 +196,6 @@ class DeliveryFormats:
     def return_formats(object):
         for instance in object.instances:
             pass
+
+    def create_request(object):
+        pass
