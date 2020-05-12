@@ -4,18 +4,19 @@ from rapidfuzz import fuzz
 
 # adding pseudocode
 unsubmitted = []
+request = []
 
-
-class ProcessRequest(object):
+class ProcessRequest(request):
+    pass
     # Read through list of requested archival objects
-    for object in objects:
-        if DeliveryFormats.check_formats:
+    # for object in objects:
+        # if DeliveryFormats.check_formats:
     # run necessary checks
     # add object to submission list
-            pass
-        else:
+            # pass
+        # else:
     # Add object to unsubmitted list
-            pass
+        # pass
 
 
 class GetObject(object):
