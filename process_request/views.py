@@ -1,28 +1,20 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
+
 from .models import MachineUser
 from .serializers import MachineUserSerializer
+from .routines import ProcessRequest
 
 # Create your views here.
-class MachineUserViewSet(ModelViewSet):
-    model = MachineUser
-    queryset = MachineUser.objects.all()
-    serializer_class = MachineUserSerializer
-
-    pass
-    def machineuser_list(request):
-        if request.method == 'GET':
-            users = MachineUser.objects.all()
-            serializer = MachineUserSerializer(users, many=True)
-            return JsonResponse(serializer.data, safe=False)
-
-    def machineuser_detail(request, pk):
+class ProcessRoutinesView(APIView):
+    def post(self, request, format=None):
         try:
-            machineuser = MachineUser.objects.get(pk=pk)
-        except MachineUser.DoesNotExist:
-            return HttpResponse(status=404)
+            response = self.routine().run()
+            return Response(prepare_response(response), status=200)
+        except Exception as e:
+            return Response(prepare_response(e), status=500)
 
-        if request.method = 'GET':
-            serializer = MachineUserSerializer(machineuser)
-            return JsonResponse(serializer.data)
+class ProcessRequestsView(ProcessRoutinesView):
+    """Runs the ProcessRequest routine. Accepts POST requests only."""
+    routine = ProcessRequest

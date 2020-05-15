@@ -6,7 +6,14 @@ from rapidfuzz import fuzz
 unsubmitted = []
 request = []
 
-class ProcessRequest(request):
+class Routine:
+    def __init__(self):
+        self.aspace_client = ArchivesSpaceClient(settings.ARCHIVESSPACE['baseurl'],
+                                                 settings.ARCHIVESSPACE['username'],
+                                                 settings.ARCHIVESSPACE['password'],
+                                                 settings.ARCHIVESSPACE['repo_id'])
+
+class ProcessRequest(Routine):
     pass
     # Read through list of requested archival objects
     # for object in objects:
