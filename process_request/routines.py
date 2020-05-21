@@ -8,8 +8,7 @@ request = []
 
 
 class ProcessRequest:
-    print('hello')
-    pass
+    message = 'hello'
     # Read through list of requested archival objects
     # for object in objects:
         # if DeliveryFormats.check_formats:

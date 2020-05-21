@@ -1,8 +1,7 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import MachineUser
 from .routines import ProcessRequest
 
 # Create your views here.
@@ -10,4 +9,7 @@ class ProcessRequestView(APIView):
     '''
     Calls the ProcessRequest class from routines.
     '''
-    ProcessRequest()
+    def get(self, request, format=None):
+        print('hi')
+        print(ProcessRequest().message)
+        return Response(str(ProcessRequest()), status=200)
