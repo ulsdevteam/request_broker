@@ -24,5 +24,5 @@ router = routers.DefaultRouter()
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
-    re_path(r'api/process-request/', ProcessRequestView.as_view(), name='process-request')
+    path(r'api/process-request/', ProcessRequestView.as_view(), name='process-request')
 ]

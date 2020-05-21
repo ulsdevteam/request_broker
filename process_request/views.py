@@ -10,4 +10,4 @@ class ProcessRequestView(APIView):
     '''
     Calls the ProcessRequest class from routines.
     '''
-    request = ProcessRequest()
+    ProcessRequest()

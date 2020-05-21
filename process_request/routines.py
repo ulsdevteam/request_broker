@@ -8,6 +8,7 @@ request = []
 
 
 class ProcessRequest:
+    print('hello')
     pass
     # Read through list of requested archival objects
     # for object in objects:
