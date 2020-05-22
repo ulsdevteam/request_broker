@@ -11,5 +11,5 @@ class ProcessRequestView(APIView):
     '''
     def get(self, request, format=None):
         print('hi')
-        request = ['one','two']
-        return Response(str(ProcessRequest.unpack_request(self, request)), status=200)
+        request = ['/repositories/2/archival_objects/1154299']
+        return Response(str(ProcessRequest.get_object(self, request)), status=200)

@@ -1,11 +1,10 @@
 from asnake.aspace import ASpace
 from datetime import datetime
-from rapidfuzz import fuzz
+#from rapidfuzz import fuzz
 from request_broker import settings
 
 # adding pseudocode
 unsubmitted = []
-
 
 class Routine:
     """
@@ -25,10 +24,13 @@ class ProcessRequest(Routine):
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
     """
-    def unpack_request(self, request):
+    def get_object(self, request):
         for item in request:
-            print(item)
-            return request
+            try:
+                obj = self.aspace.client.get(item)
+            except Exception as e:
+                print(self.aspace.client.get(item))
+                #raise AttributeError
     # Read through list of requested archival objects
     # for object in objects:
         # if DeliveryFormats.check_formats:
@@ -38,12 +40,6 @@ class ProcessRequest(Routine):
         # else:
     # Add object to unsubmitted list
         # pass
-
-
-class GetObject(object):
-    # Gets archival object information from ArchivesSpace
-    # TO DO: write connections to ArchivesSpace
-    pass
 
 
 class GetRestrictions:
