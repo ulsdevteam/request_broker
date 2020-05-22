@@ -6,6 +6,17 @@ from rapidfuzz import fuzz
 unsubmitted = []
 request = []
 
+class Routine:
+    """Base routine class which is inherited by all other routines.
+
+    Provides default clients for ArchivesSpace.
+    """
+
+    def __init__(self):
+        self.aspace_client = ArchivesSpaceClient(settings.ARCHIVESSPACE["baseurl"],
+                                                 settings.ARCHIVESSPACE["username"],
+                                                 settings.ARCHIVESSPACE["password"],
+                                                 settings.ARCHIVESSPACE["repo_id"])
 
 class ProcessRequest:
     message = 'hello'
