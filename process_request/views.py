@@ -11,5 +11,5 @@ class ProcessRequestView(APIView):
     '''
     def get(self, request, format=None):
         print('hi')
-        print(ProcessRequest().message)
-        return Response(str(ProcessRequest()), status=200)
+        request = ['one','two']
+        return Response(str(ProcessRequest.unpack_request(self, request)), status=200)

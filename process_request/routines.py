@@ -1,25 +1,34 @@
+from asnake.aspace import ASpace
 from datetime import datetime
-
 from rapidfuzz import fuzz
+from request_broker import settings
 
 # adding pseudocode
 unsubmitted = []
-request = []
+
 
 class Routine:
-    """Base routine class which is inherited by all other routines.
+    """
+    Base routine class which is inherited by all other routines.
 
     Provides default clients for ArchivesSpace.
     """
 
     def __init__(self):
-        self.aspace_client = ArchivesSpaceClient(settings.ARCHIVESSPACE["baseurl"],
-                                                 settings.ARCHIVESSPACE["username"],
-                                                 settings.ARCHIVESSPACE["password"],
-                                                 settings.ARCHIVESSPACE["repo_id"])
+        self.aspace = ASpace(settings.ARCHIVESSPACE["baseurl"],
+                             settings.ARCHIVESSPACE["username"],
+                             settings.ARCHIVESSPACE["password"],
+                             settings.ARCHIVESSPACE["repo_id"])
 
-class ProcessRequest:
-    message = 'hello'
+class ProcessRequest(Routine):
+    """
+    Runs through the process of iterating through requests, getting json information,
+    checking delivery formats, checking restrictrions, and adding items to lists.
+    """
+    def unpack_request(self, request):
+        for item in request:
+            print(item)
+            return request
     # Read through list of requested archival objects
     # for object in objects:
         # if DeliveryFormats.check_formats:
