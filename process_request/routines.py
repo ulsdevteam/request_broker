@@ -14,16 +14,16 @@ class Routine:
     """
 
     def __init__(self):
-        self.aspace = ASpace(settings.ARCHIVESSPACE["baseurl"],
-                             settings.ARCHIVESSPACE["username"],
-                             settings.ARCHIVESSPACE["password"],
-                             settings.ARCHIVESSPACE["repo_id"])
+        self.aspace = ASpace(baseurl = settings.ARCHIVESSPACE["baseurl"],
+                             username = settings.ARCHIVESSPACE["username"],
+                             password = settings.ARCHIVESSPACE["password"])
 
 class ProcessRequest(Routine):
     """
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
     """
+    request = ['/repositories/2/archival_objects/1154299']
     def get_object(self, request):
         for item in request:
             try:

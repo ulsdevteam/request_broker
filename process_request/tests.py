@@ -5,7 +5,7 @@ from asnake.jsonmodel import wrap_json_object
 from django.test import TestCase
 
 from .models import MachineUser, User
-# from .routines import DeliveryFormats
+from .routines import ProcessRequest
 
 
 class TestUsers(TestCase):
@@ -24,7 +24,11 @@ class TestUsers(TestCase):
         self.assertEqual(str(user), system)
 
 
-# class TestRoutines(TestCase):
+class TestRoutines(TestCase):
+
+    def test_routines(self):
+        routines = ProcessRequest().run()
+        print(routines)
 
     # def obj_from_fixture(self, filename, client=None):
         # with open(os.path.join("fixtures", filename)) as json_file:
