@@ -23,13 +23,13 @@ class ProcessRequest(Routine):
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
     """
-    request = ['/repositories/2/archival_objects/1154299']
     def get_object(self, request):
         for item in request:
+            print('hi')
             try:
-                obj = self.aspace.client.get(item)
+                obj = self.aspace.get(item)
             except Exception as e:
-                print(self.aspace.client.get(item))
+                print(self.aspace.get(item))
                 #raise AttributeError
     # Read through list of requested archival objects
     # for object in objects:

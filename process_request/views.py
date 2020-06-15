@@ -9,7 +9,7 @@ class ProcessRequestView(APIView):
     '''
     Calls the ProcessRequest class from routines.
     '''
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         print('hi')
         request = ['/repositories/2/archival_objects/1154299']
         return Response(str(ProcessRequest.get_object(self, request)), status=200)
