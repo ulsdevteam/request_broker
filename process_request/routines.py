@@ -3,8 +3,6 @@ from datetime import datetime
 #from rapidfuzz import fuzz
 from request_broker import settings
 
-# adding pseudocode
-unsubmitted = []
 
 class Routine:
     """
@@ -16,30 +14,34 @@ class Routine:
     def __init__(self):
         self.aspace = ASpace(baseurl = settings.ARCHIVESSPACE["baseurl"],
                              username = settings.ARCHIVESSPACE["username"],
-                             password = settings.ARCHIVESSPACE["password"])
+                             password = settings.ARCHIVESSPACE["password"],
+                             repository = settings.ARCHIVESSPACE["repo_id"])
 
 class ProcessRequest(Routine):
     """
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
     """
-    def get_object(self, request):
-        for item in request:
-            print('hi')
+    def get_data(self, item):
+        obj = self.aspace.client.get(item)
+        return obj
+
+    def run(self, object_list):
+        for item in object_list:
             try:
-                obj = self.aspace.get(item)
+                self.get_data(item)
+                print('after get_data')
             except Exception as e:
-                print(self.aspace.get(item))
-                #raise AttributeError
-    # Read through list of requested archival objects
-    # for object in objects:
-        # if DeliveryFormats.check_formats:
-    # run necessary checks
-    # add object to submission list
-            # pass
-        # else:
-    # Add object to unsubmitted list
+                print(e)
+        return 'test'
+            #raise AttributeError
+    # if DeliveryFormats.check_formats:
+# run necessary checks
+# add object to submission list
         # pass
+    # else:
+# Add object to unsubmitted list
+    # pass
 
 
 class GetRestrictions:

@@ -3,9 +3,12 @@ import os
 
 from asnake.jsonmodel import wrap_json_object
 from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIRequestFactory
 
 from .models import MachineUser, User
 from .routines import ProcessRequest
+from .views import ProcessRequestView
 
 
 class TestUsers(TestCase):
@@ -27,7 +30,7 @@ class TestUsers(TestCase):
 class TestRoutines(TestCase):
 
     def test_routines(self):
-        routines = ProcessRequest().run()
+        routines = ProcessRequest().run(['/repositories/2/archival_objects/8457'])
         print(routines)
 
     # def obj_from_fixture(self, filename, client=None):
@@ -47,3 +50,10 @@ class TestRoutines(TestCase):
             # object = self.obj_from_fixture(fixture)
             # result = DeliveryFormats.check_formats(object)
             # self.assertEqual(result, outcome)
+
+class TestViews(TestCase):
+
+    def test_processrequestview(self):
+        factory = APIRequestFactory()
+        request = factory.post(reverse('process-request'), {"items": ["/repositories/2/archival_objects/8457"]}, format='json')
+        response = ProcessRequestView.as_view()(request)
