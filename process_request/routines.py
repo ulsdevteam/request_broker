@@ -26,25 +26,6 @@ class ProcessRequest(Routine):
         obj = self.aspace.client.get(item)
         return obj
 
-    def run(self, object_list):
-        for item in object_list:
-            try:
-                self.get_data(item)
-                print('after get_data')
-            except Exception as e:
-                print(e)
-        return 'test'
-            #raise AttributeError
-    # if DeliveryFormats.check_formats:
-# run necessary checks
-# add object to submission list
-        # pass
-    # else:
-# Add object to unsubmitted list
-    # pass
-
-
-class GetRestrictions:
     # TO DO: main section where processing happens
     # Push requests to submitted or unsubmitted
     # If open and delivery formats, mark as submittable
@@ -53,7 +34,6 @@ class GetRestrictions:
     # 1. PREMIS rights statements first
     # 2. Conditions governing access notes
     # 3. Next closest conditions governing access notes (inherited)
-
     def get_note_text(note):
         """Parses note content from different note types.
 
@@ -185,15 +165,6 @@ class GetRestrictions:
         # TO DO: Add code to look up and inherit accessrestrict notes
         pass
 
-
-class DeliveryFormats:
-
-    formats = [
-        "digital_object",
-        "microform",
-        "mixed materials"
-    ]
-
     def check_formats(object):
         """Parses instances and creates a list of instance types. Matches list against
         list of acceptable delivery formats.
@@ -217,5 +188,25 @@ class DeliveryFormats:
         for instance in object.instances:
             pass
 
+    def run(self, object_list):
+        for item in object_list:
+            try:
+                self.get_data(item)
+                print('after get_data')
+            except Exception as e:
+                print(e)
+            return 'test'
+        #raise AttributeError
+# if DeliveryFormats.check_formats:
+# run necessary checks
+# add object to submission list
+        # pass
+    # else:
+# Add object to unsubmitted list
+    # pass
+
     def create_request(object):
         pass
+
+class SendRequests(Routine):
+    pass

@@ -33,24 +33,6 @@ class TestRoutines(TestCase):
         routines = ProcessRequest().run(['/repositories/2/archival_objects/8457'])
         print(routines)
 
-    # def obj_from_fixture(self, filename, client=None):
-        # with open(os.path.join("fixtures", filename)) as json_file:
-            # data = json.load(json_file)
-            # obj = wrap_json_object(data, client=client)
-            # return obj
-
-    # def test_check_instances(self):
-        # for fixture, outcome in [
-            # ("object_all.json", True),
-            # ("object_mixed.json", True),
-            # ("object_digital.json", True),
-            # ("object_microform.json", True),
-            # ("object_av.json", None),
-                # ("object_no_instance.json", None)]:
-            # object = self.obj_from_fixture(fixture)
-            # result = DeliveryFormats.check_formats(object)
-            # self.assertEqual(result, outcome)
-
 class TestViews(TestCase):
 
     def test_processrequestview(self):
