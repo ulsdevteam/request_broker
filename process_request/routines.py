@@ -240,10 +240,18 @@ class ProcessRequest(Routine):
     # pass
 
 class SendRequests(Routine):
+    """Sends submitted and unsubmitted data to the proper endpoints.
+    """
     pass
 
     def send_unsubmitted(unsubmitted):
+        """Structures and sends request of unsubmittable items to an email creation
+        endpoint to be returned to the researcher with reasons for cancellation.
+        """
         pass
 
     def send_submitted(submitted):
+        """Structures and sends request of submittable items to the proper endpoint
+        for Aeon integration.
+        """
         pass
