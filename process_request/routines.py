@@ -218,9 +218,9 @@ class ProcessRequest(Routine):
             object_list (list): A list of AS archival object URIs.
 
         Returns:
-            submitted (dict): Dict of submittable objects with corresponding most
+            submitted (list): A list of dicts of submittable objects with corresponding most
                 desirable delivery format.
-            unsubmitted (dict): Dict of unsubmittable objects with corresponding
+            unsubmitted (list): A list of dicts of unsubmittable objects with corresponding
                 reason of failure.
         """
         for item in object_list:
@@ -239,19 +239,17 @@ class ProcessRequest(Routine):
 # Add object to unsubmitted list
     # pass
 
-class SendRequests(Routine):
-    """Sends submitted and unsubmitted data to the proper endpoints.
+class SendEmail(Routine):
+    """Sends unsubmitted data to the endpoint for email creation.
     """
     pass
 
-    def send_unsubmitted(unsubmitted):
-        """Structures and sends request of unsubmittable items to an email creation
-        endpoint to be returned to the researcher with reasons for cancellation.
-        """
-        pass
+class SendRequest(Routine):
+    """Sends submitted data to Aeon for transaction creation in Aeon.
+    """
+    pass
 
-    def send_submitted(submitted):
-        """Structures and sends request of submittable items to the proper endpoint
-        for Aeon integration.
-        """
-        pass
+class SendSerializer(Routine):
+    """Sends data to the proper to an endpoint for CSV creation of submission data.
+    """
+    pass
