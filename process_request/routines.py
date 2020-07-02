@@ -25,7 +25,7 @@ class ProcessRequest(Routine):
         # TO DO: add code to read through the rights in order
         # 1. PREMIS rights statements first
         # 2. Conditions governing access notes
-        # 3. Next closest conditions governing access notes (inherited)
+        # 3. Next closest conditions governing access notes/rights statements (inherited)
     """
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
@@ -115,6 +115,7 @@ class ProcessRequest(Routine):
         return bool(ratio)
 
     def indicates_restriction(rights_statement, restriction_acts):
+        #TO DO: Rework to allow for conditional rights checks.
         """Parses a rights statement to determine if it indicates a restriction.
 
         Args:
@@ -195,6 +196,7 @@ class ProcessRequest(Routine):
             return None
 
     def return_formats(obj):
+        # TO DO: Expand to log if digital objects exist so we can log whether to send duplication or retreival requests.
         """Returns a list of acceptable delivery formats for an archival object.
 
         Args:
@@ -240,7 +242,7 @@ class ProcessRequest(Routine):
     # pass
 
 class SendEmail(Routine):
-    """Sends unsubmitted data to the endpoint for email creation.
+    """Sends an email with request data to an email address or list of addresses.
     """
     pass
 
@@ -249,7 +251,11 @@ class SendRequest(Routine):
     """
     pass
 
-class SendSerializer(Routine):
-    """Sends data to the proper to an endpoint for CSV creation of submission data.
+class SendDuplication(Routine):
+    """Sends submitted data for duplication request creation in Aeon.
+    """
+
+class DownloadCSV(Routine):
+    """Create a streaming csv file based on original request.
     """
     pass
