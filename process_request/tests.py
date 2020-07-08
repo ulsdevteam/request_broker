@@ -36,3 +36,4 @@ class TestViews(TestCase):
         factory = APIRequestFactory()
         request = factory.post(reverse('process-request'), {"items": ["/repositories/2/archival_objects/8457"]}, format='json')
         response = ProcessRequestView.as_view()(request)
+        self.assertEqual(response.status_code, 200)

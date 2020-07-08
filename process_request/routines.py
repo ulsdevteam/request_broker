@@ -28,6 +28,7 @@ class ProcessRequest(Routine):
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
     """
+
     def get_data(self, item):
         """Gets an archival object from ArchivesSpace.
 
