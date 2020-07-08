@@ -1,6 +1,4 @@
 from asnake.aspace import ASpace
-from datetime import datetime
-#from rapidfuzz import fuzz
 from request_broker import settings
 
 
@@ -12,20 +10,20 @@ class Routine:
     """
 
     def __init__(self):
-        self.aspace = ASpace(baseurl = settings.ARCHIVESSPACE["baseurl"],
-                             username = settings.ARCHIVESSPACE["username"],
-                             password = settings.ARCHIVESSPACE["password"],
-                             repository = settings.ARCHIVESSPACE["repo_id"])
+        self.aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"],
+                             username=settings.ARCHIVESSPACE["username"],
+                             password=settings.ARCHIVESSPACE["password"],
+                             repository=settings.ARCHIVESSPACE["repo_id"])
+
 
 class ProcessRequest(Routine):
-        # TODO: main section where processing happens
-        # Push requests to submitted or unsubmitted
-        # If open and delivery formats, mark as submittable
-
-        # TO DO: add code to read through the rights in order
-        # 1. PREMIS rights statements first
-        # 2. Conditions governing access notes
-        # 3. Next closest conditions governing access notes/rights statements (inherited)
+    # TODO: main section where processing happens
+    # Push requests to submitted or unsubmitted
+    # If open and delivery formats, mark as submittable
+    # TO DO: add code to read through the rights in order
+    # 1. PREMIS rights statements first
+    # 2. Conditions governing access notes
+    # 3. Next closest conditions governing access notes/rights statements (inherited)
     """
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
@@ -64,9 +62,10 @@ class ProcessRequest(Routine):
         Returns:
             bool: True on any match with delivery formats. None on no match or instances.
         """
+        formats = []
         if obj.instances:
             for instance in obj.instances:
-                if instance.instance_type in DeliveryFormats.formats:
+                if instance.instance_type in formats:
                     return True
                 else:
                     return None
@@ -110,28 +109,32 @@ class ProcessRequest(Routine):
             except Exception as e:
                 print(e)
             return 'test'
-        #raise AttributeError
-# if DeliveryFormats.check_formats:
-# run necessary checks
-# add object to submission list
-        # pass
-    # else:
-# Add object to unsubmitted list
+    # raise AttributeError
+    # if check_formats:
+    # run necessary checks
+    # add object to submission list
     # pass
+    # else:
+    # Add object to unsubmitted list
+    # pass
+
 
 class SendEmail(Routine):
     """Sends an email with request data to an email address or list of addresses.
     """
     pass
 
+
 class SendRequest(Routine):
     """Sends submitted data to Aeon for transaction creation in Aeon.
     """
     pass
 
+
 class SendDuplication(Routine):
     """Sends submitted data for duplication request creation in Aeon.
     """
+
 
 class DownloadCSV(Routine):
     """Create a streaming csv file based on original request.
