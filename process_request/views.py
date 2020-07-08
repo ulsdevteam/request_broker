@@ -8,6 +8,7 @@ class ProcessRequestView(APIView):
     '''
     Calls the ProcessRequest class from routines.
     '''
+
     def post(self, request, format=None):
         object_list = request.data.get('items')
         process_list = ProcessRequest().run(object_list)

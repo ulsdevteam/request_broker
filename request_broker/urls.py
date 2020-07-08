@@ -15,9 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework import routers
 
 from process_request.views import ProcessRequestView
+from rest_framework import routers
 
 router = routers.DefaultRouter()
 
