@@ -3,7 +3,6 @@ from os.path import join
 import vcr
 from django.test import TestCase
 from django.urls import reverse
-
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
