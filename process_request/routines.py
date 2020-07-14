@@ -105,11 +105,10 @@ class ProcessRequest(Routine):
         """
         for item in object_list:
             try:
-                self.get_data(item)
-                print('after get_data')
+                data = self.get_data(item)
             except Exception as e:
                 print(e)
-            return 'test'
+            return data
     # raise AttributeError
     # if check_formats:
     # run necessary checks

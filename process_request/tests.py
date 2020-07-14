@@ -1,11 +1,26 @@
 from django.test import TestCase
 from django.urls import reverse
+from os.path import join
 from rest_framework.test import APIRequestFactory
+import vcr
 
+from request_broker import settings
 from .models import MachineUser, User
 from .routines import ProcessRequest
 from .views import ProcessRequestView
 
+transformer_vcr = vcr.VCR(
+    serializer='json',
+    cassette_library_dir=join(settings.BASE_DIR, 'fixtures/cassettes'),
+    record_mode='once',
+    match_on=['path', 'method'],
+    filter_query_parameters=['username', 'password'],
+    filter_headers=['Authorization', 'X-ArchivesSpace-Session'],
+)
+
+ROUTINES = (
+    ('process_request.json', ProcessRequest),
+)
 
 class TestUsers(TestCase):
 
@@ -26,8 +41,9 @@ class TestUsers(TestCase):
 class TestRoutines(TestCase):
 
     def test_routines(self):
-        routines = ProcessRequest().run(['/repositories/2/archival_objects/8457'])
-        print(routines)
+        for cassette, routine in ROUTINES:
+            with transformer_vcr.use_cassette(cassette):
+                routines = ProcessRequest().run(['/repositories/2/archival_objects/8457'])
 
 
 class TestViews(TestCase):

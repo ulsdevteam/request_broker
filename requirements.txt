@@ -4,3 +4,4 @@ djangorestframework
 health-check
 psycopg2-binary
 rapidfuzz==0.7.3
+vcrpy==4.0.2
