@@ -12,5 +12,4 @@ class ProcessRequestView(APIView):
     def post(self, request, format=None):
         object_list = request.data.get('items')
         process_list = ProcessRequest().run(object_list)
-        print(process_list)
         return Response(process_list, status=200)
