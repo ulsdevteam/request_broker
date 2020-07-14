@@ -50,6 +50,7 @@ class TestRoutines(TestCase):
         for cassette, routine in ROUTINES:
             with transformer_vcr.use_cassette(cassette):
                 routines = ProcessRequest().run(['/repositories/2/archival_objects/8457'])
+                self.assertEqual(routines.status_code, 200)
 
 
 class TestViews(TestCase):
