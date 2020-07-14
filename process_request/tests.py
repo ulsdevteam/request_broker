@@ -1,14 +1,31 @@
-import json
-import os
+from os.path import join
 
-from asnake.jsonmodel import wrap_json_object
+import vcr
 from django.test import TestCase
 from django.urls import reverse
+from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
 from .models import MachineUser, User
 from .routines import ProcessRequest
 from .views import ProcessRequestView
+
+transformer_vcr = vcr.VCR(
+    serializer='json',
+    cassette_library_dir=join(settings.BASE_DIR, 'fixtures/cassettes'),
+    record_mode='once',
+    match_on=['path', 'method'],
+    filter_query_parameters=['username', 'password'],
+    filter_headers=['Authorization', 'X-ArchivesSpace-Session'],
+)
+
+ROUTINES = (
+    ('process_request.json', ProcessRequest),
+)
+
+VIEWS = (
+    ('process_request.json', ProcessRequestView),
+)
 
 
 class TestUsers(TestCase):
@@ -30,12 +47,18 @@ class TestUsers(TestCase):
 class TestRoutines(TestCase):
 
     def test_routines(self):
-        routines = ProcessRequest().run(['/repositories/2/archival_objects/8457'])
-        print(routines)
+        for cassette, routine in ROUTINES:
+            with transformer_vcr.use_cassette(cassette):
+                routines = ProcessRequest().run(['/repositories/2/archival_objects/8457'])
+                self.assertEqual(routines.status_code, 200)
+
 
 class TestViews(TestCase):
 
     def test_processrequestview(self):
         factory = APIRequestFactory()
-        request = factory.post(reverse('process-request'), {"items": ["/repositories/2/archival_objects/8457"]}, format='json')
-        response = ProcessRequestView.as_view()(request)
+        for v in VIEWS:
+            with transformer_vcr.use_cassette(v[0]):
+                request = factory.post(reverse('process-request'), {"items": ["/repositories/2/archival_objects/8457"]}, format='json')
+                response = v[1].as_view()(request)
+                self.assertEqual(response.status_code, 200)
