@@ -39,7 +39,10 @@ class ProcessRequest(Routine):
             obj: An ArchivesSpace Archival Object.
         """
         obj = self.aspace.client.get(item)
-        return obj
+        if obj.status_code == 200:
+            return obj.json()
+        else:
+            raise Exception(obj.json()["error"])
 
     def inherit_restrictions(obj):
         """Iterates up from an archial object level to find the nearest restriction
@@ -86,13 +89,25 @@ class ProcessRequest(Routine):
         for instance in obj.instances:
             pass
 
-    def run(self, object_list):
-        """Runs the process request functions with proper conditionals. First get
-        object, then check restrictions, then check if proper delivery formats exist,
-        and then gets delivery format information. If the obj, fails a check, it
-        gets added to a dict of unsubmitted materials with reason for failure,
-        if it passes all, add it and corresponding delivery format info to a submission
-        dictionary.
+    def process_email_request(self, object_list):
+        """Processes email requests.
+
+        Args:
+            object_list (list): A list of AS archival object URIs.
+
+        Returns:
+            data (list): A list of dicts of objects.
+        """
+        for item in object_list:
+            try:
+                self.get_data(item)
+                print('after get_data')
+            except Exception as e:
+                print(e)
+            return 'test'
+
+    def process_readingroom_request(self, object_list):
+        """Processes reading room requests.
 
         Args:
             object_list (list): A list of AS archival object URIs.
@@ -108,35 +123,64 @@ class ProcessRequest(Routine):
                 data = self.get_data(item)
             except Exception as e:
                 print(e)
-            return data
-    # raise AttributeError
-    # if check_formats:
-    # run necessary checks
-    # add object to submission list
-    # pass
-    # else:
-    # Add object to unsubmitted list
-    # pass
+            return 'test'
+
+    def process_duplication_request(self, object_list):
+        """Processes duplication requests.
+
+        Args:
+            object_list (list): A list of AS archival object URIs.
+
+        Returns:
+            submitted (list): A list of dicts of submittable objects with corresponding most
+                desirable delivery format.
+            unsubmitted (list): A list of dicts of unsubmittable objects with corresponding
+                reason of failure.
+        """
+        for item in object_list:
+            try:
+                self.get_data(item)
+                print('after get_data')
+            except Exception as e:
+                print(e)
+            return 'test'
+
+    def process_csv_request(self, object_list):
+        """Processes requests for a CSV download.
+
+        Args:
+            object_list (list): A list of AS archival object URIs.
+
+        Returns:
+            A streaming CSV file
+        """
+        for item in object_list:
+            try:
+                self.get_data(item)
+                print('after get_data')
+            except Exception as e:
+                print(e)
+            return 'test'
 
 
-class SendEmail(Routine):
+class DeliverEmail(Routine):
     """Sends an email with request data to an email address or list of addresses.
     """
     pass
 
 
-class SendRequest(Routine):
+class DeliverReadingRoomRequest(Routine):
     """Sends submitted data to Aeon for transaction creation in Aeon.
     """
     pass
 
 
-class SendDuplication(Routine):
+class DeliverDuplicationRequest(Routine):
     """Sends submitted data for duplication request creation in Aeon.
     """
 
 
-class DownloadCSV(Routine):
+class DeliverCSV(Routine):
     """Create a streaming csv file based on original request.
     """
     pass
