@@ -29,11 +29,11 @@ class ProcessRequest(Routine):
     checking delivery formats, checking restrictrions, and adding items to lists.
     """
 
-    def get_data(self, obj):
+    def get_data(self, item):
         """Gets an archival object from ArchivesSpace.
 
         Args:
-            obj (str): An ArchivesSpace URI.
+            item (str): An ArchivesSpace URI.
 
         Returns:
             obj (dict): A JSON representation of an ArchivesSpace Archival Object.
@@ -216,6 +216,7 @@ class ProcessRequest(Routine):
         for item in object_list:
             try:
                 data = self.get_data(item)
+                print(data)
             except Exception as e:
                 print(e)
             return 'test'

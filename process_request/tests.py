@@ -49,8 +49,8 @@ class TestRoutines(TestCase):
     def test_routines(self):
         for cassette, routine in ROUTINES:
             with transformer_vcr.use_cassette(cassette):
-                routines = ProcessRequest().run(['/repositories/2/archival_objects/8457'])
-                self.assertEqual(routines.status_code, 200)
+                routines = ProcessRequest().process_readingroom_request(['/repositories/2/archival_objects/8457'])
+                self.assertEqual(routines, 'test')
 
 
 class TestViews(TestCase):
