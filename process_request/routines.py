@@ -29,14 +29,14 @@ class ProcessRequest(Routine):
     checking delivery formats, checking restrictrions, and adding items to lists.
     """
 
-    def get_data(self, item):
+    def get_data(self, obj):
         """Gets an archival object from ArchivesSpace.
 
         Args:
-            item (str): An ArchivesSpace URI.
+            obj (str): An ArchivesSpace URI.
 
         Returns:
-            obj: An ArchivesSpace Archival Object.
+            obj (dict): A JSON representation of an ArchivesSpace Archival Object.
         """
         obj = self.aspace.client.get(item)
         if obj.status_code == 200:
@@ -44,50 +44,105 @@ class ProcessRequest(Routine):
         else:
             raise Exception(obj.json()["error"])
 
-    def inherit_restrictions(obj):
-        """Iterates up from an archial object level to find the nearest restriction
-        act or restriction note.
+    def is_restricted(self, obj):
+        """Checks whether an object is restricted in ArchivesSpace.
+
+        Args:
+            obj (JSONModelObject): An ArchivesSpace archival object.
+
+        Returns:
+            bool (boolean): True on any match with restrictions_apply. None on no match.
+        """
+        pass
+
+    def inherit_restrictions(self, obj):
+        """Iterates up through an object's parents, including resource level,
+        to find the nearest restriction act note or accessrestrict note. Parses accessrestrict
+        notes for note content.
 
         Args:
             obj: An ArchivesSpace archival object.
+
+        Returns:
+            restriction (str): String representation of a rights statement note or
+            accessrestrict note that details why an item is restricted.
         """
-        # TODO: Add code to look up and inherit accessrestrict notes. Will need
-        # to address resource records at some point.
         pass
 
-    def check_formats(obj):
-        """Parses instances and creates a list of instance types. Matches list against
-        list of acceptable delivery formats. Acceptable formats include digital,
-        microform, or mixed materials.
+    def check_formats(self, obj, formats):
+        """Parses instances and for existing instance types. Matches each type against
+        list of acceptable delivery formats. Returns instance information.
 
         Args:
             obj (JSONModelObject): an ArchivesSpace archival object.
+            formats (list): A list of strings of acceptable delivery formats.
 
         Returns:
-            bool: True on any match with delivery formats. None on no match or instances.
+            bool (boolean): False on no instances or if instance type is not in accepted formats.
+            instance_list (list): A list of dicts containing JSON representations of each
+            instance.
         """
-        formats = []
         if obj.instances:
             for instance in obj.instances:
                 if instance.instance_type in formats:
-                    return True
+                    pass
                 else:
-                    return None
+                    False
         else:
-            return None
+            return False
 
-    def return_formats(obj):
-        # TO DO: Expand to log if digital objects exist so we can log whether to send duplication or retreival requests.
-        """Returns a list of acceptable delivery formats for an archival object.
+    def get_instance_data(self, instance):
+        """Returns container and location information for instance objects. Constructs
+        a dictionary of instance information. Calls get_top_container.
 
         Args:
-            obj: An ArchivesSpace archival object.
+            instance (dict): ArchivesSpace instance information.
 
         Returns:
-            list: list of instance objects that match delivery formats.
+            instance_data (dict): a constructed dictionary of instance data.
+            This will include barcode, container indicators, container type,
+            and location information.
         """
-        for instance in obj.instances:
-            pass
+        pass
+
+    def get_top_container(self, container):
+        """Retrieves and returns top container data from a top container url information.
+        Calls get_location_information.
+
+        Args:
+            container (str): an ArchivesSpace top container url.
+
+        Returns:
+            container_data (dict): a dictionary of combined top_container and location
+            information.
+        """
+        pass
+
+    def get_location_information(self, location_url):
+        """Retrieves and returns location information for an ArchivesSpace location.
+
+        Args:
+            location_url (str): an ArchivesSpace location url.
+
+        Returns:
+            location (str): a concatenated string of location information.
+        """
+        pass
+
+    def create_readingroom_request(self, obj, instance_data, restriction):
+        """Constructs a request for reading room materials out of provided data.
+
+        Args:
+            obj (JSONModelObject): an ArchivesSpace object
+            instance_data (dict): a dictionary containing instance and location information.
+            restriction (str): a string representation of a restriction note or accessrestrict
+            note contents.
+
+        Returns:
+            readingroom_request (dict): a JSON compliant request that validates against
+            RAC requirements for Reading Room request data.
+        """
+        pass
 
     def process_email_request(self, object_list):
         """Processes email requests.
