@@ -52,6 +52,7 @@ class ProcessRequest(Routine):
             resource (JSONModelObject): an ArchivesSpace resource object.
 
         Returns:
+            collection_title (str): a string representation of a collection title.
             creators (list): a list of strings representing creator names.
         """
         pass
@@ -80,8 +81,8 @@ class ProcessRequest(Routine):
 
     def inherit_restrictions(self, obj):
         """Iterates up through an object's parents, including resource level,
-        to find the nearest restriction act note or accessrestrict note. Parses accessrestrict
-        notes for note content.
+            to find the nearest restriction act note or accessrestrict note. Parses accessrestrict
+            notes for note content.
 
         Args:
             obj (JSONModelObject): An ArchivesSpace archival object.
@@ -92,9 +93,21 @@ class ProcessRequest(Routine):
         """
         pass
 
+    def inherit_dates(self, obj):
+        """Iterates up through an object's parents, including resource level,
+            to find the nearest date object.
+
+        Args:
+            obj (JSONModelObject): An ArchivesSpace archival object.
+
+        Returns:
+            dates (str): a date expression.
+        """
+        pass
+
     def check_formats(self, obj, formats):
         """Parses instances and for existing instance types. Matches each type against
-        list of acceptable delivery formats. Returns instance information.
+            list of acceptable delivery formats. Returns instance information.
 
         Args:
             obj (JSONModelObject): an ArchivesSpace archival object.
@@ -103,7 +116,7 @@ class ProcessRequest(Routine):
         Returns:
             bool (boolean): False on no instances or if instance type is not in accepted formats.
             instance_list (list): A list of dicts containing JSON representations of each
-            instance.
+                instance.
         """
         if obj.instances:
             for instance in obj.instances:
@@ -116,28 +129,28 @@ class ProcessRequest(Routine):
 
     def get_instance_data(self, instance):
         """Returns container and location information for instance objects. Constructs
-        a dictionary of instance information. Calls get_top_container.
+            a dictionary of instance information. Calls get_top_container.
 
         Args:
             instance (dict): ArchivesSpace instance information.
 
         Returns:
             instance_data (dict): a constructed dictionary of instance data.
-            This will include barcode, container indicators, container type,
-            and location information.
+                This will include barcode, container indicators, container type,
+                and location information.
         """
         pass
 
     def get_top_container(self, container):
         """Retrieves and returns top container data from a top container url information.
-        Calls get_location_information.
+            Calls get_location_information.
 
         Args:
             container (JSONModelObject): an ArchivesSpace top container object.
 
         Returns:
             container_data (dict): a dictionary of combined top_container and location
-            information.
+                information.
         """
         pass
 
@@ -152,7 +165,7 @@ class ProcessRequest(Routine):
         """
         pass
 
-    def create_readingroom_request(self, obj, instance_data, restriction):
+    def create_readingroom_request(self, obj, instance_data, restriction, creators, collection_title, dates):
         """Constructs a request for reading room materials out of provided data.
 
         Args:
@@ -161,6 +174,8 @@ class ProcessRequest(Routine):
             restriction (str): a string representation of a restriction note or accessrestrict
             note contents.
             creators (list): a list of strings including all creator names.
+            collection_title (str): a string representation of a collection title.
+            dates (str): a date expression.
 
         Returns:
             readingroom_request (dict): a JSON compliant request that validates against
