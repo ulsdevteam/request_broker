@@ -106,8 +106,9 @@ class ProcessRequest(Routine):
         pass
 
     def check_formats(self, obj, formats):
-        """Parses instances and for existing instance types. Matches each type against
-            list of acceptable delivery formats. Returns instance information.
+        """Parses instances for existing instance types. Matches each type against
+            list of acceptable delivery formats. Returns instance information for
+            for the most desirable delivery format.
 
         Args:
             obj (JSONModelObject): an ArchivesSpace archival object.
@@ -115,8 +116,7 @@ class ProcessRequest(Routine):
 
         Returns:
             bool (boolean): False on no instances or if instance type is not in accepted formats.
-            instance_list (list): A list of dicts containing JSON representations of each
-                instance.
+            instance (dict): A dict of instance information for most desirable delivery format.
         """
         if obj.instances:
             for instance in obj.instances:
@@ -127,9 +127,9 @@ class ProcessRequest(Routine):
         else:
             return False
 
-    def get_instance_data(self, instance):
-        """Returns container and location information for instance objects. Constructs
-            a dictionary of instance information. Calls get_top_container.
+    def create_instance_data(self, instance):
+        """Constructs a dictionary of instance information and location data.
+        Calls get_top_container.
 
         Args:
             instance (dict): ArchivesSpace instance information.
@@ -170,7 +170,8 @@ class ProcessRequest(Routine):
 
         Args:
             obj (JSONModelObject): an ArchivesSpace object
-            instance_data (dict): a dictionary containing instance and location information.
+            instance_data (dict): a dictionary containing instance and location information for
+                most desirable delivery format.
             restriction (str): a string representation of a restriction note or accessrestrict
             note contents.
             creators (list): a list of strings including all creator names.
