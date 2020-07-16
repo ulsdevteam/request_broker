@@ -44,6 +44,29 @@ class ProcessRequest(Routine):
         else:
             raise Exception(obj.json()["error"])
 
+    def get_creator(self, resource):
+        """Gets a resource and then gets the creator for the resource. Iterates
+        over agents and gets creator information.
+
+        Args:
+            resource (JSONModelObject): an ArchivesSpace resource object.
+
+        Returns:
+            creators (list): a list of strings representing creator names.
+        """
+        pass
+
+    def get_agent_data(self, agent):
+        """Gets ArchivesSpace agent data from an agent uri.
+
+        Args:
+            agent (JSONModelObject): an ArchivesSpace agent object.
+
+        Returns:
+            agent_name (str): Agent name for associated agent.
+        """
+        pass
+
     def is_restricted(self, obj):
         """Checks whether an object is restricted in ArchivesSpace.
 
@@ -61,7 +84,7 @@ class ProcessRequest(Routine):
         notes for note content.
 
         Args:
-            obj: An ArchivesSpace archival object.
+            obj (JSONModelObject): An ArchivesSpace archival object.
 
         Returns:
             restriction (str): String representation of a rights statement note or
@@ -110,7 +133,7 @@ class ProcessRequest(Routine):
         Calls get_location_information.
 
         Args:
-            container (str): an ArchivesSpace top container url.
+            container (JSONModelObject): an ArchivesSpace top container object.
 
         Returns:
             container_data (dict): a dictionary of combined top_container and location
@@ -118,14 +141,14 @@ class ProcessRequest(Routine):
         """
         pass
 
-    def get_location_information(self, location_url):
+    def get_location_information(self, location):
         """Retrieves and returns location information for an ArchivesSpace location.
 
         Args:
-            location_url (str): an ArchivesSpace location url.
+            location (JSONModelObject): an ArchivesSpace location object.
 
         Returns:
-            location (str): a concatenated string of location information.
+            location_data (str): a concatenated string of location information.
         """
         pass
 
@@ -137,6 +160,7 @@ class ProcessRequest(Routine):
             instance_data (dict): a dictionary containing instance and location information.
             restriction (str): a string representation of a restriction note or accessrestrict
             note contents.
+            creators (list): a list of strings including all creator names.
 
         Returns:
             readingroom_request (dict): a JSON compliant request that validates against
