@@ -231,7 +231,8 @@ class ProcessRequest(object):
 class DeliverEmail(object):
     """Sends an email with request data to an email address or list of addresses.
     """
-    pass
+    def send_message(to_address, subject, object_list):
+        return "email sent"
 
 
 class DeliverReadingRoomRequest(object):

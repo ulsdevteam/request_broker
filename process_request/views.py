@@ -5,7 +5,7 @@ from django.http import StreamingHttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .routines import ProcessRequest
+from .routines import DeliverEmail, ProcessRequest
 
 
 class ProcessRequestView(APIView):
@@ -24,9 +24,23 @@ class ProcessEmailRequestView(APIView):
 
     def post(self, request):
         try:
-            object_list = request.data.get('items')
-            process_list = ProcessRequest().process_email_request(object_list)
-            return Response(process_list, status=200)
+            object_list = request.data.get("items")
+            processed = ProcessRequest().process_email_request(object_list)
+            return Response({"items": processed}, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+
+
+class DeliverEmailView(APIView):
+    """Delivers email messages containing data."""
+
+    def post(self, request):
+        try:
+            object_list = request.data.get("items")
+            to_address = request.data.get("to_address")
+            subject = request.data.get("subject")
+            emailed = DeliverEmail().send_message(to_address, subject, object_list)
+            return Response({"detail": emailed}, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 

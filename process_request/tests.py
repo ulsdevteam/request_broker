@@ -14,7 +14,8 @@ from rest_framework.test import APIRequestFactory
 
 from .models import MachineUser, User
 from .routines import ProcessRequest
-from .views import DownloadCSVView, ProcessEmailRequestView, ProcessRequestView
+from .views import (DeliverEmailView, DownloadCSVView, ProcessEmailRequestView,
+                    ProcessRequestView)
 
 transformer_vcr = vcr.VCR(
     serializer='json',
@@ -129,3 +130,17 @@ class TestViews(TestCase):
         self.assertEqual(len(response.data), 1)
 
         self.exception_handling(mock_processed, "foobar", "process-email", ProcessEmailRequestView)
+
+    @patch("process_request.routines.DeliverEmail.send_message")
+    def test_send_email_request_view(self, mock_sent):
+        mock_sent.return_value = "email sent"
+        to_process = random_list()
+        request = self.factory.post(
+            reverse("deliver-email"),
+            {"items": to_process, "to_address": "test@example.com", "subject": "DIMES list"},
+            format="json")
+        response = DeliverEmailView.as_view()(request)
+        self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
+        self.assertEqual(len(response.data), 1)
+
+        self.exception_handling(mock_sent, "foobar", "process-email", DeliverEmailView)
