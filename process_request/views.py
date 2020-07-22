@@ -45,9 +45,10 @@ class DownloadCSVView(APIView):
         """Streams a large CSV file."""
         try:
             submitted = request.data.get("items")
-            rows = ProcessRequest().process_csv_request(submitted)
+            processor = ProcessRequest()
+            fetched = [processor.get_data(item) for item in submitted]
             response = StreamingHttpResponse(
-                streaming_content=(self.iter_items(rows, Echo())),
+                streaming_content=(self.iter_items(fetched, Echo())),
                 content_type="text/csv",
             )
             filename = "dimes-{}.csv".format(datetime.now().isoformat())

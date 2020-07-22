@@ -59,18 +59,6 @@ class TestRoutines(TestCase):
                 routines = ProcessRequest().process_readingroom_request(['/repositories/2/archival_objects/8457'])
                 self.assertEqual(routines, 'test')
 
-    @patch("process_request.routines.ProcessRequest.get_data")
-    def test_process_csv_request(self, mock_get_data):
-        with open(join(FIXTURES_DIR, "as_data.json"), "r") as df:
-            data = json.load(df)
-            mock_get_data.return_value = data
-            to_process = random.sample(string.ascii_lowercase, random.randint(2, 10))
-            processed = ProcessRequest().process_csv_request(to_process)
-            self.assertTrue(isinstance(processed, list))
-            for item in processed:
-                self.assertTrue(isinstance(item, dict))
-            self.assertEqual(len(processed), len(to_process))
-
 
 class TestViews(TestCase):
 
@@ -84,15 +72,16 @@ class TestViews(TestCase):
                 response = v[1].as_view()(request)
                 self.assertEqual(response.status_code, 200)
 
-    @patch("process_request.routines.ProcessRequest.process_csv_request")
-    def test_downloadcsvview(self, mock_process_csv):
+    @patch("process_request.routines.ProcessRequest.get_data")
+    def test_downloadcsvview(self, mock_get_data):
         with open(join(FIXTURES_DIR, "as_data.json"), "r") as df:
             item = json.load(df)
-            processed = [item for x in range(random.randint(2, 10))]
-            mock_process_csv.return_value = processed
+            mock_get_data.return_value = item
             to_process = random.sample(string.ascii_lowercase, random.randint(2, 10))
             request = self.factory.post(reverse("download-csv"), {"items": to_process}, format="json")
             response = DownloadCSVView.as_view()(request)
             self.assertTrue(isinstance(response, StreamingHttpResponse))
             self.assertEqual(response.get('Content-Type'), "text/csv")
             self.assertIn("attachment;", response.get('Content-Disposition'))
+            # TODO: test content of downloaded file
+            # TODO: test when exception is thrown

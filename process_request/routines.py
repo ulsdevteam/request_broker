@@ -231,23 +231,6 @@ class ProcessRequest(object):
                 print(e)
             return 'test'
 
-    def process_csv_request(self, object_list):
-        """Processes requests for a CSV download.
-
-        Args:
-            object_list (list): A list of AS archival object URIs.
-
-        Returns:
-            A list of dicts containing data to be downloaded.
-        """
-        processed = []
-        for item in object_list:
-            try:
-                processed.append(self.get_data(item))
-            except Exception as e:
-                print("Error processing item {}: {}".format(item, e))
-        return processed
-
 
 class DeliverEmail(object):
     """Sends an email with request data to an email address or list of addresses.
