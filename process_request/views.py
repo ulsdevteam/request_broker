@@ -39,7 +39,7 @@ class DeliverEmailView(APIView):
             object_list = request.data.get("items")
             to_address = request.data.get("to_address")
             subject = request.data.get("subject")
-            emailed = DeliverEmail().send_message(to_address, subject, object_list)
+            emailed = DeliverEmail().send_message(to_address, object_list, subject)
             return Response({"detail": emailed}, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)

@@ -6,6 +6,7 @@ from os.path import join
 from unittest.mock import patch
 
 import vcr
+from django.core import mail
 from django.http import StreamingHttpResponse
 from django.test import TestCase
 from django.urls import reverse
@@ -13,7 +14,7 @@ from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
 from .models import MachineUser, User
-from .routines import ProcessRequest
+from .routines import DeliverEmail, ProcessRequest
 from .views import (DeliverEmailView, DownloadCSVView, ProcessEmailRequestView,
                     ProcessRequestView)
 
@@ -78,6 +79,19 @@ class TestRoutines(TestCase):
         self.assertEqual(len(to_process), len(processed))
         self.assertTrue([isinstance(item, dict) for item in processed])
 
+    def test_deliver_email(self):
+        object_list = [json_from_fixture("as_data.json")]
+        for to, subject in [
+                ("test@example.com", "Subject"),
+                (["foo@example.com", "bar@example.com"], None)]:
+            expected_to = to if isinstance(to, list) else [to]
+            emailed = DeliverEmail().send_message(to, object_list, subject)
+            self.assertEqual(emailed, "email sent to {}".format(", ".join(expected_to)))
+            self.assertTrue(isinstance(mail.outbox[0].to, list))
+            self.assertIsNot(mail.outbox[0].subject, None)
+            self.assertNotIn("location", mail.outbox[0].body)
+            self.assertNotIn("barcode", mail.outbox[0].body)
+
 
 class TestViews(TestCase):
 
@@ -91,7 +105,14 @@ class TestViews(TestCase):
                 response = v[1].as_view()(request)
                 self.assertEqual(response.status_code, 200)
 
-    def exception_handling(self, patched_fn, exception_text, view_str, view):
+    def assert_handles_routine(self, request_data, view_str, view):
+        request = self.factory.post(
+            reverse(view_str), request_data, format="json")
+        response = view.as_view()(request)
+        self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
+        self.assertEqual(len(response.data), 1)
+
+    def assert_handles_exceptions(self, patched_fn, exception_text, view_str, view):
         patched_fn.side_effect = Exception(exception_text)
         request = self.factory.post(
             reverse(view_str), {"items": random_list()}, format="json")
@@ -102,7 +123,7 @@ class TestViews(TestCase):
             response.data["detail"], exception_text, "Exception string not in response")
 
     @patch("process_request.routines.ProcessRequest.get_data")
-    def test_downloadcsvview(self, mock_get_data):
+    def test_download_csv_view(self, mock_get_data):
         mock_get_data.return_value = json_from_fixture("as_data.json")
         to_process = random_list()
         request = self.factory.post(
@@ -117,30 +138,23 @@ class TestViews(TestCase):
             sum(1 for row in reader), len(to_process) + 1,
             "Incorrect number of rows in CSV file")
 
-        self.exception_handling(mock_get_data, "foobar", "download-csv", DownloadCSVView)
+        self.assert_handles_exceptions(
+            mock_get_data, "foobar", "download-csv", DownloadCSVView)
 
     @patch("process_request.routines.ProcessRequest.process_email_request")
     def test_process_email_request_view(self, mock_processed):
         mock_processed.return_value = [json_from_fixture("as_data.json")]
-        to_process = random_list()
-        request = self.factory.post(
-            reverse("process-email"), {"items": to_process}, format="json")
-        response = ProcessEmailRequestView.as_view()(request)
-        self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
-        self.assertEqual(len(response.data), 1)
-
-        self.exception_handling(mock_processed, "foobar", "process-email", ProcessEmailRequestView)
+        self.assert_handles_routine(
+            {"items": random_list()}, "process-email", ProcessEmailRequestView)
+        self.assert_handles_exceptions(
+            mock_processed, "foobar", "process-email", ProcessEmailRequestView)
 
     @patch("process_request.routines.DeliverEmail.send_message")
     def test_send_email_request_view(self, mock_sent):
         mock_sent.return_value = "email sent"
-        to_process = random_list()
-        request = self.factory.post(
-            reverse("deliver-email"),
-            {"items": to_process, "to_address": "test@example.com", "subject": "DIMES list"},
-            format="json")
-        response = DeliverEmailView.as_view()(request)
-        self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
-        self.assertEqual(len(response.data), 1)
-
-        self.exception_handling(mock_sent, "foobar", "process-email", DeliverEmailView)
+        self.assert_handles_routine(
+            {"items": random_list(), "to_address": "test@example.com", "subject": "DIMES list"},
+            "deliver-email",
+            DeliverEmailView)
+        self.assert_handles_exceptions(
+            mock_sent, "foobar", "process-email", DeliverEmailView)

@@ -20,3 +20,11 @@ ARCHIVESSPACE = {
 }
 
 STATIC_ROOT = '/static'
+
+EMAIL_HOST = 'mail.example.org'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'alerts@example.org'
+EMAIL_HOST_PASSWORD = 'password'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+DEFAULT_FROM_EMAIL = 'alerts@example.org'

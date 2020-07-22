@@ -1,4 +1,5 @@
 from asnake.aspace import ASpace
+from django.core.mail import send_mail
 from request_broker import settings
 
 
@@ -231,8 +232,28 @@ class ProcessRequest(object):
 class DeliverEmail(object):
     """Sends an email with request data to an email address or list of addresses.
     """
-    def send_message(to_address, subject, object_list):
-        return "email sent"
+
+    def send_message(self, to_address, object_list, subject=None):
+        recipient_list = to_address if isinstance(to_address, list) else [to_address]
+        subject = subject if subject else "My List from DIMES"
+        message = self.format_items(object_list)
+        # TODO: decide if we want to send html messages
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_DEFAULT_FROM,
+            recipient_list,
+            fail_silently=False)
+        return "email sent to {}".format(", ".join(recipient_list))
+
+    def format_items(self, object_list):
+        message = ""
+        for obj in object_list:
+            for k, v in obj.items():
+                if k not in ["location", "barcode"]:
+                    message += "{}: {}\n".format(k, v)
+            message += "\n"
+        return message
 
 
 class DeliverReadingRoomRequest(object):
