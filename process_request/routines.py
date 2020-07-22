@@ -193,13 +193,10 @@ class ProcessRequest(Routine):
         Returns:
             data (list): A list of dicts of objects.
         """
+        processed = []
         for item in object_list:
-            try:
-                self.get_data(item)
-                print('after get_data')
-            except Exception as e:
-                print(e)
-            return 'test'
+            processed.append(self.get_data(item))
+        return processed
 
     def process_readingroom_request(self, object_list):
         """Processes reading room requests.

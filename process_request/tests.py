@@ -1,4 +1,8 @@
+import json
+import random
+import string
 from os.path import join
+from unittest.mock import patch
 
 import vcr
 from django.test import TestCase
@@ -51,6 +55,15 @@ class TestRoutines(TestCase):
             with transformer_vcr.use_cassette(cassette):
                 routines = ProcessRequest().process_readingroom_request(['/repositories/2/archival_objects/8457'])
                 self.assertEqual(routines, 'test')
+
+    @patch("process_request.routines.ProcessRequest.get_data")
+    def test_process_email_request(self, mock_get_data):
+        with open(join("fixtures", "as_data.json"), "r") as df:
+            mock_get_data.return_value = json.load(df)
+            to_process = random.sample(string.ascii_lowercase, random.randint(2, 10))
+            processed = ProcessRequest().process_email_request(to_process)
+            self.assertEqual(len(to_process), len(processed))
+            self.assertTrue([isinstance(item, dict) for item in processed])
 
 
 class TestViews(TestCase):
