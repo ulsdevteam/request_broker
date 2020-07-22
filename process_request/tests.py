@@ -107,7 +107,6 @@ class TestViews(TestCase):
             "Incorrect number of rows in CSV file")
 
         mock_get_data.side_effect = Exception("foobar")
-        to_process = random_list()
         request = self.factory.post(
             reverse("download-csv"), {"items": to_process}, format="json")
         response = DownloadCSVView.as_view()(request)
