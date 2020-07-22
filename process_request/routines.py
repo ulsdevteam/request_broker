@@ -205,8 +205,7 @@ class ProcessRequest(object):
         """
         for item in object_list:
             try:
-                data = self.get_data(item)
-                print(data)
+                self.get_data(item)
             except Exception as e:
                 print(e)
             return 'test'
