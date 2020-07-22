@@ -201,45 +201,28 @@ class ProcessRequest(Routine):
                 print(e)
             return 'test'
 
-    def process_readingroom_request(self, object_list):
-        """Processes reading room requests.
+    def parse_items(self, object_list):
+        """Parses items into two lists.
 
         Args:
             object_list (list): A list of AS archival object URIs.
 
         Returns:
-            submitted (list): A list of dicts of submittable objects with corresponding most
+            submittable (list): A list of dicts of submittable objects with corresponding most
                 desirable delivery format.
-            unsubmitted (list): A list of dicts of unsubmittable objects with corresponding
+            unsubmittable (list): A list of dicts of unsubmittable objects with corresponding
                 reason of failure.
         """
+        submittable = []
+        unsubmittable = []
         for item in object_list:
-            try:
-                data = self.get_data(item)
-                print(data)
-            except Exception as e:
-                print(e)
-            return 'test'
-
-    def process_duplication_request(self, object_list):
-        """Processes duplication requests.
-
-        Args:
-            object_list (list): A list of AS archival object URIs.
-
-        Returns:
-            submitted (list): A list of dicts of submittable objects with corresponding most
-                desirable delivery format.
-            unsubmitted (list): A list of dicts of unsubmittable objects with corresponding
-                reason of failure.
-        """
-        for item in object_list:
-            try:
-                self.get_data(item)
-                print('after get_data')
-            except Exception as e:
-                print(e)
-            return 'test'
+            data = self.get_data(item)
+            # TODO: what if there's a URL?
+            if data.get("restriction") or not data.get("container"):
+                unsubmittable.append(data)
+            else:
+                submittable.append(data)
+        return submittable, unsubmittable
 
     def process_csv_request(self, object_list):
         """Processes requests for a CSV download.
