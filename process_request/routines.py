@@ -230,10 +230,12 @@ class ProcessRequest(object):
 
 
 class DeliverEmail(object):
-    """Sends an email with request data to an email address or list of addresses.
-    """
+    """Email delivery class."""
 
     def send_message(self, to_address, object_list, subject=None):
+        """Sends an email with request data to an email address or list of
+        addresses.
+        """
         recipient_list = to_address if isinstance(to_address, list) else [to_address]
         subject = subject if subject else "My List from DIMES"
         message = self.format_items(object_list)
@@ -247,6 +249,10 @@ class DeliverEmail(object):
         return "email sent to {}".format(", ".join(recipient_list))
 
     def format_items(self, object_list):
+        """Converts dicts into strings and appends them to message body.
+
+        Location and barcode are not appended to the message.
+        """
         message = ""
         for obj in object_list:
             for k, v in obj.items():
