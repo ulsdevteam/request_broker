@@ -1,3 +1,4 @@
+import csv
 import json
 import random
 import string
@@ -78,10 +79,24 @@ class TestViews(TestCase):
             item = json.load(df)
             mock_get_data.return_value = item
             to_process = random.sample(string.ascii_lowercase, random.randint(2, 10))
-            request = self.factory.post(reverse("download-csv"), {"items": to_process}, format="json")
+            request = self.factory.post(
+                reverse("download-csv"), {"items": to_process}, format="json")
             response = DownloadCSVView.as_view()(request)
             self.assertTrue(isinstance(response, StreamingHttpResponse))
             self.assertEqual(response.get('Content-Type'), "text/csv")
             self.assertIn("attachment;", response.get('Content-Disposition'))
-            # TODO: test content of downloaded file
-            # TODO: test when exception is thrown
+            f = response.getvalue().decode("utf-8")
+            reader = csv.reader(f.splitlines())
+            self.assertEqual(
+                sum(1 for row in reader), len(to_process) + 1,
+                "Incorrect number of rows in CSV file")
+
+            mock_get_data.side_effect = Exception("foobar")
+            to_process = random.sample(string.ascii_lowercase, random.randint(2, 10))
+            request = self.factory.post(
+                reverse("download-csv"), {"items": to_process}, format="json")
+            response = DownloadCSVView.as_view()(request)
+            self.assertEqual(
+                response.status_code, 500, "Request did not return a 500 response")
+            self.assertEqual(
+                response.data["detail"], "foobar", "Exception string not in response")
