@@ -37,7 +37,7 @@ class DownloadCSVView(APIView):
         fieldnames = ["creator", "collection_name", "aggregation", "dates",
                       "resource_id", "container", "title", "restrictions", "ref"]
         writer = csv.DictWriter(pseudo_buffer, fieldnames=fieldnames, extrasaction="ignore")
-        yield pseudo_buffer.write(fieldnames)
+        yield writer.writerow(dict((fn, fn) for fn in writer.fieldnames))
         for row in items:
             yield writer.writerow(row)
 
@@ -55,4 +55,4 @@ class DownloadCSVView(APIView):
             response["Content-Disposition"] = "attachment; filename={}".format(filename)
             return response
         except Exception as e:
-            return Response({"detail": "Unable to download data: {}".format(e)}, status=500)
+            return Response({"detail": str(e)}, status=500)
