@@ -2,21 +2,7 @@ from asnake.aspace import ASpace
 from request_broker import settings
 
 
-class Routine:
-    """
-    Base routine class which is inherited by all other routines.
-
-    Provides default clients for ArchivesSpace.
-    """
-
-    def __init__(self):
-        self.aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"],
-                             username=settings.ARCHIVESSPACE["username"],
-                             password=settings.ARCHIVESSPACE["password"],
-                             repository=settings.ARCHIVESSPACE["repo_id"])
-
-
-class ProcessRequest(Routine):
+class ProcessRequest(object):
     # TODO: main section where processing happens
     # Push requests to submitted or unsubmitted
     # If open and delivery formats, mark as submittable
@@ -38,7 +24,11 @@ class ProcessRequest(Routine):
         Returns:
             obj (dict): A JSON representation of an ArchivesSpace Archival Object.
         """
-        obj = self.aspace.client.get(item)
+        aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"],
+                        username=settings.ARCHIVESSPACE["username"],
+                        password=settings.ARCHIVESSPACE["password"],
+                        repository=settings.ARCHIVESSPACE["repo_id"])
+        obj = aspace.client.get(item)
         if obj.status_code == 200:
             return obj.json()
         else:
@@ -215,8 +205,7 @@ class ProcessRequest(Routine):
         """
         for item in object_list:
             try:
-                data = self.get_data(item)
-                print(data)
+                self.get_data(item)
             except Exception as e:
                 print(e)
             return 'test'
@@ -241,42 +230,19 @@ class ProcessRequest(Routine):
                 print(e)
             return 'test'
 
-    def process_csv_request(self, object_list):
-        """Processes requests for a CSV download.
 
-        Args:
-            object_list (list): A list of AS archival object URIs.
-
-        Returns:
-            A streaming CSV file
-        """
-        for item in object_list:
-            try:
-                self.get_data(item)
-                print('after get_data')
-            except Exception as e:
-                print(e)
-            return 'test'
-
-
-class DeliverEmail(Routine):
+class DeliverEmail(object):
     """Sends an email with request data to an email address or list of addresses.
     """
     pass
 
 
-class DeliverReadingRoomRequest(Routine):
+class DeliverReadingRoomRequest(object):
     """Sends submitted data to Aeon for transaction creation in Aeon.
     """
     pass
 
 
-class DeliverDuplicationRequest(Routine):
+class DeliverDuplicationRequest(object):
     """Sends submitted data for duplication request creation in Aeon.
     """
-
-
-class DeliverCSV(Routine):
-    """Create a streaming csv file based on original request.
-    """
-    pass
