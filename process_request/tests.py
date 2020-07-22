@@ -14,7 +14,7 @@ from rest_framework.test import APIRequestFactory
 
 from .models import MachineUser, User
 from .routines import ProcessRequest
-from .views import DownloadCSVView, ProcessRequestView
+from .views import DownloadCSVView, ProcessEmailRequestView, ProcessRequestView
 
 transformer_vcr = vcr.VCR(
     serializer='json',
@@ -90,6 +90,16 @@ class TestViews(TestCase):
                 response = v[1].as_view()(request)
                 self.assertEqual(response.status_code, 200)
 
+    def exception_handling(self, patched_fn, exception_text, view_str, view):
+        patched_fn.side_effect = Exception(exception_text)
+        request = self.factory.post(
+            reverse(view_str), {"items": random_list()}, format="json")
+        response = view.as_view()(request)
+        self.assertEqual(
+            response.status_code, 500, "Request did not return a 500 response")
+        self.assertEqual(
+            response.data["detail"], exception_text, "Exception string not in response")
+
     @patch("process_request.routines.ProcessRequest.get_data")
     def test_downloadcsvview(self, mock_get_data):
         mock_get_data.return_value = json_from_fixture("as_data.json")
@@ -106,11 +116,16 @@ class TestViews(TestCase):
             sum(1 for row in reader), len(to_process) + 1,
             "Incorrect number of rows in CSV file")
 
-        mock_get_data.side_effect = Exception("foobar")
+        self.exception_handling(mock_get_data, "foobar", "download-csv", DownloadCSVView)
+
+    @patch("process_request.routines.ProcessRequest.process_email_request")
+    def test_process_email_request_view(self, mock_processed):
+        mock_processed.return_value = [json_from_fixture("as_data.json")]
+        to_process = random_list()
         request = self.factory.post(
-            reverse("download-csv"), {"items": to_process}, format="json")
-        response = DownloadCSVView.as_view()(request)
-        self.assertEqual(
-            response.status_code, 500, "Request did not return a 500 response")
-        self.assertEqual(
-            response.data["detail"], "foobar", "Exception string not in response")
+            reverse("process-email"), {"items": to_process}, format="json")
+        response = ProcessEmailRequestView.as_view()(request)
+        self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
+        self.assertEqual(len(response.data), 1)
+
+        self.exception_handling(mock_processed, "foobar", "process-email", ProcessEmailRequestView)

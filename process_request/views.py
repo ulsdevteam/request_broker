@@ -19,6 +19,18 @@ class ProcessRequestView(APIView):
         return Response(process_list, status=200)
 
 
+class ProcessEmailRequestView(APIView):
+    """Processes data in preparation for sending an email."""
+
+    def post(self, request):
+        try:
+            object_list = request.data.get('items')
+            process_list = ProcessRequest().process_email_request(object_list)
+            return Response(process_list, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+
+
 class Echo:
     """An object that implements just the write method of the file-like
     interface, returning the object instead of buffering. Used to stream
