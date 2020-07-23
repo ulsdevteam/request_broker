@@ -256,7 +256,7 @@ class DeliverEmail(object):
         message = ""
         for obj in object_list:
             for k, v in obj.items():
-                if k not in ["location", "barcode"]:
+                if k in settings.EXPORT_FIELDS:
                     message += "{}: {}\n".format(k, v)
             message += "\n"
         return message

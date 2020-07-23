@@ -22,12 +22,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'obop2gifqn6wncaha^dt!w3an-%vkj_&1a@(w-2ci0))^o%#f4'
+SECRET_KEY = CF.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = CF.DEBUG
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = CF.ALLOWED_HOSTS
 
 
 # Application definition
@@ -117,6 +117,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = CF.STATIC_ROOT
 
 ARCHIVESSPACE = CF.ARCHIVESSPACE
 
@@ -127,3 +128,6 @@ EMAIL_HOST_PASSWORD = CF.EMAIL_HOST_PASSWORD
 EMAIL_USE_TLS = CF.EMAIL_USE_TLS
 EMAIL_USE_SSL = CF.EMAIL_USE_SSL
 EMAIL_DEFAULT_FROM = CF.DEFAULT_FROM_EMAIL
+
+EXPORT_FIELDS = ["creator", "collection_name", "aggregation", "dates",
+                 "resource_id", "container", "title", "restrictions", "ref"]

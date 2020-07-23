@@ -1,5 +1,7 @@
 DEBUG = True
 
+SECRET_KEY = 'obop2gifqn6wncaha^dt!w3an-%vkj_&1a@(w-2ci0))^o%#f4'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
