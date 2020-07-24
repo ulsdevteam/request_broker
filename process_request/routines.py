@@ -1,4 +1,5 @@
 from asnake.aspace import ASpace
+from django.core.mail import send_mail
 from request_broker import settings
 
 
@@ -183,13 +184,10 @@ class ProcessRequest(object):
         Returns:
             data (list): A list of dicts of objects.
         """
+        processed = []
         for item in object_list:
-            try:
-                self.get_data(item)
-                print('after get_data')
-            except Exception as e:
-                print(e)
-            return 'test'
+            processed.append(self.get_data(item))
+        return processed
 
     def process_readingroom_request(self, object_list):
         """Processes reading room requests.
@@ -232,9 +230,36 @@ class ProcessRequest(object):
 
 
 class DeliverEmail(object):
-    """Sends an email with request data to an email address or list of addresses.
-    """
-    pass
+    """Email delivery class."""
+
+    def send_message(self, to_address, object_list, subject=None):
+        """Sends an email with request data to an email address or list of
+        addresses.
+        """
+        recipient_list = to_address if isinstance(to_address, list) else [to_address]
+        subject = subject if subject else "My List from DIMES"
+        message = self.format_items(object_list)
+        # TODO: decide if we want to send html messages
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_DEFAULT_FROM,
+            recipient_list,
+            fail_silently=False)
+        return "email sent to {}".format(", ".join(recipient_list))
+
+    def format_items(self, object_list):
+        """Converts dicts into strings and appends them to message body.
+
+        Location and barcode are not appended to the message.
+        """
+        message = ""
+        for obj in object_list:
+            for k, v in obj.items():
+                if k in settings.EXPORT_FIELDS:
+                    message += "{}: {}\n".format(k, v)
+            message += "\n"
+        return message
 
 
 class DeliverReadingRoomRequest(object):

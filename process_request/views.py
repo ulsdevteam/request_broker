@@ -2,10 +2,11 @@ import csv
 from datetime import datetime
 
 from django.http import StreamingHttpResponse
+from request_broker import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .routines import ProcessRequest
+from .routines import DeliverEmail, ProcessRequest
 
 
 class ProcessRequestView(APIView):
@@ -17,6 +18,32 @@ class ProcessRequestView(APIView):
         object_list = request.data.get('items')
         process_list = ProcessRequest().process_readingroom_request(object_list)
         return Response(process_list, status=200)
+
+
+class ProcessEmailRequestView(APIView):
+    """Processes data in preparation for sending an email."""
+
+    def post(self, request):
+        try:
+            object_list = request.data.get("items")
+            processed = ProcessRequest().process_email_request(object_list)
+            return Response({"items": processed}, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+
+
+class DeliverEmailView(APIView):
+    """Delivers email messages containing data."""
+
+    def post(self, request):
+        try:
+            object_list = request.data.get("items")
+            to_address = request.data.get("to_address")
+            subject = request.data.get("subject")
+            emailed = DeliverEmail().send_message(to_address, object_list, subject)
+            return Response({"detail": emailed}, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
 
 
 class Echo:
@@ -34,8 +61,7 @@ class DownloadCSVView(APIView):
 
     def iter_items(self, items, pseudo_buffer):
         """Returns an iterable containing the spreadsheet rows."""
-        fieldnames = ["creator", "collection_name", "aggregation", "dates",
-                      "resource_id", "container", "title", "restrictions", "ref"]
+        fieldnames = settings.EXPORT_FIELDS
         writer = csv.DictWriter(pseudo_buffer, fieldnames=fieldnames, extrasaction="ignore")
         yield writer.writerow(dict((fn, fn) for fn in writer.fieldnames))
         for row in items:
