@@ -1,6 +1,9 @@
 from asnake.aspace import ASpace
 from request_broker import settings
 
+from .helpers import (check_for_instance_type, get_collection_creator,
+                      get_container_info, get_dates, get_location)
+
 
 class ProcessRequest(object):
     # TODO: main section where processing happens
@@ -28,9 +31,34 @@ class ProcessRequest(object):
                         username=settings.ARCHIVESSPACE["username"],
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
-        obj = aspace.client.get(item)
+        obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors", "top_container", "top_container::container_locations"]})
         if obj.status_code == 200:
-            return obj.json()
+            as_data = {}
+            item_collection = obj.json().get("ancestors")[-1].get("_resolved")
+            as_data['creator'] = get_collection_creator(obj.json())
+            as_data['restrictions'] = "TK"
+            as_data['collection_name'] = item_collection.get("title")
+            if len(obj.json().get("ancestors")) > 1:
+                as_data['aggregation'] = obj.json().get("ancestors")[0].get("_resolved").get("display_string")
+            else:
+                as_data['aggregation'] = ""
+            as_data['dates'] = get_dates(obj.json())
+            as_data['resource_id'] = item_collection.get("id_0")
+            as_data['title'] = obj.json().get("display_string")
+            as_data['ref'] = obj.json().get("uri")
+            if check_for_instance_type(obj.json(), "digital_object"):
+                as_data['container'] = ""
+                as_data['barcode'] = ""
+                as_data['location'] = ""
+            else:
+                if check_for_instance_type(obj.json(), "microform"):
+                    instance = obj.json().get("instances")[check_for_instance_type(obj.json(), "microform")]
+                else:
+                    instance = obj.json().get("instances")[0]
+                as_data['barcode'] = get_container_info(instance, "barcode")
+                as_data['location'] = get_location(instance)
+                as_data['container'] = "{} {}".format(get_container_info(instance, "type").title(), get_container_info(instance, "indicator"))
+            print(as_data)
         else:
             raise Exception(obj.json()["error"])
 
