@@ -15,8 +15,8 @@ from rest_framework.test import APIRequestFactory
 
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
-from .views import (DeliverEmailView, DownloadCSVView, ProcessEmailRequestView,
-                    ProcessRequestView)
+from .views import (DeliverEmailView, DownloadCSVView, ParseRequestView,
+                    ProcessEmailRequestView)
 
 transformer_vcr = vcr.VCR(
     serializer='json',
@@ -28,14 +28,6 @@ transformer_vcr = vcr.VCR(
 )
 
 FIXTURES_DIR = join(settings.BASE_DIR, "fixtures")
-
-ROUTINES = (
-    ('process_request.json', ProcessRequest),
-)
-
-VIEWS = (
-    ('process_request.json', ProcessRequestView),
-)
 
 
 def random_list():
@@ -65,11 +57,24 @@ class TestUsers(TestCase):
 
 class TestRoutines(TestCase):
 
-    def test_routines(self):
-        for cassette, routine in ROUTINES:
-            with transformer_vcr.use_cassette(cassette):
-                routines = ProcessRequest().process_readingroom_request(['/repositories/2/archival_objects/8457'])
-                self.assertEqual(routines, 'test')
+    @patch("process_request.routines.ProcessRequest.get_data")
+    def test_parse_items(self, mock_get_data):
+        item = json_from_fixture("as_data.json")
+        mock_get_data.return_value = item
+        for restrictions, text, submit, reason in [
+                ("closed", "foo", False, "Item is restricted: foo"),
+                ("open", "bar", True, None),
+                ("conditional", "foobar", True, None)]:
+            mock_get_data.return_value["restrictions"] = restrictions
+            mock_get_data.return_value["restrictions_text"] = text
+            parsed = ProcessRequest().parse_items([mock_get_data.return_value])[0]
+            self.assertEqual(parsed["submit"], submit)
+            self.assertEqual(parsed["submit_reason"], reason)
+        for format, submit in [
+                ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
+            mock_get_data.return_value["preferred_format"] = format
+            parsed = ProcessRequest().parse_items([item])[0]
+            self.assertEqual(parsed["submit"], submit)
 
     @patch("process_request.routines.ProcessRequest.get_data")
     def test_process_email_request(self, mock_get_data):
@@ -97,13 +102,6 @@ class TestViews(TestCase):
 
     def setUp(self):
         self.factory = APIRequestFactory()
-
-    def test_processrequestview(self):
-        for v in VIEWS:
-            with transformer_vcr.use_cassette(v[0]):
-                request = self.factory.post(reverse('process-request'), {"items": ["/repositories/2/archival_objects/8457"]}, format='json')
-                response = v[1].as_view()(request)
-                self.assertEqual(response.status_code, 200)
 
     def assert_handles_routine(self, request_data, view_str, view):
         request = self.factory.post(
@@ -158,3 +156,12 @@ class TestViews(TestCase):
             DeliverEmailView)
         self.assert_handles_exceptions(
             mock_sent, "foobar", "process-email", DeliverEmailView)
+
+    @patch("process_request.routines.ProcessRequest.parse_items")
+    def test_parse_request_view(self, mock_parse):
+        parsed = random_list()
+        mock_parse.return_value = parsed
+        self.assert_handles_routine(
+            {"items": parsed}, "parse-request", ParseRequestView)
+        self.assert_handles_exceptions(
+            mock_parse, "bar", "parse-request", ParseRequestView)
