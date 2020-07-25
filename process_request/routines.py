@@ -189,28 +189,43 @@ class ProcessRequest(object):
             processed.append(self.get_data(item))
         return processed
 
+    def is_submittable(self, item):
+        """Determines if a request item is submittable.
+
+        Args:
+            item (dict): request item data.
+
+        Returns:
+            submit (bool): indicate if the request item is submittable or not.
+            reason (str): if applicable, a human-readable explanation for why
+                the request is not submittable.
+        """
+        submit = True
+        reason = None
+        if item.get("restrictions").lower() in ["closed"]:
+            submit = False
+            reason = "Item is restricted: {}".format(item.get("restrictions_text"))
+        elif item.get("preferred_format").lower() == "digital":
+            submit = False
+            reason = "This item is available online."
+        return submit, reason
+
     def parse_items(self, object_list):
-        """Parses items into two lists.
+        """Parses requested items to determine which are submittable. Adds a
+        `submit` and `submit_reason` attribute to each item.
 
         Args:
             object_list (list): A list of AS archival object URIs.
 
         Returns:
-            submittable (list): A list of dicts of submittable objects with corresponding most
-                desirable delivery format.
-            unsubmittable (list): A list of dicts of unsubmittable objects with corresponding
-                reason of failure.
+            object_list (list): A list of dicts containing parsed item information.
         """
-        submittable = []
-        unsubmittable = []
         for item in object_list:
             data = self.get_data(item)
-            # TODO: what if there's a URL?
-            if data.get("restriction") or not data.get("container"):
-                unsubmittable.append(data)
-            else:
-                submittable.append(data)
-        return submittable, unsubmittable
+            submit, reason = self.is_submittable(data)
+            data["submit"] = submit
+            data["submit_reason"] = reason
+        return object_list
 
 
 class DeliverEmail(object):
