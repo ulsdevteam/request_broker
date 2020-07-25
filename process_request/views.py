@@ -9,15 +9,16 @@ from rest_framework.views import APIView
 from .routines import DeliverEmail, ProcessRequest
 
 
-class ProcessRequestView(APIView):
-    '''
-    Calls the ProcessRequest class from routines.
-    '''
+class ParseRequestView(APIView):
+    """Parses requests into a submittable and unsubmittable list."""
 
     def post(self, request, format=None):
-        object_list = request.data.get('items')
-        process_list = ProcessRequest().process_readingroom_request(object_list)
-        return Response(process_list, status=200)
+        try:
+            object_list = request.data.get("items")
+            parsed = ProcessRequest().parse_items(object_list)
+            return Response({"items": parsed}, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
 
 
 class ProcessEmailRequestView(APIView):
