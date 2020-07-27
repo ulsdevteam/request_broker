@@ -12,18 +12,16 @@ def get_collection_creator(archival_object):
     return ",".join(creators)
 
 
-def get_location(instance_json):
-    """Takes json for a single instance of an archival object that has the _resolved parameter on top_containers and returns the title field of the container location for each location."""
-    top_container_info = instance_json.get("sub_container").get("top_container").get("_resolved")
+def get_location(top_container_info):
+    """Takes the _resolved json for a top container (with the _resolved parameter also on container locations) from an archival object and returns the title field of the container location for each location. C"""
     locations = []
     for c in top_container_info.get("container_locations"):
         locations.append(c.get("_resolved").get("title"))
     return ",".join(locations)
 
 
-def get_container_info(instance_json, container_field):
-    """Takes two arguments: json for a single instance of an archival object that has the _resolved parameter on top_containers, and the top container field to retrieve."""
-    top_container_info = instance_json.get("sub_container").get("top_container").get("_resolved")
+def get_container_info(top_container_info, container_field):
+    """Takes two arguments: the _resolved json for a top container from an archival objects, and the top container field to retrieve."""
     return(top_container_info.get(container_field))
 
 
@@ -39,12 +37,34 @@ def check_for_instance_type(archival_object, type_to_check):
 
 def get_dates(archival_object):
     """Takes json for an archival object that has the _resolved parameter on ancestors. Gets date expression for an item. Starts at item level, goes up until a date is found"""
+    dates = []
     if archival_object.get("dates"):
-        return archival_object.get("dates")[0].get("expression")
+        for d in archival_object.get("dates"):
+            dates.append(get_expression(d))
     else:
-        for a in archival_object.get("ancestors"):
-            if a.get("_resolved").get("dates"):
-                return a.get("_resolved").get("dates")[0].get("expression")
+        for d in archival_object.get("dates"):
+            dates.append(get_expression(d))
+    return ",".join(dates)
+
+
+def get_expression(date):
+    """Returns a date expression for a date object.
+
+    Concatenates start and end dates if no date expression exists.
+
+    :param dict date: an ArchivesSpace date
+
+    :returns: date expression for the date object.
+    :rtype: str
+    """
+    try:
+        expression = date["expression"]
+    except KeyError:
+        if date.get("end"):
+            expression = "{0}-{1}".format(date["begin"], date["end"])
+        else:
+            expression = date["begin"]
+    return expression
 
 
 def get_note_text(note):

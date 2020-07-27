@@ -34,30 +34,33 @@ class ProcessRequest(object):
         obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors", "top_container", "top_container::container_locations"]})
         if obj.status_code == 200:
             as_data = {}
-            item_collection = obj.json().get("ancestors")[-1].get("_resolved")
-            as_data['creator'] = get_collection_creator(obj.json())
+            item_json = obj.json()
+            item_collection = item_json.get("ancestors")[-1].get("_resolved")
+            as_data['creator'] = get_collection_creator(item_json)
             as_data['restrictions'] = "TK"
+            as_data['restrictions_text'] = "TK"
             as_data['collection_name'] = item_collection.get("title")
-            if len(obj.json().get("ancestors")) > 1:
-                as_data['aggregation'] = obj.json().get("ancestors")[0].get("_resolved").get("display_string")
+            if len(item_json.get("ancestors")) > 1:
+                as_data['aggregation'] = item_json.get("ancestors")[0].get("_resolved").get("display_string")
             else:
                 as_data['aggregation'] = ""
-            as_data['dates'] = get_dates(obj.json())
+            as_data['dates'] = get_dates(item_json)
             as_data['resource_id'] = item_collection.get("id_0")
-            as_data['title'] = obj.json().get("display_string")
-            as_data['ref'] = obj.json().get("uri")
-            if check_for_instance_type(obj.json(), "digital_object"):
+            as_data['title'] = item_json.get("display_string")
+            as_data['ref'] = item_json.get("uri")
+            if check_for_instance_type(item_json, "digital_object"):
                 as_data['container'] = ""
                 as_data['barcode'] = ""
                 as_data['location'] = ""
             else:
-                if check_for_instance_type(obj.json(), "microform"):
-                    instance = obj.json().get("instances")[check_for_instance_type(obj.json(), "microform")]
+                if check_for_instance_type(item_json, "microform"):
+                    instance = item_json.get("instances")[check_for_instance_type(item_json, "microform")]
                 else:
-                    instance = obj.json().get("instances")[0]
-                as_data['barcode'] = get_container_info(instance, "barcode")
-                as_data['location'] = get_location(instance)
-                as_data['container'] = "{} {}".format(get_container_info(instance, "type").title(), get_container_info(instance, "indicator"))
+                    instance = item_json.get("instances")[0]
+                    top_container_info = instance.get("sub_container").get("top_container").get("_resolved")
+                as_data['barcode'] = get_container_info(top_container_info, "barcode")
+                as_data['location'] = get_location(top_container_info)
+                as_data['container'] = "{} {}".format(get_container_info(top_container_info, "type").title(), get_container_info(top_container_info, "indicator"))
             print(as_data)
         else:
             raise Exception(obj.json()["error"])
