@@ -65,30 +65,6 @@ class ProcessRequest(object):
         else:
             raise Exception(obj.json()["error"])
 
-    def get_creator(self, resource):
-        """Gets a resource and then gets the creator for the resource. Iterates
-        over agents and gets creator information.
-
-        Args:
-            resource (JSONModelObject): an ArchivesSpace resource object.
-
-        Returns:
-            collection_title (str): a string representation of a collection title.
-            creators (list): a list of strings representing creator names.
-        """
-        pass
-
-    def get_agent_data(self, agent):
-        """Gets ArchivesSpace agent data from an agent uri.
-
-        Args:
-            agent (JSONModelObject): an ArchivesSpace agent object.
-
-        Returns:
-            agent_name (str): Agent name for associated agent.
-        """
-        pass
-
     def is_restricted(self, obj):
         """Checks whether an object is restricted in ArchivesSpace.
 
@@ -111,18 +87,6 @@ class ProcessRequest(object):
         Returns:
             restriction (str): String representation of a rights statement note or
             accessrestrict note that details why an item is restricted.
-        """
-        pass
-
-    def inherit_dates(self, obj):
-        """Iterates up through an object's parents, including resource level,
-            to find the nearest date object.
-
-        Args:
-            obj (JSONModelObject): An ArchivesSpace archival object.
-
-        Returns:
-            dates (str): a date expression.
         """
         pass
 
