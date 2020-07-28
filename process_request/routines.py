@@ -36,7 +36,7 @@ class ProcessRequest(object):
             as_data = {}
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
-            as_data['creator'] = get_collection_creator(item_json)
+            as_data['creator'] = get_collection_creator(item_collection)
             as_data['restrictions'] = "TK"
             as_data['restrictions_text'] = "TK"
             as_data['collection_name'] = item_collection.get("title")
