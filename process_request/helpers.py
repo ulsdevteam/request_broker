@@ -182,16 +182,3 @@ def is_restricted(archival_object, query_string, restriction_acts):
         if indicates_restriction(rights_statement, restriction_acts):
             return True
     return False
-
-
-def object_locations(archival_object):
-    """Finds locations associated with an archival object.
-    :param JSONModelObject archival_object: an ArchivesSpace archival_object.
-    :returns: Locations objects associated with the archival object.
-    :rtype: list
-    """
-    locations = []
-    for instance in archival_object.instances:
-        top_container = instance.sub_container.top_container.reify()
-        locations += top_container.container_locations
-    return locations
