@@ -79,14 +79,14 @@ def get_dates(archival_object):
 
 
 def get_expression(date):
-    """Returns a date expression for a date object.
+    """Returns a date expression for a date object. Concatenates start and end dates if no date expression exists.
 
-    Concatenates start and end dates if no date expression exists.
+    Args:
+        date (dict): an ArchivesSpace date
 
-    :param dict date: an ArchivesSpace date
+    Returns:
+        string: date expression for the date object
 
-    :returns: date expression for the date object.
-    :rtype: str
     """
     try:
         expression = date["expression"]
