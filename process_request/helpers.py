@@ -3,19 +3,18 @@ from datetime import datetime
 from rapidfuzz import fuzz
 
 
-def get_container_indicators(archival_object):
+def get_container_indicators(instances):
     """Takes ArchivesSpace archival object json data and returns all containers and indicators.
 
     args:
-        archival_object (dict): AS archival object JSON
+        instances (list): AS instance data that is a list of dicts
 
     returns:
-        containers (str): a string representation of all container display strings.
+        string: a string representation of all container display strings.
     """
     containers = []
-    instances = archival_object.get("instances")
     if instances:
-        for instance in archival_object.get("instances"):
+        for instance in instances:
             if instance.get("instance_type") == "digital_object":
                 containers.append("Digital Object: " + instance.get("digital_object").get("_resolved").get("title"))
             else:

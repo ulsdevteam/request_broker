@@ -12,6 +12,7 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
+from .helpers import get_container_indicators
 from .models import MachineUser, User
 from .routines import ProcessRequest
 from .views import DownloadCSVView, ProcessRequestView
@@ -59,15 +60,18 @@ class TestUsers(TestCase):
         self.assertEqual(str(user), system)
 
 
+class TestHelpers(TestCase):
+
+    def test_get_container_indicators(self):
+        pass
+
+
 class TestRoutines(TestCase):
 
-    def test_routines(self):
-        for cassette, routine in ROUTINES:
-            with transformer_vcr.use_cassette(cassette):
-                for item in item_list:
-                    get_data = ProcessRequest().get_data(item)
-                    #routines = ProcessRequest().process_readingroom_request('/repositories/2/archival_objects/8457')
-                    #self.assertEqual(routines, 'test')
+    def test_get_data(self):
+        with transformer_vcr.use_cassette("process_request.json"):
+            for item in item_list:
+                get_data = ProcessRequest().get_data(item)
 
 
 class TestViews(TestCase):

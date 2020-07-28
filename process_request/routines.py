@@ -51,7 +51,8 @@ class ProcessRequest(object):
             as_data['resource_id'] = item_collection.get("id_0")
             as_data['title'] = item_json.get("display_string")
             as_data['ref'] = item_json.get("uri")
-            as_data['containers'] = get_container_indicators(item_json)
+            instances = item_json.get("instances")
+            as_data['containers'] = get_container_indicators(instances)
             #if check_for_instance_type(item_json, "digital_object"):
                 #as_data['container'] = ""
                 #as_data['barcode'] = ""
@@ -115,44 +116,6 @@ class ProcessRequest(object):
                     False
         else:
             return False
-
-    def create_instance_data(self, instance):
-        """Constructs a dictionary of instance information and location data.
-        Calls get_top_container.
-
-        Args:
-            instance (dict): ArchivesSpace instance information.
-
-        Returns:
-            instance_data (dict): a constructed dictionary of instance data.
-                This will include barcode, container indicators, container type,
-                and location information.
-        """
-        pass
-
-    def get_top_container(self, container):
-        """Retrieves and returns top container data from a top container url information.
-            Calls get_location_information.
-
-        Args:
-            container (JSONModelObject): an ArchivesSpace top container object.
-
-        Returns:
-            container_data (dict): a dictionary of combined top_container and location
-                information.
-        """
-        pass
-
-    def get_location_information(self, location):
-        """Retrieves and returns location information for an ArchivesSpace location.
-
-        Args:
-            location (JSONModelObject): an ArchivesSpace location object.
-
-        Returns:
-            location_data (str): a concatenated string of location information.
-        """
-        pass
 
     def create_readingroom_request(self, obj, instance_data, restriction, creators, collection_title, dates):
         """Constructs a request for reading room materials out of provided data.
