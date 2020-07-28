@@ -42,7 +42,8 @@ item_list = ['/repositories/2/archival_objects/1154382',
              '/repositories/2/archival_objects/1154386',
              '/repositories/2/archival_objects/1154387',
              '/repositories/2/archival_objects/1154388'
-            ]
+             ]
+
 
 class TestUsers(TestCase):
 
@@ -63,7 +64,17 @@ class TestUsers(TestCase):
 class TestHelpers(TestCase):
 
     def test_get_container_indicators(self):
-        pass
+        instances = []
+
+        container = {"instance_type": "mixed materials", "sub_container": {"top_container": {"_resolved": {"type": "box", "indicator": "1"}}}}
+        instances.append(container)
+        containers = get_container_indicators(instances)
+        self.assertEqual("Box 1", containers)
+
+        container = {"instance_type": "digital_object", "digital_object": {"_resolved": {"title": "Digitized Item"}}}
+        instances.append(container)
+        containers = get_container_indicators(instances)
+        self.assertEqual("Box 1, Digital Object: Digitized Item", containers)
 
 
 class TestRoutines(TestCase):
@@ -72,6 +83,7 @@ class TestRoutines(TestCase):
         with transformer_vcr.use_cassette("process_request.json"):
             for item in item_list:
                 get_data = ProcessRequest().get_data(item)
+                print(get_data)
 
 
 class TestViews(TestCase):

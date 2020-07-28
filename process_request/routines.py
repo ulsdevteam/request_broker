@@ -1,9 +1,7 @@
 from asnake.aspace import ASpace
 from request_broker import settings
 
-from .helpers import (check_for_instance_type, get_collection_creator,
-                      get_container_field, get_container_indicators,
-                      get_dates, get_location)
+from .helpers import (get_collection_creator, get_container_indicators, get_dates)
 
 
 class ProcessRequest(object):
@@ -33,8 +31,7 @@ class ProcessRequest(object):
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
         obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors",
-                                              "top_container", "top_container::container_locations",
-                                              "digital_object"]})
+                                              "top_container", "top_container::container_locations", "digital_object"]})
         if obj.status_code == 200:
             as_data = {}
             item_json = obj.json()
@@ -52,21 +49,10 @@ class ProcessRequest(object):
             as_data['title'] = item_json.get("display_string")
             as_data['ref'] = item_json.get("uri")
             instances = item_json.get("instances")
-            as_data['containers'] = get_container_indicators(instances)
-            #if check_for_instance_type(item_json, "digital_object"):
-                #as_data['container'] = ""
-                #as_data['barcode'] = ""
-                #as_data['location'] = ""
-            #else:
-                #if check_for_instance_type(item_json, "microform"):
-                    #instance = item_json.get("instances")[check_for_instance_type(item_json, "microform")]
-                #else:
-                    #instance = item_json.get("instances")[0]
-                    #top_container_info = instance.get("sub_container").get("top_container").get("_resolved")
-                #as_data['barcode'] = get_container_field(top_container_info, "barcode")
-                #as_data['location'] = get_location(top_container_info)
-                #as_data['container'] = "{} {}".format(get_container_field(top_container_info, "type").title(), get_container_field(top_container_info, "indicator"))
-            print(as_data)
+            if instances:
+                as_data['containers'] = get_container_indicators(instances)
+            else:
+                as_data['containers'] = None
         else:
             raise Exception(obj.json()["error"])
 
@@ -94,28 +80,6 @@ class ProcessRequest(object):
             accessrestrict note that details why an item is restricted.
         """
         pass
-
-    def check_formats(self, obj, formats):
-        """Parses instances for existing instance types. Matches each type against
-            list of acceptable delivery formats. Returns instance information for
-            for the most desirable delivery format.
-
-        Args:
-            obj (JSONModelObject): an ArchivesSpace archival object.
-            formats (list): A list of strings of acceptable delivery formats.
-
-        Returns:
-            bool (boolean): False on no instances or if instance type is not in accepted formats.
-            instance (dict): A dict of instance information for most desirable delivery format.
-        """
-        if obj.instances:
-            for instance in obj.instances:
-                if instance.instance_type in formats:
-                    pass
-                else:
-                    False
-        else:
-            return False
 
     def create_readingroom_request(self, obj, instance_data, restriction, creators, collection_title, dates):
         """Constructs a request for reading room materials out of provided data.

@@ -13,17 +13,12 @@ def get_container_indicators(instances):
         string: a string representation of all container display strings.
     """
     containers = []
-    if instances:
-        for instance in instances:
-            if instance.get("instance_type") == "digital_object":
-                containers.append("Digital Object: " + instance.get("digital_object").get("_resolved").get("title"))
-            else:
-                containers.append(instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize()
-                + ' ' +
-                instance.get("sub_container").get("top_container").get("_resolved").get("indicator"))
-        return ", ".join(containers)
-    else:
-        return None
+    for instance in instances:
+        if instance.get("instance_type") == "digital_object":
+            containers.append("Digital Object: " + instance.get("digital_object").get("_resolved").get("title"))
+        else:
+            containers.append(instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize() + ' ' + instance.get("sub_container").get("top_container").get("_resolved").get("indicator"))
+    return ", ".join(containers)
 
 
 def get_collection_creator(resource):
