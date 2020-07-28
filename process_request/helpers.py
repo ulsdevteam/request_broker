@@ -14,10 +14,10 @@ def get_collection_creator(resource):
 
 def get_location(top_container_info):
     """Gets a human-readable location string for a top container
-    
+
     Args:
         top_container_info (dict): json for a top container (with resolved container locations)
-        
+
      Returns:
          string: all locations associated with the top container, separated by a comma.
      """
@@ -28,12 +28,28 @@ def get_location(top_container_info):
 
 
 def get_container_field(top_container_info, container_field):
-    """Takes two arguments: the _resolved json for a top container from an archival objects, and the top container field to retrieve."""
+    """Gets the value from a top container field
+
+    Args:
+        top_container_info (dict): json for a top container
+        container_field (str): top container field
+
+    Returns:
+        string: value of the top container field
+    """
     return(top_container_info.get(container_field))
 
 
 def check_for_instance_type(archival_object, type_to_check):
-    """Takes json for an archival object and instance type to check against. If the instance type is found, return the index of the instance"""
+    """Gets the index value of a specific instance type for an archival object
+
+    Args:
+        archival_object (dict): json for an archival object
+        type_to_check (str): instance type to check against
+
+    Returns:
+        int: index of the matching instance type in the list of instances
+    """
     list_of_instances = []
     for i in archival_object.get("instances"):
         instance_type = i.get("instance_type")
@@ -43,7 +59,15 @@ def check_for_instance_type(archival_object, type_to_check):
 
 
 def get_dates(archival_object):
-    """Takes json for an archival object that has the _resolved parameter on ancestors. Gets date expression for an item. Starts at item level, goes up until a date is found"""
+    """Gets the dates of an archival object or its closest ancestor with a date
+
+        Args:
+            archival_object (dict): json for an archival object (with resolved ancestors)
+
+        Returns:
+            string: all dates associated with an archival object or its closest ancestor, separated by a comma
+
+    Takes json for an archival object that has the _resolved parameter on ancestors. Gets date expression for an item. Starts at item level, goes up until a date is found"""
     dates = []
     if archival_object.get("dates"):
         dates = [get_expression(d) for d in archival_object.get("dates")]
