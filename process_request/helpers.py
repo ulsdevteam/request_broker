@@ -20,7 +20,7 @@ def get_location(top_container_info):
     return ",".join(locations)
 
 
-def get_container_info(top_container_info, container_field):
+def get_container_field(top_container_info, container_field):
     """Takes two arguments: the _resolved json for a top container from an archival objects, and the top container field to retrieve."""
     return(top_container_info.get(container_field))
 
