@@ -4,11 +4,11 @@ from rapidfuzz import fuzz
 
 
 def get_collection_creator(archival_object):
-    '''Takes json for an archival object that has the _resolved parameter on resource::linked_agents. Iterates through linked_agents; if the role is creator, appends to list, and returns list as a string.'''
+    """Takes json for an archival object that has the _resolved parameter on resource::linked_agents. Iterates through linked_agents; if the role is creator, appends to list, and returns list as a string."""
     creators = []
     for linked_agent in archival_object.get("resource").get("_resolved").get("linked_agents"):
         if linked_agent.get("role") == "creator":
-            creators.append(linked_agent.get("_resolved").get('display_name').get('primary_name'))
+            creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
     return ",".join(creators)
 
 
