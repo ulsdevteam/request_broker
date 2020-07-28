@@ -3,22 +3,22 @@ from datetime import datetime
 from rapidfuzz import fuzz
 
 
-def get_container_indicators(instances):
-    """Takes ArchivesSpace archival object json data and returns all containers and indicators.
-
-    args:
-        instances (list): AS instance data that is a list of dicts
-
-    returns:
-        string: a string representation of all container display strings.
-    """
-    containers = []
+def get_container_data(instances):
+    container_data = []
     for instance in instances:
-        if instance.get("instance_type") == "digital_object":
-            containers.append("Digital Object: " + instance.get("digital_object").get("_resolved").get("title"))
+        data = {}
+        data['instance_type'] = instance.get("instance_type")
+        if data["instance_type"] == "digital_object":
+            data['container_indicator'] = "Digital Object: " + instance.get("digital_object").get("_resolved").get("title")
+            digital_object = instance.get("digital_object").get("_resolved")
+            data["location"] = get_file_versions(digital_object)
         else:
-            containers.append(instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize() + ' ' + instance.get("sub_container").get("top_container").get("_resolved").get("indicator"))
-    return ", ".join(containers)
+            data['container_indicator'] = instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize() + ' ' + instance.get("sub_container").get("top_container").get("_resolved").get("indicator")
+            top_container = instance.get("sub_container").get("top_container").get("_resolved")
+            data["location"] = get_location(top_container)
+            data["barcode"] = top_container.get("barcode")
+        container_data.append(data)
+    return container_data
 
 
 def get_collection_creator(resource):
@@ -40,40 +40,22 @@ def get_location(top_container_info):
          string: all locations associated with the top container, separated by a comma.
      """
     locations = []
-    for c in top_container_info.get("container_locations"):
-        locations.append(c.get("_resolved").get("title"))
+    [locations.append(c.get("_resolved").get("title")) for c in top_container_info.get("container_locations")]
     return ",".join(locations)
 
 
-def get_container_field(top_container_info, container_field):
-    """Gets the value from a top container field
+def get_file_versions(digital_object_info):
+    """Gets a file version link for a digital object.
 
     Args:
-        top_container_info (dict): json for a top container
-        container_field (str): top container field
+        digital_object_info (dict): json for a digital object
 
     Returns:
-        string: value of the top container field
+        string: all file version uris associated with the digital object, separated by a comma.
     """
-    return(top_container_info.get(container_field))
-
-
-def check_for_instance_type(archival_object, type_to_check):
-    """Gets the index value of a specific instance type for an archival object
-
-    Args:
-        archival_object (dict): json for an archival object
-        type_to_check (str): instance type to check against
-
-    Returns:
-        int: index of the matching instance type in the list of instances
-    """
-    list_of_instances = []
-    for i in archival_object.get("instances"):
-        instance_type = i.get("instance_type")
-        list_of_instances.append(instance_type)
-    if type_to_check in list_of_instances:
-        return list_of_instances.index(type_to_check)
+    versions = []
+    [versions.append(v.get("file_uri")) for v in digital_object_info.get("file_versions")]
+    return ", ".join(versions)
 
 
 def get_dates(archival_object):

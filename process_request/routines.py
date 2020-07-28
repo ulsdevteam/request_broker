@@ -1,7 +1,7 @@
 from asnake.aspace import ASpace
 from request_broker import settings
 
-from .helpers import (get_collection_creator, get_container_indicators, get_dates)
+from .helpers import (get_collection_creator, get_container_data, get_dates)
 
 
 class ProcessRequest(object):
@@ -31,7 +31,8 @@ class ProcessRequest(object):
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
         obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors",
-                                              "top_container", "top_container::container_locations", "digital_object"]})
+                                              "top_container", "top_container::container_locations", "instances::digital_object"]})
+
         if obj.status_code == 200:
             as_data = {}
             item_json = obj.json()
@@ -50,9 +51,20 @@ class ProcessRequest(object):
             as_data['ref'] = item_json.get("uri")
             instances = item_json.get("instances")
             if instances:
-                as_data['containers'] = get_container_indicators(instances)
+                preferred_list = []
+                container_list = []
+                container_data = get_container_data(instances)
+                for container in container_data:
+                    container_list.append(container["container_indicator"])
+                    if container["instance_type"] in settings.PREFERRED_FORMATS:\
+                        preferred_list.append(container)
+                as_data['containers'] = ", ".join(container_list)
+                print(as_data)
             else:
                 as_data['containers'] = None
+                as_data['preferred_container'] = None
+                as_data['preferred_format'] = None
+                as_data['preferred_location'] = None
         else:
             raise Exception(obj.json()["error"])
 

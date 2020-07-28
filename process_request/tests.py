@@ -12,7 +12,6 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
-from .helpers import get_container_indicators
 from .models import MachineUser, User
 from .routines import ProcessRequest
 from .views import DownloadCSVView, ProcessRequestView
@@ -63,18 +62,8 @@ class TestUsers(TestCase):
 
 class TestHelpers(TestCase):
 
-    def test_get_container_indicators(self):
-        instances = []
-
-        container = {"instance_type": "mixed materials", "sub_container": {"top_container": {"_resolved": {"type": "box", "indicator": "1"}}}}
-        instances.append(container)
-        containers = get_container_indicators(instances)
-        self.assertEqual("Box 1", containers)
-
-        container = {"instance_type": "digital_object", "digital_object": {"_resolved": {"title": "Digitized Item"}}}
-        instances.append(container)
-        containers = get_container_indicators(instances)
-        self.assertEqual("Box 1, Digital Object: Digitized Item", containers)
+    def test_get_container_data(self):
+        pass
 
 
 class TestRoutines(TestCase):
@@ -83,7 +72,6 @@ class TestRoutines(TestCase):
         with transformer_vcr.use_cassette("process_request.json"):
             for item in item_list:
                 get_data = ProcessRequest().get_data(item)
-                print(get_data)
 
 
 class TestViews(TestCase):
