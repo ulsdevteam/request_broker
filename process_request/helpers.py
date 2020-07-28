@@ -42,8 +42,10 @@ def get_dates(archival_object):
         for d in archival_object.get("dates"):
             dates.append(get_expression(d))
     else:
-        for d in archival_object.get("dates"):
-            dates.append(get_expression(d))
+        for a in archival_object.get("ancestors"):
+            if a.get("_resolved").get("dates"):
+                for d in a.get("_resolved").get("dates"):
+                    dates.append(get_expression(d))
     return ",".join(dates)
 
 
