@@ -39,7 +39,8 @@ item_list = ['/repositories/2/archival_objects/1154382',
              '/repositories/2/archival_objects/1154384',
              '/repositories/2/archival_objects/1154385',
              '/repositories/2/archival_objects/1154386',
-             '/repositories/2/archival_objects/1154387'
+             '/repositories/2/archival_objects/1154387',
+             '/repositories/2/archival_objects/1154388'
             ]
 
 class TestUsers(TestCase):
