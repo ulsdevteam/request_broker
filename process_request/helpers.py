@@ -39,13 +39,11 @@ def get_dates(archival_object):
     """Takes json for an archival object that has the _resolved parameter on ancestors. Gets date expression for an item. Starts at item level, goes up until a date is found"""
     dates = []
     if archival_object.get("dates"):
-        for d in archival_object.get("dates"):
-            dates.append(get_expression(d))
+        dates = [get_expression(d) for d in archival_object.get("dates")]
     else:
         for a in archival_object.get("ancestors"):
             if a.get("_resolved").get("dates"):
-                for d in a.get("_resolved").get("dates"):
-                    dates.append(get_expression(d))
+                dates = [get_expression(d) for d in a.get("_resolved").get("dates")]
     return ",".join(dates)
 
 
