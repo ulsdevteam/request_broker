@@ -2,7 +2,8 @@ from asnake.aspace import ASpace
 from request_broker import settings
 
 from .helpers import (check_for_instance_type, get_collection_creator,
-                      get_container_field, get_dates, get_location)
+                      get_container_field, get_container_indicators,
+                      get_dates, get_location)
 
 
 class ProcessRequest(object):
@@ -31,7 +32,9 @@ class ProcessRequest(object):
                         username=settings.ARCHIVESSPACE["username"],
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
-        obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors", "top_container", "top_container::container_locations"]})
+        obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors",
+                                              "top_container", "top_container::container_locations",
+                                              "digital_object"]})
         if obj.status_code == 200:
             as_data = {}
             item_json = obj.json()
@@ -48,19 +51,21 @@ class ProcessRequest(object):
             as_data['resource_id'] = item_collection.get("id_0")
             as_data['title'] = item_json.get("display_string")
             as_data['ref'] = item_json.get("uri")
-            if check_for_instance_type(item_json, "digital_object"):
-                as_data['container'] = ""
-                as_data['barcode'] = ""
-                as_data['location'] = ""
-            else:
-                if check_for_instance_type(item_json, "microform"):
-                    instance = item_json.get("instances")[check_for_instance_type(item_json, "microform")]
-                else:
-                    instance = item_json.get("instances")[0]
-                    top_container_info = instance.get("sub_container").get("top_container").get("_resolved")
-                as_data['barcode'] = get_container_field(top_container_info, "barcode")
-                as_data['location'] = get_location(top_container_info)
-                as_data['container'] = "{} {}".format(get_container_field(top_container_info, "type").title(), get_container_field(top_container_info, "indicator"))
+            as_data['containers'] = get_container_indicators(item_json)
+            #if check_for_instance_type(item_json, "digital_object"):
+                #as_data['container'] = ""
+                #as_data['barcode'] = ""
+                #as_data['location'] = ""
+            #else:
+                #if check_for_instance_type(item_json, "microform"):
+                    #instance = item_json.get("instances")[check_for_instance_type(item_json, "microform")]
+                #else:
+                    #instance = item_json.get("instances")[0]
+                    #top_container_info = instance.get("sub_container").get("top_container").get("_resolved")
+                #as_data['barcode'] = get_container_field(top_container_info, "barcode")
+                #as_data['location'] = get_location(top_container_info)
+                #as_data['container'] = "{} {}".format(get_container_field(top_container_info, "type").title(), get_container_field(top_container_info, "indicator"))
+            print(as_data)
         else:
             raise Exception(obj.json()["error"])
 

@@ -3,6 +3,30 @@ from datetime import datetime
 from rapidfuzz import fuzz
 
 
+def get_container_indicators(archival_object):
+    """Takes ArchivesSpace archival object json data and returns all containers and indicators.
+
+    args:
+        archival_object (dict): AS archival object JSON
+
+    returns:
+        containers (str): a string representation of all container display strings.
+    """
+    containers = []
+    instances = archival_object.get("instances")
+    if instances:
+        for instance in archival_object.get("instances"):
+            if instance.get("instance_type") == "digital_object":
+                containers.append("Digital Object: " + instance.get("digital_object").get("_resolved").get("title"))
+            else:
+                containers.append(instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize()
+                + ' ' +
+                instance.get("sub_container").get("top_container").get("_resolved").get("indicator"))
+        return ", ".join(containers)
+    else:
+        return None
+
+
 def get_collection_creator(resource):
     """Takes json for an archival object that has the _resolved parameter on resource::linked_agents. Iterates through linked_agents; if the role is creator, appends to list, and returns list as a string."""
     creators = []

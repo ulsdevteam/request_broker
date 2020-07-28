@@ -35,6 +35,12 @@ VIEWS = (
     ('process_request.json', ProcessRequestView),
 )
 
+item_list = ['/repositories/2/archival_objects/1154382',
+             '/repositories/2/archival_objects/1154384',
+             '/repositories/2/archival_objects/1154385',
+             '/repositories/2/archival_objects/1154386',
+             '/repositories/2/archival_objects/1154387'
+            ]
 
 class TestUsers(TestCase):
 
@@ -57,8 +63,10 @@ class TestRoutines(TestCase):
     def test_routines(self):
         for cassette, routine in ROUTINES:
             with transformer_vcr.use_cassette(cassette):
-                routines = ProcessRequest().process_readingroom_request(['/repositories/2/archival_objects/8457'])
-                self.assertEqual(routines, 'test')
+                for item in item_list:
+                    get_data = ProcessRequest().get_data(item)
+                    #routines = ProcessRequest().process_readingroom_request('/repositories/2/archival_objects/8457')
+                    #self.assertEqual(routines, 'test')
 
 
 class TestViews(TestCase):
@@ -69,7 +77,7 @@ class TestViews(TestCase):
     def test_processrequestview(self):
         for v in VIEWS:
             with transformer_vcr.use_cassette(v[0]):
-                request = self.factory.post(reverse('process-request'), {"items": ["/repositories/2/archival_objects/8457"]}, format='json')
+                request = self.factory.post(reverse('process-request'), {"items": item_list}, format='json')
                 response = v[1].as_view()(request)
                 self.assertEqual(response.status_code, 200)
 
