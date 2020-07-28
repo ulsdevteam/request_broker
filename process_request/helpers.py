@@ -13,7 +13,14 @@ def get_collection_creator(resource):
 
 
 def get_location(top_container_info):
-    """Takes the _resolved json for a top container (with the _resolved parameter also on container locations) from an archival object and returns the title field of the container location for each location. C"""
+    """Gets a human-readable location string for a top container
+    
+    Args:
+        top_container_info (dict): json for a top container (with resolved container locations)
+        
+     Returns:
+         string: all locations associated with the top container, separated by a comma.
+     """
     locations = []
     for c in top_container_info.get("container_locations"):
         locations.append(c.get("_resolved").get("title"))
