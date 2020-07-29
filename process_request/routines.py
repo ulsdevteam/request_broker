@@ -35,10 +35,7 @@ class ProcessRequest(object):
         if obj.status_code == 200:
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
-            if len(item_json.get("ancestors")) > 1:
-                aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string")
-            else:
-                aggregation = None
+            aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
             return {
                 "creator": get_collection_creator(item_collection),
                 "restrictions": "TK",
