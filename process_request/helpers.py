@@ -13,7 +13,7 @@ def get_container_indicators(instance):
         string: A concatenated string containing the container type and container indicator, or digital object title.
     """
     if instance.get("instance_type") == "digital_object":
-        return "Digital Object:  {}".format(instance.get("digital_object").get("_resolved").get("title"))
+        return "Digital Object: {}".format(instance.get("digital_object").get("_resolved").get("title"))
     else:
         top_container = instance.get("sub_container").get("top_container").get("_resolved")
         return "{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator"))
@@ -28,7 +28,7 @@ def get_file_versions(digital_object):
     Returns:
         string: all file version uris associated with the digital object, separated by a comma.
     """
-    versions = [v.get("file_uri")) for v in digital_object.get("file_versions")]
+    versions = [v.get("file_uri") for v in digital_object.get("file_versions")]
     return ", ".join(versions)
 
 
@@ -70,8 +70,6 @@ def get_preferred_format(instances):
         preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "digital_object"]
     elif "microform" in instance_types:
         preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "microform"]
-    elif "microfilm" in instance_types:
-        preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "microfilm"]
     elif "mixed materials" in instance_types:
         preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "mixed materials"]
     else:

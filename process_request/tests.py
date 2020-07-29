@@ -17,6 +17,7 @@ from .helpers import (get_container_indicators, get_file_versions,
                       set_preferred_data)
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
+from .test_helpers import random_string
 from .views import (DeliverEmailView, DownloadCSVView, ParseRequestView,
                     ProcessEmailRequestView)
 
@@ -70,30 +71,30 @@ class TestUsers(TestCase):
 class TestHelpers(TestCase):
 
     def test_get_container_indicators(self):
-        letters = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
-        title = "Digital Object: " + letters
+        letters = random_string(10)
+        expected_title = "Digital Object: " + letters
         instance = {'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}
-        indicator = get_container_indicators(instance)
-        self.assertEqual(indicator, title)
+        title = get_container_indicators(instance)
+        self.assertEqual(title, expected_title)
 
-        type = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10))).capitalize()
-        number = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        type = random_string(10)
+        number = random_string(2)
         instance = {'instance_type': 'mixed materials', 'sub_container': {'top_container': {'_resolved': {'type': type, 'indicator': number}}}}
-        combined = type + ' ' + number
+        expected_indicator = "{} {}".format(type.capitalize(), number)
         indicator = get_container_indicators(instance)
-        self.assertEqual(indicator, combined)
+        self.assertEqual(indicator, expected_indicator)
 
     def test_get_file_versions(self):
-        uri = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        uri = random_string(10)
         digital_object = {'file_versions': [{'file_uri': uri}]}
         version = get_file_versions(digital_object)
         self.assertEqual(uri, version)
 
     def test_set_preferred_data(self):
         data = {}
-        indicator = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
-        type = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
-        location = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        indicator = random_string(10)
+        type = random_string(10)
+        location = random_string(10)
         data = set_preferred_data(data, indicator, type, location)
         self.assertEqual(indicator, data['preferred_container'])
         self.assertEqual(type, data['preferred_format'])

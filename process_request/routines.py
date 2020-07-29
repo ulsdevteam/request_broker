@@ -53,9 +53,7 @@ class ProcessRequest(object):
             as_data['ref'] = item_json.get("uri")
             instances = item_json.get("instances")
             if instances:
-                container_indicators = []
-                for i in instances:
-                    [container_indicators.append(get_container_indicators(i))]
+                container_indicators = [get_container_indicators(i) for i in instances]
                 as_data['containers'] = ", ".join(container_indicators)
                 preferred_item = get_preferred_format(instances)
                 if preferred_item:
