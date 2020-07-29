@@ -101,7 +101,7 @@ class TestRoutines(TestCase):
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_get_data(self):
         get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
-        self.assertIsNot(False, get_as_data)
+        self.assertTrue(isinstance(get_as_data, dict))
         self.assertEqual(len(get_as_data), 9)
 
 
