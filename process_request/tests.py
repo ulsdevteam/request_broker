@@ -17,7 +17,7 @@ from .models import MachineUser, User
 from .routines import ProcessRequest
 from .views import DownloadCSVView, ProcessRequestView
 
-transformer_vcr = vcr.VCR(
+aspace_vcr = vcr.VCR(
     serializer='json',
     cassette_library_dir=join(settings.BASE_DIR, 'fixtures/cassettes'),
     record_mode='once',
@@ -57,10 +57,11 @@ class TestRoutines(TestCase):
 
     def test_routines(self):
         for cassette, routine in ROUTINES:
-            with transformer_vcr.use_cassette(cassette):
+            with aspace_vcr.use_cassette(cassette):
                 routines = ProcessRequest().process_readingroom_request(['/repositories/2/archival_objects/8457'])
                 self.assertEqual(routines, 'test')
 
+    @aspace_vcr.use_cassette("aspace_request.json")
     def test_get_data(self):
         get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
         self.assertIsNot(False, get_as_data)
@@ -88,7 +89,7 @@ class TestViews(TestCase):
 
     def test_processrequestview(self):
         for v in VIEWS:
-            with transformer_vcr.use_cassette(v[0]):
+            with aspace_vcr.use_cassette(v[0]):
                 request = self.factory.post(reverse('process-request'), {"items": ["/repositories/2/archival_objects/8457"]}, format='json')
                 response = v[1].as_view()(request)
                 self.assertEqual(response.status_code, 200)
