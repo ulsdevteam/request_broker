@@ -15,7 +15,8 @@ def get_container_indicators(instance):
     if instance.get("instance_type") == "digital_object":
         return "Digital Object:  {}".format(instance.get("digital_object").get("_resolved").get("title"))
     else:
-        return instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize() + ' ' + instance.get("sub_container").get("top_container").get("_resolved").get("indicator")
+        top_container = instance.get("sub_container").get("top_container").get("_resolved")
+        return "{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator"))
 
 
 def get_file_versions(digital_object):
