@@ -13,7 +13,7 @@ def get_container_indicators(instance):
         string: A concatenated string containing the container type and container indicator, or digital object title.
     """
     if instance.get("instance_type") == "digital_object":
-        return "Digital Object: " + instance.get("digital_object").get("_resolved").get("title")
+        return "Digital Object:  {}".format(instance.get("digital_object").get("_resolved").get("title"))
     else:
         return instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize() + ' ' + instance.get("sub_container").get("top_container").get("_resolved").get("indicator")
 
