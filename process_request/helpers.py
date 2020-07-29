@@ -28,8 +28,7 @@ def get_file_versions(digital_object):
     Returns:
         string: all file version uris associated with the digital object, separated by a comma.
     """
-    versions = []
-    [versions.append(v.get("file_uri")) for v in digital_object.get("file_versions")]
+    versions = [v.get("file_uri")) for v in digital_object.get("file_versions")]
     return ", ".join(versions)
 
 
