@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from request_broker import settings
-
 from rapidfuzz import fuzz
 
 
@@ -78,8 +76,26 @@ def get_preferred_format(instances):
     elif "mixed materials" in instance_types:
         preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "mixed materials"]
     else:
-        preferred = None
+        return None
     return preferred
+
+
+def set_preferred_data(data, indicator=None, type=None, location=None):
+    """Takes a dictionary and sets arguments to key, value pairs in that dictionary.
+
+    Args:
+        data (dict): the dictionary to write to.
+        indicator (string): string representation of a container type and indicator
+        type (string): string representation of an instance type
+        location (string): string representation of a container's location
+
+    Return:
+        data (dict): returns an updated dictionary with new key, value pairs
+    """
+    data['preferred_container'] = indicator
+    data['preferred_format'] = type
+    data['preferred_location'] = location
+    return data
 
 
 def get_collection_creator(resource):

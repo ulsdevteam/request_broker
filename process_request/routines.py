@@ -1,7 +1,7 @@
 from asnake.aspace import ASpace
 from request_broker import settings
 
-from .helpers import (get_collection_creator, get_container_indicators, get_instance_data, get_dates, get_preferred_format)
+from .helpers import (get_collection_creator, get_container_indicators, get_dates, get_preferred_format, set_preferred_data)
 
 
 class ProcessRequest(object):
@@ -56,15 +56,16 @@ class ProcessRequest(object):
                     [container_indicators.append(get_container_indicators(i))]
                 as_data['containers'] = ", ".join(container_indicators)
                 preferred_item = get_preferred_format(instances)
-                as_data['preferred_container'] = preferred_item[0]['indicator']
-                as_data['preferred_format'] = preferred_item[0]['instance_type']
-                as_data['preferred_location'] = preferred_item[0]['location']
+                if preferred_item:
+                    set_preferred_data(as_data,
+                                       preferred_item[0]['indicator'],
+                                       preferred_item[0]['instance_type'],
+                                       preferred_item[0]['location'])
+                else:
+                    set_preferred_data(as_data)
             else:
                 as_data['containers'] = None
-                as_data['preferred_container'] = None
-                as_data['preferred_format'] = None
-                as_data['preferred_location'] = None
-            print(as_data)
+                set_preferred_data(as_data)
             return as_data
         else:
             raise Exception(obj.json()["error"])

@@ -12,6 +12,7 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
+from .helpers import get_container_indicators, get_file_versions, set_preferred_data
 from .models import MachineUser, User
 from .routines import ProcessRequest
 from .views import DownloadCSVView, ProcessRequestView
@@ -40,7 +41,8 @@ item_list = ['/repositories/2/archival_objects/1154382',
              '/repositories/2/archival_objects/1154385',
              '/repositories/2/archival_objects/1154386',
              '/repositories/2/archival_objects/1154387',
-             '/repositories/2/archival_objects/1154388'
+             '/repositories/2/archival_objects/1154388',
+             '/repositories/2/archival_objects/1154389'
              ]
 
 
@@ -62,8 +64,35 @@ class TestUsers(TestCase):
 
 class TestHelpers(TestCase):
 
-    def test_get_container_data(self):
-        pass
+    def test_get_container_indicators(self):
+        letters = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        title = "Digital Object: " + letters
+        instance = {'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}
+        indicator = get_container_indicators(instance)
+        self.assertEqual(indicator, title)
+
+        type = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10))).capitalize()
+        number = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        instance = {'instance_type': 'mixed materials', 'sub_container': {'top_container': {'_resolved': {'type': type, 'indicator': number}}}}
+        combined = type + ' ' + number
+        indicator = get_container_indicators(instance)
+        self.assertEqual(indicator, combined)
+
+    def test_get_file_versions(self):
+        uri = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        digital_object = {'file_versions': [{'file_uri': uri}]}
+        version = get_file_versions(digital_object)
+        self.assertEqual(uri, version)
+
+    def test_set_preferred_data(self):
+        data = {}
+        indicator = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        type = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        location = ''.join(random.sample(string.ascii_lowercase, random.randint(2, 10)))
+        data = set_preferred_data(data, indicator, type, location)
+        self.assertEqual(indicator, data['preferred_container'])
+        self.assertEqual(type, data['preferred_format'])
+        self.assertEqual(location, data['preferred_location'])
 
 
 class TestRoutines(TestCase):
