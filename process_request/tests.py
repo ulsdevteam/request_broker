@@ -100,7 +100,7 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         with transformer_vcr.use_cassette("process_request.json"):
             for item in item_list:
-                get_data = ProcessRequest().get_data(item)
+                ProcessRequest().get_data(item)
 
 
 class TestViews(TestCase):
