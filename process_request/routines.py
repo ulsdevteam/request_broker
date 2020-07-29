@@ -61,6 +61,7 @@ class ProcessRequest(object):
                 as_data['barcode'] = get_container_field(top_container_info, "barcode")
                 as_data['location'] = get_location(top_container_info)
                 as_data['container'] = "{} {}".format(get_container_field(top_container_info, "type").title(), get_container_field(top_container_info, "indicator"))
+            return as_data
         else:
             raise Exception(obj.json()["error"])
 
