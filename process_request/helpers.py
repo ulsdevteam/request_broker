@@ -1,24 +1,85 @@
 from datetime import datetime
 
+from request_broker import settings
+
 from rapidfuzz import fuzz
 
 
-def get_container_data(instances):
-    container_data = []
-    for instance in instances:
-        data = {}
-        data['instance_type'] = instance.get("instance_type")
-        if data["instance_type"] == "digital_object":
-            data['container_indicator'] = "Digital Object: " + instance.get("digital_object").get("_resolved").get("title")
-            digital_object = instance.get("digital_object").get("_resolved")
-            data["location"] = get_file_versions(digital_object)
-        else:
-            data['container_indicator'] = instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize() + ' ' + instance.get("sub_container").get("top_container").get("_resolved").get("indicator")
-            top_container = instance.get("sub_container").get("top_container").get("_resolved")
-            data["location"] = get_location(top_container)
-            data["barcode"] = top_container.get("barcode")
-        container_data.append(data)
-    return container_data
+def get_container_indicators(instance):
+    """Takes ArchivesSpace JSON instance data with resolved top containers and returns a container indicator.
+
+    Args:
+        instance (dict): ArchivesSpace instance information that has resolved top containers and digital objects.
+
+    Returns:
+        string: A concatenated string containing the container type and container indicator, or digital object title.
+    """
+    if instance.get("instance_type") == "digital_object":
+        return "Digital Object: " + instance.get("digital_object").get("_resolved").get("title")
+    else:
+        return instance.get("sub_container").get("top_container").get("_resolved").get("type").capitalize() + ' ' + instance.get("sub_container").get("top_container").get("_resolved").get("indicator")
+
+
+def get_file_versions(digital_object):
+    """Takes ArchivesSpace digital object json and returns a file version.
+
+    Args:
+        digital_object (dict): Resolved json of an ArchivesSpace digital object.
+
+    Returns:
+        string: all file version uris associated with the digital object, separated by a comma.
+    """
+    versions = []
+    [versions.append(v.get("file_uri")) for v in digital_object.get("file_versions")]
+    return ", ".join(versions)
+
+
+def get_instance_data(instance, type):
+    """Takes ArchivesSpace instance information and returns a dictionary of selected instance information.
+
+    Args:
+        instance (dict): ArchivesSpace instance information that has resolved top containers and digital objects.
+        type (string): a string representation of an instance type.
+
+    Returns:
+        instance_data (dict): returns a dict container instance type, indicator, location, and barcode for the instance.
+    """
+    instance_data = {}
+    instance_data["instance_type"] = type
+    instance_data["indicator"] = get_container_indicators(instance)
+    if type == "digital_object":
+        digital_object = instance.get("digital_object").get("_resolved")
+        instance_data["location"] = get_file_versions(digital_object)
+        instance_data["barcode"] = ''
+    else:
+        top_container = instance.get("sub_container").get("top_container").get("_resolved")
+        instance_data["location"] = get_location(top_container)
+        instance_data["barcode"] = top_container.get("barcode")
+    return instance_data
+
+
+def get_preferred_format(instances):
+    """Iterates over instances and gets the preferred delivery format based on delivery formats set in the settings.
+
+    Args:
+        instances (list): a list of ArchivesSpace instance dictionaries.
+
+    Returns:
+        preferred (list): a list of string instance information retrieved by get_instance_data.
+    """
+    instance_types = []
+    [instance_types.append((i["instance_type"])) for i in instances]
+    if "digital_object" in instance_types:
+        preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "digital_object"]
+    elif "microform" in instance_types:
+        preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "microform"]
+    elif "microfilm" in instance_types:
+        preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "microfilm"]
+    elif "mixed materials" in instance_types:
+        preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "mixed materials"]
+    else:
+        preferred = None
+    return preferred
 
 
 def get_collection_creator(resource):
@@ -42,20 +103,6 @@ def get_location(top_container_info):
     locations = []
     [locations.append(c.get("_resolved").get("title")) for c in top_container_info.get("container_locations")]
     return ",".join(locations)
-
-
-def get_file_versions(digital_object_info):
-    """Gets a file version link for a digital object.
-
-    Args:
-        digital_object_info (dict): json for a digital object
-
-    Returns:
-        string: all file version uris associated with the digital object, separated by a comma.
-    """
-    versions = []
-    [versions.append(v.get("file_uri")) for v in digital_object_info.get("file_versions")]
-    return ", ".join(versions)
 
 
 def get_dates(archival_object):

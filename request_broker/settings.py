@@ -131,5 +131,3 @@ EMAIL_DEFAULT_FROM = CF.DEFAULT_FROM_EMAIL
 
 EXPORT_FIELDS = ["creator", "collection_name", "aggregation", "dates",
                  "resource_id", "container", "title", "restrictions", "ref"]
-
-PREFERRED_FORMATS = ["digital_object", "microform", "microfilm", "mixed materials"]
