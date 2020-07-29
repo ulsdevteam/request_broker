@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from request_broker import settings
 
 from .helpers import (check_for_instance_type, get_collection_creator,
-                      get_container_field, get_dates, get_location)
+                      get_dates, get_location)
 
 
 class ProcessRequest(object):
@@ -59,9 +59,9 @@ class ProcessRequest(object):
                 else:
                     instance = item_json.get("instances")[0]
                     top_container_info = instance.get("sub_container").get("top_container").get("_resolved")
-                as_data['barcode'] = get_container_field(top_container_info, "barcode")
+                as_data['barcode'] = top_container_info.get("barcode")
                 as_data['location'] = get_location(top_container_info)
-                as_data['container'] = "{} {}".format(get_container_field(top_container_info, "type").title(), get_container_field(top_container_info, "indicator"))
+                as_data['container'] = "{} {}".format(top_container_info.get("type").title(), top_container_info.get("indicator"))
             return as_data
         else:
             raise Exception(obj.json()["error"])

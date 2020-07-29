@@ -35,19 +35,6 @@ def get_location(top_container_info):
     return ",".join(locations)
 
 
-def get_container_field(top_container_info, container_field):
-    """Gets the value from a top container field
-
-    Args:
-        top_container_info (dict): json for a top container
-        container_field (str): top container field
-
-    Returns:
-        string: value of the top container field
-    """
-    return(top_container_info.get(container_field))
-
-
 def check_for_instance_type(archival_object, type_to_check):
     """Gets the index value of a specific instance type for an archival object
 
