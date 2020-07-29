@@ -48,7 +48,7 @@ def get_instance_data(instance, type):
     if type == "digital_object":
         digital_object = instance.get("digital_object").get("_resolved")
         instance_data["location"] = get_file_versions(digital_object)
-        instance_data["barcode"] = ''
+        instance_data["barcode"] = None
     else:
         top_container = instance.get("sub_container").get("top_container").get("_resolved")
         instance_data["location"] = get_location(top_container)
