@@ -33,22 +33,23 @@ class ProcessRequest(object):
                         repository=settings.ARCHIVESSPACE["repo_id"])
         obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors", "top_container", "top_container::container_locations"]})
         if obj.status_code == 200:
-            as_data = {}
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
-            as_data['creator'] = get_collection_creator(item_collection)
-            as_data['restrictions'] = "TK"
-            as_data['restrictions_text'] = "TK"
-            as_data['collection_name'] = item_collection.get("title")
             if len(item_json.get("ancestors")) > 1:
-                as_data['aggregation'] = item_json.get("ancestors")[0].get("_resolved").get("display_string")
+                aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string")
             else:
-                as_data['aggregation'] = ""
-            as_data['dates'] = get_dates(item_json)
-            as_data['resource_id'] = item_collection.get("id_0")
-            as_data['title'] = item_json.get("display_string")
-            as_data['ref'] = item_json.get("uri")
-            return as_data
+                aggregation = None
+            return {
+                "creator": get_collection_creator(item_collection),
+                "restrictions": "TK",
+                "restrictions_text": "TK",
+                "collection_name": item_collection.get("title"),
+                "aggregation": aggregation,
+                "dates": get_dates(item_json),
+                "resource_id": item_collection.get("id_0"),
+                "title": item_json.get("display_string"),
+                "ref": item_json.get("uri"),
+            }
         else:
             raise Exception(obj.json()["error"])
 
