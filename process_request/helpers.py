@@ -6,9 +6,10 @@ from rapidfuzz import fuzz
 def get_collection_creator(resource):
     """Takes json for an archival object that has the _resolved parameter on resource::linked_agents. Iterates through linked_agents; if the role is creator, appends to list, and returns list as a string."""
     creators = []
-    for linked_agent in resource.get("linked_agents"):
-        if linked_agent.get("role") == "creator":
-            creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
+    if resource.get("linked_agents"):
+        for linked_agent in resource.get("linked_agents"):
+            if linked_agent.get("role") == "creator":
+                creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
     return ",".join(creators)
 
 
