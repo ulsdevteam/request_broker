@@ -61,6 +61,11 @@ class TestRoutines(TestCase):
                 routines = ProcessRequest().process_readingroom_request(['/repositories/2/archival_objects/8457'])
                 self.assertEqual(routines, 'test')
 
+    def test_get_data(self):
+        get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
+        self.assertIsNot(False, get_as_data)
+        self.assertEqual(len(get_as_data), 12)
+
 
 class TestHelpers(TestCase):
 
