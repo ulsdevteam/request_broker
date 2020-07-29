@@ -65,8 +65,7 @@ def get_preferred_format(instances):
     Returns:
         preferred (list): a list of string instance information retrieved by get_instance_data.
     """
-    instance_types = []
-    [instance_types.append((i["instance_type"])) for i in instances]
+    instance_types = [i["instance_type"] for i in instances]
     if "digital_object" in instance_types:
         preferred = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "digital_object"]
     elif "microform" in instance_types:
