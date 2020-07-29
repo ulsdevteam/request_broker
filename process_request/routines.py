@@ -1,7 +1,8 @@
 from asnake.aspace import ASpace
 from request_broker import settings
 
-from .helpers import (get_collection_creator, get_container_indicators, get_dates, get_preferred_format, set_preferred_data)
+from .helpers import (get_collection_creator, get_container_indicators,
+                      get_dates, get_preferred_format, set_preferred_data)
 
 
 class ProcessRequest(object):
@@ -31,7 +32,7 @@ class ProcessRequest(object):
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
         obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors",
-                                              "top_container", "top_container::container_locations", "instances::digital_object"]})
+                                                          "top_container", "top_container::container_locations", "instances::digital_object"]})
 
         if obj.status_code == 200:
             as_data = {}

@@ -12,7 +12,8 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
-from .helpers import get_container_indicators, get_file_versions, set_preferred_data
+from .helpers import (get_container_indicators, get_file_versions,
+                      set_preferred_data)
 from .models import MachineUser, User
 from .routines import ProcessRequest
 from .views import DownloadCSVView, ProcessRequestView
@@ -35,6 +36,7 @@ ROUTINES = (
 VIEWS = (
     ('process_request.json', ProcessRequestView),
 )
+
 
 item_list = ['/repositories/2/archival_objects/1154382',
              '/repositories/2/archival_objects/1154384',
