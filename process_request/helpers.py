@@ -20,39 +20,6 @@ def get_collection_creator(resource):
     return ",".join(creators)
 
 
-def get_location(top_container_info):
-    """Gets a human-readable location string for a top container.
-
-    Args:
-        top_container_info (dict): json for a top container (with resolved container locations)
-
-     Returns:
-         string: all locations associated with the top container, separated by a comma.
-     """
-    locations = []
-    for c in top_container_info.get("container_locations"):
-        locations.append(c.get("_resolved").get("title"))
-    return ",".join(locations)
-
-
-def check_for_instance_type(archival_object, type_to_check):
-    """Gets the index value of a specific instance type for an archival object
-
-    Args:
-        archival_object (dict): json for an archival object
-        type_to_check (str): instance type to check against
-
-    Returns:
-        int: index of the matching instance type in the list of instances
-    """
-    list_of_instances = []
-    for i in archival_object.get("instances"):
-        instance_type = i.get("instance_type")
-        list_of_instances.append(instance_type)
-    if type_to_check in list_of_instances:
-        return list_of_instances.index(type_to_check)
-
-
 def get_dates(archival_object):
     """Gets the dates of an archival object or its closest ancestor with a date
 

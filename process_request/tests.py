@@ -102,7 +102,7 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
         self.assertIsNot(False, get_as_data)
-        self.assertEqual(len(get_as_data), 12)
+        self.assertEqual(len(get_as_data), 9)
 
 
 class TestHelpers(TestCase):
