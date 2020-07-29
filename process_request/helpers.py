@@ -4,7 +4,14 @@ from rapidfuzz import fuzz
 
 
 def get_collection_creator(resource):
-    """Takes json for an archival object that has the _resolved parameter on resource::linked_agents. Iterates through linked_agents; if the role is creator, appends to list, and returns list as a string."""
+    """Returns a list of creators for a resource record.
+
+    Args:
+        resource (dict): resource record data.
+
+    Returns:
+        creators (string): resource creators, separated by a comma.
+    """
     creators = []
     if resource.get("linked_agents"):
         for linked_agent in resource.get("linked_agents"):
@@ -14,7 +21,7 @@ def get_collection_creator(resource):
 
 
 def get_location(top_container_info):
-    """Gets a human-readable location string for a top container
+    """Gets a human-readable location string for a top container.
 
     Args:
         top_container_info (dict): json for a top container (with resolved container locations)
