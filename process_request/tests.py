@@ -12,6 +12,7 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
+from .helpers import get_collection_creator, get_dates
 from .models import MachineUser, User
 from .routines import ProcessRequest
 from .views import DownloadCSVView, ProcessRequestView
@@ -59,6 +60,20 @@ class TestRoutines(TestCase):
             with transformer_vcr.use_cassette(cassette):
                 routines = ProcessRequest().process_readingroom_request(['/repositories/2/archival_objects/8457'])
                 self.assertEqual(routines, 'test')
+
+
+class TestHelpers(TestCase):
+
+    def test_get_collection_creator(self):
+
+        with open(join("fixtures", "object_all.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+
+    def test_get_dates(self):
+        with open(join("fixtures", "object_all.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            self.assertEqual(get_dates(obj_data), "1991")
 
 
 class TestViews(TestCase):
