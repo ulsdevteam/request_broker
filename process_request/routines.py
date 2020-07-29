@@ -1,4 +1,5 @@
 from asnake.aspace import ASpace
+from django.core.mail import send_mail
 from request_broker import settings
 
 from .helpers import (check_for_instance_type, get_collection_creator,
@@ -178,58 +179,81 @@ class ProcessRequest(object):
         Returns:
             data (list): A list of dicts of objects.
         """
+        processed = []
         for item in object_list:
-            try:
-                self.get_data(item)
-                print('after get_data')
-            except Exception as e:
-                print(e)
-            return 'test'
+            processed.append(self.get_data(item))
+        return processed
 
-    def process_readingroom_request(self, object_list):
-        """Processes reading room requests.
+    def is_submittable(self, item):
+        """Determines if a request item is submittable.
+
+        Args:
+            item (dict): request item data.
+
+        Returns:
+            submit (bool): indicate if the request item is submittable or not.
+            reason (str): if applicable, a human-readable explanation for why
+                the request is not submittable.
+        """
+        submit = True
+        reason = None
+        if item.get("restrictions").lower() in ["closed"]:
+            submit = False
+            reason = "Item is restricted: {}".format(item.get("restrictions_text"))
+        elif item.get("preferred_format").lower() == "digital":
+            submit = False
+            reason = "This item is available online."
+        return submit, reason
+
+    def parse_items(self, object_list):
+        """Parses requested items to determine which are submittable. Adds a
+        `submit` and `submit_reason` attribute to each item.
 
         Args:
             object_list (list): A list of AS archival object URIs.
 
         Returns:
-            submitted (list): A list of dicts of submittable objects with corresponding most
-                desirable delivery format.
-            unsubmitted (list): A list of dicts of unsubmittable objects with corresponding
-                reason of failure.
+            object_list (list): A list of dicts containing parsed item information.
         """
         for item in object_list:
-            try:
-                self.get_data(item)
-            except Exception as e:
-                print(e)
-            return 'test'
-
-    def process_duplication_request(self, object_list):
-        """Processes duplication requests.
-
-        Args:
-            object_list (list): A list of AS archival object URIs.
-
-        Returns:
-            submitted (list): A list of dicts of submittable objects with corresponding most
-                desirable delivery format.
-            unsubmitted (list): A list of dicts of unsubmittable objects with corresponding
-                reason of failure.
-        """
-        for item in object_list:
-            try:
-                self.get_data(item)
-                print('after get_data')
-            except Exception as e:
-                print(e)
-            return 'test'
+            data = self.get_data(item)
+            submit, reason = self.is_submittable(data)
+            data["submit"] = submit
+            data["submit_reason"] = reason
+        return object_list
 
 
 class DeliverEmail(object):
-    """Sends an email with request data to an email address or list of addresses.
-    """
-    pass
+    """Email delivery class."""
+
+    def send_message(self, to_address, object_list, subject=None):
+        """Sends an email with request data to an email address or list of
+        addresses.
+        """
+        recipient_list = to_address if isinstance(to_address, list) else [to_address]
+        subject = subject if subject else "My List from DIMES"
+        message = self.format_items(object_list)
+        # TODO: decide if we want to send html messages
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_DEFAULT_FROM,
+            recipient_list,
+            fail_silently=False)
+        return "email sent to {}".format(", ".join(recipient_list))
+
+    def format_items(self, object_list):
+        """Converts dicts into strings and appends them to message body.
+
+        Location and barcode are not appended to the message.
+        """
+        message = ""
+        for obj in object_list:
+            for k, v in obj.items():
+                if k in settings.EXPORT_FIELDS:
+                    message += "{}: {}\n".format(k, v)
+            message += "\n"
+        return message
 
 
 class DeliverReadingRoomRequest(object):
