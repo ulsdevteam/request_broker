@@ -13,7 +13,7 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
-from .helpers import (get_collection_creator, get_container_indicators, 
+from .helpers import (get_collection_creator, get_container_indicators,
                       get_dates, get_file_versions, get_instance_data,
                       get_location, get_preferred_format)
 from .models import MachineUser, User
@@ -191,12 +191,12 @@ class TestRoutines(TestCase):
             self.assertIsNot(mail.outbox[0].subject, None)
             self.assertNotIn("location", mail.outbox[0].body)
             self.assertNotIn("barcode", mail.outbox[0].body)
-    
+
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_get_data(self):
         get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 9)
+        self.assertEqual(len(get_as_data), 14)
 
 
 class TestViews(TestCase):
