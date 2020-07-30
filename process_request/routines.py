@@ -3,17 +3,10 @@ from django.core.mail import send_mail
 from request_broker import settings
 
 from .helpers import (get_collection_creator, get_container_indicators,
-                      get_dates, get_preferred_format, set_preferred_data)
+                      get_dates, get_preferred_format)
 
 
 class ProcessRequest(object):
-    # TODO: main section where processing happens
-    # Push requests to submitted or unsubmitted
-    # If open and delivery formats, mark as submittable
-    # TO DO: add code to read through the rights in order
-    # 1. PREMIS rights statements first
-    # 2. Conditions governing access notes
-    # 3. Next closest conditions governing access notes/rights statements (inherited)
     """
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
@@ -34,39 +27,27 @@ class ProcessRequest(object):
                         repository=settings.ARCHIVESSPACE["repo_id"])
         obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors",
                                                           "top_container", "top_container::container_locations", "instances::digital_object"]})
-
         if obj.status_code == 200:
-            as_data = {}
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
-            as_data['creator'] = get_collection_creator(item_collection)
-            as_data['restrictions'] = "TK"
-            as_data['restrictions_text'] = "TK"
-            as_data['collection_name'] = item_collection.get("title")
-            if len(item_json.get("ancestors")) > 1:
-                as_data['aggregation'] = item_json.get("ancestors")[0].get("_resolved").get("display_string")
-            else:
-                as_data['aggregation'] = ""
-            as_data['dates'] = get_dates(item_json)
-            as_data['resource_id'] = item_collection.get("id_0")
-            as_data['title'] = item_json.get("display_string")
-            as_data['ref'] = item_json.get("uri")
-            instances = item_json.get("instances")
-            if instances:
-                container_indicators = [get_container_indicators(i) for i in instances]
-                as_data['containers'] = ", ".join(container_indicators)
-                preferred_item = get_preferred_format(instances)
-                if preferred_item:
-                    set_preferred_data(as_data,
-                                       preferred_item[0]['indicator'],
-                                       preferred_item[0]['instance_type'],
-                                       preferred_item[0]['location'])
-                else:
-                    set_preferred_data(as_data)
-            else:
-                as_data['containers'] = None
-                set_preferred_data(as_data)
-            return as_data
+            aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
+            preferred_item = get_preferred_format(item_json)
+            return {
+                "creator": get_collection_creator(item_collection),
+                "restrictions": "TK",
+                "restrictions_text": "TK",
+                "collection_name": item_collection.get("title"),
+                "aggregation": aggregation,
+                "dates": get_dates(item_json),
+                "resource_id": item_collection.get("id_0"),
+                "title": item_json.get("display_string"),
+                "ref": item_json.get("uri"),
+                "containers": get_container_indicators(item_json),
+                "preferred_format": preferred_item[0],
+                "preferred_container": preferred_item[1],
+                "preferred_location": preferred_item[2],
+                "preferred_barcode": preferred_item[3],
+            }
         else:
             raise Exception(obj.json()["error"])
 

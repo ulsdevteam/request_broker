@@ -14,7 +14,7 @@ from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
 from .helpers import (get_container_indicators, get_file_versions,
-                      set_preferred_data)
+                      get_instance_data, get_location, get_preferred_format)
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
 from .test_helpers import random_string
@@ -72,33 +72,80 @@ class TestHelpers(TestCase):
 
     def test_get_container_indicators(self):
         letters = random_string(10)
-        expected_title = "Digital Object: " + letters
-        instance = {'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}
-        title = get_container_indicators(instance)
-        self.assertEqual(title, expected_title)
+        expected_title = "Digital Object: {}".format(letters)
+        item = {'instances': [{'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}]}
+        self.assertEqual(get_container_indicators(item), expected_title)
 
         type = random_string(10)
         number = random_string(2)
-        instance = {'instance_type': 'mixed materials', 'sub_container': {'top_container': {'_resolved': {'type': type, 'indicator': number}}}}
+        item = {'instances': [{'instance_type': 'mixed materials', 'sub_container':
+                               {'top_container': {'_resolved': {'type': type, 'indicator': number}}}}]}
         expected_indicator = "{} {}".format(type.capitalize(), number)
-        indicator = get_container_indicators(instance)
-        self.assertEqual(indicator, expected_indicator)
+        self.assertEqual(get_container_indicators(item), expected_indicator)
+
+        type = random_string(10)
+        number = random_string(2)
+        letters = random_string(10)
+        item = {'instances': [{'instance_type': 'mixed materials', 'sub_container':
+                               {'top_container': {'_resolved': {'type': type, 'indicator': number}}}},
+                              {'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}]}
+        expected_containers = "{} {}, Digital Object: {}".format(type.capitalize(), number, letters)
+        self.assertEqual(get_container_indicators(item), expected_containers)
+
+        item = {'instances': []}
+        self.assertEqual(get_container_indicators(item), None)
 
     def test_get_file_versions(self):
         uri = random_string(10)
         digital_object = {'file_versions': [{'file_uri': uri}]}
-        version = get_file_versions(digital_object)
-        self.assertEqual(uri, version)
+        self.assertEqual(get_file_versions(digital_object), uri)
 
-    def test_set_preferred_data(self):
-        data = {}
-        indicator = random_string(10)
-        type = random_string(10)
-        location = random_string(10)
-        data = set_preferred_data(data, indicator, type, location)
-        self.assertEqual(indicator, data['preferred_container'])
-        self.assertEqual(type, data['preferred_format'])
-        self.assertEqual(location, data['preferred_location'])
+    def test_get_location(self):
+        with open(join("fixtures", "locations.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            expected_location = "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+            self.assertEqual(get_location(obj_data), expected_location)
+
+    def test_get_instance_data(self):
+        with open(join("fixtures", "digital_object_instance.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            expected_values = ("digital_object", "Digital Object: digital object", "http://google.com", "238475")
+            self.assertEqual(get_instance_data(obj_data, "digital_object"), expected_values)
+
+        with open(join("fixtures", "mixed_materials_instance.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            expected_values = ("mixed materials", "Box 2",
+                               "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
+                               "A12345")
+            self.assertEqual(get_instance_data(obj_data, "mixed_materials"), expected_values)
+
+    def test_get_preferred_format(self):
+        with open(join("fixtures", "object_digital.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            expected_data = ("digital_object,digital_object", "Digital Object: digital object,Digital Object: digital object 2",
+                             "http://google.com,http://google2.com", "238475,238476")
+            self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        with open(join("fixtures", "object_microform.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            expected_data = ("microform, microform",
+                             "Reel 1, Reel 2",
+                             "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                             "A12345, A123456")
+            self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        with open(join("fixtures", "object_mixed.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            expected_data = ("mixed materials, mixed materials",
+                             "Reel 1, Reel 2",
+                             "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                             "A12345, A123456")
+            self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        with open(join("fixtures", "object_no_instance.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            expected_data = (None, None, None, None)
+            self.assertTrue(get_preferred_format(obj_data), expected_data)
 
 
 class TestRoutines(TestCase):
