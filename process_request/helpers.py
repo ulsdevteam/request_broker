@@ -113,23 +113,28 @@ def get_preferred_format(item_json):
 
 
 def get_collection_creator(resource):
-    """Takes json for an archival object that has the _resolved parameter on resource::linked_agents. Iterates through linked_agents; if the role is creator, appends to list, and returns list as a string."""
+    """Returns a list of creators for a resource record.
+
+    Args:
+        resource (dict): resource record data.
+
+    Returns:
+        creators (string): resource creators, separated by a comma.
+    """
     creators = []
-    for linked_agent in resource.get("linked_agents"):
-        if linked_agent.get("role") == "creator":
-            creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
+    if resource.get("linked_agents"):
+        for linked_agent in resource.get("linked_agents"):
+            if linked_agent.get("role") == "creator":
+                creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
     return ",".join(creators)
 
 
 def get_dates(archival_object):
     """Gets the dates of an archival object or its closest ancestor with a date
-
         Args:
             archival_object (dict): json for an archival object (with resolved ancestors)
-
         Returns:
             string: all dates associated with an archival object or its closest ancestor, separated by a comma
-
     Takes json for an archival object that has the _resolved parameter on ancestors. Gets date expression for an item. Starts at item level, goes up until a date is found"""
     dates = []
     if archival_object.get("dates"):
@@ -143,13 +148,10 @@ def get_dates(archival_object):
 
 def get_expression(date):
     """Returns a date expression for a date object. Concatenates start and end dates if no date expression exists.
-
     Args:
         date (dict): an ArchivesSpace date
-
     Returns:
         string: date expression for the date object
-
     """
     try:
         expression = date["expression"]
@@ -163,17 +165,13 @@ def get_expression(date):
 
 def get_note_text(note):
     """Parses note content from different note types.
-
     :param dict: an ArchivesSpace note.
-
     :returns: a list containing note content.
     :rtype: list
     """
     def parse_subnote(subnote):
         """Parses note content from subnotes.
-
         :param dict: an ArchivesSpace subnote.
-
         :returns: a list containing subnote content.
         :rtype: list
         """
@@ -213,10 +211,8 @@ def get_note_text(note):
 
 def text_in_note(note, query_string):
     """Performs fuzzy searching against note text.
-
     :param dict note: an ArchivesSpace note.
     :param str query_string: a string to match against.
-
     :returns: True if a match is found for `query_string`, False if no match is
             found.
     :rtype: bool
@@ -233,9 +229,7 @@ def text_in_note(note, query_string):
 
 def indicates_restriction(rights_statement, restriction_acts):
     """Parses a rights statement to determine if it indicates a restriction.
-
     :param dict rights_statement: an ArchivesSpace rights statement.
-
     :returns: True if rights statement indicates a restriction, False if not.
     :rtype: bool
     """
@@ -256,15 +250,12 @@ def indicates_restriction(rights_statement, restriction_acts):
 
 def is_restricted(archival_object, query_string, restriction_acts):
     """Parses an archival object to determine if it is restricted.
-
     Iterates through notes, looking for a conditions governing access note
     which contains a particular set of strings.
     Also looks for associated rights statements which indicate object may be
     restricted.
-
     :param dict archival_object: an ArchivesSpace archival_object.
     :param list restriction_acts: a list of strings to match restriction act against.
-
     :returns: True if archival object is restricted, False if not.
     :rtype: bool
     """

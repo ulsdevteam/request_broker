@@ -13,15 +13,16 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
-from .helpers import (get_container_indicators, get_file_versions,
-                      get_instance_data, get_location, get_preferred_format)
+from .helpers import (get_collection_creator, get_container_indicators, 
+                      get_dates, get_file_versions, get_instance_data,
+                      get_location, get_preferred_format)
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
 from .test_helpers import random_string
 from .views import (DeliverEmailView, DownloadCSVView, ParseRequestView,
                     ProcessEmailRequestView)
 
-transformer_vcr = vcr.VCR(
+aspace_vcr = vcr.VCR(
     serializer='json',
     cassette_library_dir=join(settings.BASE_DIR, 'fixtures/cassettes'),
     record_mode='once',
@@ -42,16 +43,6 @@ def json_from_fixture(filename):
         return json.load(df)
 
 
-item_list = ['/repositories/2/archival_objects/1154382',
-             '/repositories/2/archival_objects/1154384',
-             '/repositories/2/archival_objects/1154385',
-             '/repositories/2/archival_objects/1154386',
-             '/repositories/2/archival_objects/1154387',
-             '/repositories/2/archival_objects/1154388',
-             '/repositories/2/archival_objects/1154389'
-             ]
-
-
 class TestUsers(TestCase):
 
     def test_user(self):
@@ -69,6 +60,17 @@ class TestUsers(TestCase):
 
 
 class TestHelpers(TestCase):
+
+    def test_get_collection_creator(self):
+
+        with open(join("fixtures", "object_all.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+
+    def test_get_dates(self):
+        with open(join("fixtures", "object_all.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            self.assertEqual(get_dates(obj_data), "1991")
 
     def test_get_container_indicators(self):
         letters = random_string(10)
@@ -189,6 +191,12 @@ class TestRoutines(TestCase):
             self.assertIsNot(mail.outbox[0].subject, None)
             self.assertNotIn("location", mail.outbox[0].body)
             self.assertNotIn("barcode", mail.outbox[0].body)
+    
+    @aspace_vcr.use_cassette("aspace_request.json")
+    def test_get_data(self):
+        get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
+        self.assertTrue(isinstance(get_as_data, dict))
+        self.assertEqual(len(get_as_data), 9)
 
 
 class TestViews(TestCase):
