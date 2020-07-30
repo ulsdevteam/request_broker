@@ -3,6 +3,63 @@ from datetime import datetime
 from rapidfuzz import fuzz
 
 
+def get_collection_creator(resource):
+    """Returns a list of creators for a resource record.
+
+    Args:
+        resource (dict): resource record data.
+
+    Returns:
+        creators (string): resource creators, separated by a comma.
+    """
+    creators = []
+    if resource.get("linked_agents"):
+        for linked_agent in resource.get("linked_agents"):
+            if linked_agent.get("role") == "creator":
+                creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
+    return ",".join(creators)
+
+
+def get_dates(archival_object):
+    """Gets the dates of an archival object or its closest ancestor with a date
+
+        Args:
+            archival_object (dict): json for an archival object (with resolved ancestors)
+
+        Returns:
+            string: all dates associated with an archival object or its closest ancestor, separated by a comma
+
+    Takes json for an archival object that has the _resolved parameter on ancestors. Gets date expression for an item. Starts at item level, goes up until a date is found"""
+    dates = []
+    if archival_object.get("dates"):
+        dates = [get_expression(d) for d in archival_object.get("dates")]
+    else:
+        for a in archival_object.get("ancestors"):
+            if a.get("_resolved").get("dates"):
+                dates = [get_expression(d) for d in a.get("_resolved").get("dates")]
+    return ",".join(dates)
+
+
+def get_expression(date):
+    """Returns a date expression for a date object. Concatenates start and end dates if no date expression exists.
+
+    Args:
+        date (dict): an ArchivesSpace date
+
+    Returns:
+        string: date expression for the date object
+
+    """
+    try:
+        expression = date["expression"]
+    except KeyError:
+        if date.get("end"):
+            expression = "{0}-{1}".format(date["begin"], date["end"])
+        else:
+            expression = date["begin"]
+    return expression
+
+
 def get_note_text(note):
     """Parses note content from different note types.
 
@@ -19,35 +76,35 @@ def get_note_text(note):
         :returns: a list containing subnote content.
         :rtype: list
         """
-        if subnote["jsonmodel_type"] in [
+        if subnote.get("jsonmodel_type") in [
                 "note_orderedlist", "note_index"]:
-            content = subnote["items"]
-        elif subnote["jsonmodel_type"] in ["note_chronology", "note_definedlist"]:
+            content = subnote.get("items")
+        elif subnote.get("jsonmodel_type") in ["note_chronology", "note_definedlist"]:
             content = []
-            for k in subnote["items"]:
+            for k in subnote.get("items"):
                 for i in k:
                     content += k.get(i) if isinstance(k.get(i),
                                                       list) else [k.get(i)]
         else:
-            content = subnote["content"] if isinstance(
-                subnote["content"], list) else [subnote["content"]]
+            content = subnote.get("content") if isinstance(
+                subnote.get("content"), list) else [subnote.get("content")]
         return content
 
-    if note["jsonmodel_type"] in ["note_singlepart", "note_langmaterial"]:
-        content = note["content"]
-    elif note["jsonmodel_type"] == "note_bibliography":
+    if note.get("jsonmodel_type") in ["note_singlepart", "note_langmaterial"]:
+        content = note.get("content")
+    elif note.get("jsonmodel_type") == "note_bibliography":
         data = []
-        data += note["content"]
-        data += note["items"]
+        data += note.get("content")
+        data += note.get("items")
         content = data
-    elif note["jsonmodel_type"] == "note_index":
+    elif note.get("jsonmodel_type") == "note_index":
         data = []
-        for item in note["items"]:
-            data.append(item["value"])
+        for item in note.get("items"):
+            data.append(item.get("value"))
         content = data
     else:
         subnote_content_list = list(parse_subnote(sn)
-                                    for sn in note["subnotes"])
+                                    for sn in note.get("subnotes"))
         content = [
             c for subnote_content in subnote_content_list for c in subnote_content]
     return content
@@ -110,11 +167,11 @@ def is_restricted(archival_object, query_string, restriction_acts):
     :returns: True if archival object is restricted, False if not.
     :rtype: bool
     """
-    for note in archival_object["notes"]:
-        if note["type"] == "accessrestrict":
+    for note in archival_object.get("notes"):
+        if note.get("type") == "accessrestrict":
             if text_in_note(note, query_string.lower()):
                 return True
-    for rights_statement in archival_object["rights_statements"]:
+    for rights_statement in archival_object.get("rights_statements"):
         if indicates_restriction(rights_statement, restriction_acts):
             return True
     return False

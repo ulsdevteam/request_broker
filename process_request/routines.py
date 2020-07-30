@@ -2,6 +2,8 @@ from asnake.aspace import ASpace
 from django.core.mail import send_mail
 from request_broker import settings
 
+from .helpers import get_collection_creator, get_dates
+
 
 class ProcessRequest(object):
     # TODO: main section where processing happens
@@ -29,35 +31,24 @@ class ProcessRequest(object):
                         username=settings.ARCHIVESSPACE["username"],
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
-        obj = aspace.client.get(item)
+        obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors", "top_container", "top_container::container_locations"]})
         if obj.status_code == 200:
-            return obj.json()
+            item_json = obj.json()
+            item_collection = item_json.get("ancestors")[-1].get("_resolved")
+            aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
+            return {
+                "creator": get_collection_creator(item_collection),
+                "restrictions": "TK",
+                "restrictions_text": "TK",
+                "collection_name": item_collection.get("title"),
+                "aggregation": aggregation,
+                "dates": get_dates(item_json),
+                "resource_id": item_collection.get("id_0"),
+                "title": item_json.get("display_string"),
+                "ref": item_json.get("uri"),
+            }
         else:
             raise Exception(obj.json()["error"])
-
-    def get_creator(self, resource):
-        """Gets a resource and then gets the creator for the resource. Iterates
-        over agents and gets creator information.
-
-        Args:
-            resource (JSONModelObject): an ArchivesSpace resource object.
-
-        Returns:
-            collection_title (str): a string representation of a collection title.
-            creators (list): a list of strings representing creator names.
-        """
-        pass
-
-    def get_agent_data(self, agent):
-        """Gets ArchivesSpace agent data from an agent uri.
-
-        Args:
-            agent (JSONModelObject): an ArchivesSpace agent object.
-
-        Returns:
-            agent_name (str): Agent name for associated agent.
-        """
-        pass
 
     def is_restricted(self, obj):
         """Checks whether an object is restricted in ArchivesSpace.
@@ -81,18 +72,6 @@ class ProcessRequest(object):
         Returns:
             restriction (str): String representation of a rights statement note or
             accessrestrict note that details why an item is restricted.
-        """
-        pass
-
-    def inherit_dates(self, obj):
-        """Iterates up through an object's parents, including resource level,
-            to find the nearest date object.
-
-        Args:
-            obj (JSONModelObject): An ArchivesSpace archival object.
-
-        Returns:
-            dates (str): a date expression.
         """
         pass
 

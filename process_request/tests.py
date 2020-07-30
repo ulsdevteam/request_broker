@@ -13,12 +13,13 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
+from .helpers import get_collection_creator, get_dates
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
 from .views import (DeliverEmailView, DownloadCSVView, ParseRequestView,
                     ProcessEmailRequestView)
 
-transformer_vcr = vcr.VCR(
+aspace_vcr = vcr.VCR(
     serializer='json',
     cassette_library_dir=join(settings.BASE_DIR, 'fixtures/cassettes'),
     record_mode='once',
@@ -96,6 +97,26 @@ class TestRoutines(TestCase):
             self.assertIsNot(mail.outbox[0].subject, None)
             self.assertNotIn("location", mail.outbox[0].body)
             self.assertNotIn("barcode", mail.outbox[0].body)
+
+    @aspace_vcr.use_cassette("aspace_request.json")
+    def test_get_data(self):
+        get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
+        self.assertTrue(isinstance(get_as_data, dict))
+        self.assertEqual(len(get_as_data), 9)
+
+
+class TestHelpers(TestCase):
+
+    def test_get_collection_creator(self):
+
+        with open(join("fixtures", "object_all.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+
+    def test_get_dates(self):
+        with open(join("fixtures", "object_all.json")) as fixture_json:
+            obj_data = json.load(fixture_json)
+            self.assertEqual(get_dates(obj_data), "1991")
 
 
 class TestViews(TestCase):
