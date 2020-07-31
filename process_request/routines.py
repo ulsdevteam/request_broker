@@ -31,7 +31,7 @@ class ProcessRequest(object):
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
-            preferred_item = get_preferred_format(item_json)
+            format, container, location, barcode = get_preferred_format(item_json)
             return {
                 "creator": get_collection_creator(item_collection),
                 "restrictions": "TK",
@@ -43,10 +43,10 @@ class ProcessRequest(object):
                 "title": item_json.get("display_string"),
                 "ref": item_json.get("uri"),
                 "containers": get_container_indicators(item_json),
-                "preferred_format": preferred_item[0],
-                "preferred_container": preferred_item[1],
-                "preferred_location": preferred_item[2],
-                "preferred_barcode": preferred_item[3],
+                "preferred_format": format,
+                "preferred_container": container,
+                "preferred_location": location,
+                "preferred_barcode": barcode,
             }
         else:
             raise Exception(obj.json()["error"])
