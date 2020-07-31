@@ -82,7 +82,10 @@ def get_instance_data(instance_list):
             containers.append("{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator")))
             locations.append(get_locations(top_container))
             barcodes.append(top_container.get("barcode"))
-    return ", ".join(set(instance_types)), ", ".join(containers), ", ".join(locations), ", ".join(barcodes)
+    # TODO: this does not yet account for the following cases:
+    #  - lists which contain None
+    #  - Lists which are full of None (or empty), and should return None
+    return ", ".join(set(instance_types)), ", ".join(set(containers)), ", ".join(set(locations)), ", ".join(set(barcodes))
 
 
 def get_preferred_format(item_json):
