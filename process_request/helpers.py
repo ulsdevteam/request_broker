@@ -4,14 +4,15 @@ from rapidfuzz import fuzz
 
 
 def get_container_indicators(item_json):
-    """Takes ArchivesSpace JSON archival object data with resolved top containers and returns a container indicator.
+    """Returns container indicator(s) for an archival object.
 
     Args:
-        item_json (dict): ArchivesSpace archival object information that has resolved top containers and digital objects.
+        item_json (dict): ArchivesSpace archival object information that has
+            resolved top containers and digital objects.
 
     Returns:
-        string: A concatenated string containing the container type and container indicator, or digital object title.
-                Or None if no instances.
+        string or None: A concatenated string containing the container type and
+            container indicator, or digital object title.
     """
     indicators = []
     if item_json.get("instances"):
@@ -27,19 +28,19 @@ def get_container_indicators(item_json):
 
 
 def get_file_versions(digital_object):
-    """Takes ArchivesSpace digital object json and returns a file version.
+    """Returns the file versions for an ArchivesSpace digital object.
 
     Args:
         digital_object (dict): Resolved json of an ArchivesSpace digital object.
 
     Returns:
-        string: all file version uris associated with the digital object, separated by a comma.
+        string: all file version uris associated with the digital object,
+            separated by a comma.
     """
-    versions = [v.get("file_uri") for v in digital_object.get("file_versions")]
-    return ", ".join(versions)
+    return ", ".join([v.get("file_uri") for v in digital_object.get("file_versions")])
 
 
-def get_location(top_container_info):
+def get_locations(top_container_info):
     """Gets a human-readable location string for a top container
 
     Args:
@@ -48,16 +49,15 @@ def get_location(top_container_info):
      Returns:
          string: all locations associated with the top container, separated by a comma.
      """
-    locations = []
-    [locations.append(c.get("_resolved").get("title")) for c in top_container_info.get("container_locations")]
-    return ",".join(locations)
+    return ",".join([c.get("_resolved").get("title") for c in top_container_info.get("container_locations")])
 
 
 def get_instance_data(instance, type):
-    """Takes ArchivesSpace instance information and returns a dictionary of selected instance information.
+    """Returns a dictionary of selected instance information.
 
     Args:
-        instances (dict): ArchivesSpace instance information that has resolved top containers and digital objects.
+        instances (dict): ArchivesSpace instance information that has resolved
+            top containers and digital objects.
         type (string): a string representation of an instance type.
 
     Returns:
@@ -73,7 +73,7 @@ def get_instance_data(instance, type):
         top_container = instance.get("sub_container").get("top_container").get("_resolved")
         container = "{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator"))
         if top_container.get("container_locations"):
-            location = get_location(top_container)
+            location = get_locations(top_container)
         else:
             location = None
         if top_container.get("barcode"):
@@ -84,14 +84,19 @@ def get_instance_data(instance, type):
 
 
 def get_preferred_format(item_json):
-    """Iterates over instances in an archival object and gets the preferred delivery format based on instance
-    types. Prioritizes digital objects, then microform, and then returns anything if there is an instance.
+    """Returns information about the format preferred for delivery.
+
+    Iterates over instances in an archival object and gets the preferred
+    delivery format based on instance types. Prioritizes digital objects,
+    then microform, and then returns anything if there is an instance.
 
     Args:
-        item_json (dict): ArchivesSpace archival object information that has resolved top containers and digital objects.
+        item_json (dict): ArchivesSpace archival object information that has
+            resolved top containers and digital objects.
 
     Returns:
-        preferred (tuple): a tuple containing concatenated information of the preferred format retrieved by get_instance_data.
+        preferred (tuple): a tuple containing concatenated information of the
+            preferred format retrieved by get_instance_data.
     """
     if item_json.get("instances"):
         instances = item_json.get("instances")
@@ -130,12 +135,12 @@ def get_collection_creator(resource):
 
 
 def get_dates(archival_object):
-    """Gets the dates of an archival object or its closest ancestor with a date
+    """Gets the dates of an archival object or its closest ancestor with a date.
         Args:
             archival_object (dict): json for an archival object (with resolved ancestors)
         Returns:
             string: all dates associated with an archival object or its closest ancestor, separated by a comma
-    Takes json for an archival object that has the _resolved parameter on ancestors. Gets date expression for an item. Starts at item level, goes up until a date is found"""
+    """
     dates = []
     if archival_object.get("dates"):
         dates = [get_expression(d) for d in archival_object.get("dates")]

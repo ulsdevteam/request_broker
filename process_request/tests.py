@@ -15,7 +15,7 @@ from rest_framework.test import APIRequestFactory
 
 from .helpers import (get_collection_creator, get_container_indicators,
                       get_dates, get_file_versions, get_instance_data,
-                      get_location, get_preferred_format)
+                      get_locations, get_preferred_format)
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
 from .test_helpers import random_string
@@ -102,11 +102,11 @@ class TestHelpers(TestCase):
         digital_object = {'file_versions': [{'file_uri': uri}]}
         self.assertEqual(get_file_versions(digital_object), uri)
 
-    def test_get_location(self):
+    def test_get_locations(self):
         with open(join("fixtures", "locations.json")) as fixture_json:
             obj_data = json.load(fixture_json)
             expected_location = "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
-            self.assertEqual(get_location(obj_data), expected_location)
+            self.assertEqual(get_locations(obj_data), expected_location)
 
     def test_get_instance_data(self):
         with open(join("fixtures", "digital_object_instance.json")) as fixture_json:
