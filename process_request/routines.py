@@ -76,25 +76,6 @@ class ProcessRequest(object):
         """
         pass
 
-    def create_readingroom_request(self, obj, instance_data, restriction, creators, collection_title, dates):
-        """Constructs a request for reading room materials out of provided data.
-
-        Args:
-            obj (JSONModelObject): an ArchivesSpace object
-            instance_data (dict): a dictionary containing instance and location information for
-                most desirable delivery format.
-            restriction (str): a string representation of a restriction note or accessrestrict
-            note contents.
-            creators (list): a list of strings including all creator names.
-            collection_title (str): a string representation of a collection title.
-            dates (str): a date expression.
-
-        Returns:
-            readingroom_request (dict): a JSON compliant request that validates against
-            RAC requirements for Reading Room request data.
-        """
-        pass
-
     def process_email_request(self, object_list):
         """Processes email requests.
 
