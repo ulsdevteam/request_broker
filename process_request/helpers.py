@@ -48,39 +48,41 @@ def get_locations(top_container_info):
 
      Returns:
          string: all locations associated with the top container, separated by a comma.
-     """
-    return ",".join([c.get("_resolved").get("title") for c in top_container_info.get("container_locations")])
+    """
+    locations = None
+    if top_container_info.get("container_locations"):
+        locations = ",".join([c.get("_resolved").get("title") for c in top_container_info.get("container_locations")])
+    return locations
 
 
-def get_instance_data(instance, type):
+def get_instance_data(instance_list):
     """Returns a dictionary of selected instance information.
 
     Args:
-        instances (dict): ArchivesSpace instance information that has resolved
-            top containers and digital objects.
-        type (string): a string representation of an instance type.
+        instance_list (list): A list of ArchivesSpace instance information with
+            resolved top containers and digital objects.
 
     Returns:
-        tuple: a tuple containing instance type, indicator, location, and barcode for the instance.
+        tuple: a tuple containing instance type, indicator, location, and
+            barcode for the instance.
     """
-    if type == "digital_object":
-        instance_type = "digital_object"
-        container = "Digital Object: {}".format(instance.get("digital_object").get("_resolved").get("title"))
-        location = get_file_versions(instance.get("digital_object").get("_resolved"))
-        barcode = instance.get("digital_object").get("_resolved").get("digital_object_id")
-    else:
-        instance_type = instance["instance_type"]
-        top_container = instance.get("sub_container").get("top_container").get("_resolved")
-        container = "{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator"))
-        if top_container.get("container_locations"):
-            location = get_locations(top_container)
+    instance_types = []
+    containers = []
+    locations = []
+    barcodes = []
+    for instance in instance_list:
+        if instance["instance_type"] == "digital_object":
+            instance_types.append("digital_object")
+            containers.append("Digital Object: {}".format(instance.get("digital_object").get("_resolved").get("title")))
+            locations.append(get_file_versions(instance.get("digital_object").get("_resolved")))
+            barcodes.append(instance.get("digital_object").get("_resolved").get("digital_object_id"))
         else:
-            location = None
-        if top_container.get("barcode"):
-            barcode = top_container.get("barcode")
-        else:
-            barcode = None
-    return instance_type, container, location, barcode
+            instance_types.append(instance["instance_type"])
+            top_container = instance.get("sub_container").get("top_container").get("_resolved")
+            containers.append("{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator")))
+            locations.append(get_locations(top_container))
+            barcodes.append(top_container.get("barcode"))
+    return ", ".join(set(instance_types)), ", ".join(containers), ", ".join(locations), ", ".join(barcodes)
 
 
 def get_preferred_format(item_json):
@@ -98,23 +100,16 @@ def get_preferred_format(item_json):
         preferred (tuple): a tuple containing concatenated information of the
             preferred format retrieved by get_instance_data.
     """
+    preferred = None, None, None, None
     if item_json.get("instances"):
         instances = item_json.get("instances")
-        instance_types = [i["instance_type"] for i in instances]
-        if "digital_object" in instance_types:
-            data = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "digital_object"]
-        elif "microform" in instance_types:
-            data = [get_instance_data(i, i["instance_type"]) for i in instances if i["instance_type"] == "microform"]
+        if "digital_object" in instances:
+            preferred = get_instance_data([i for i in instances if i["instance_type"] == "digital_object"])
+        elif "microform" in instances:
+            preferred = get_instance_data([i for i in instances if i["instance_type"] == "microform"])
         else:
-            data = [get_instance_data(i, i["instance_type"]) for i in instances]
-        for x in data:
-            preferred = (",".join([x[0] for x in data]),
-                         ",".join([x[1] for x in data]),
-                         ",".join([x[2] for x in data if x[2]]),
-                         ",".join([x[3] for x in data if x[3]]))
-    else:
-        preferred = (None, None, None, None)
-    return(preferred)
+            preferred = get_instance_data([i for i in instances])
+    return preferred
 
 
 def get_collection_creator(resource):

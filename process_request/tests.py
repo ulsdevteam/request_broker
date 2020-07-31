@@ -112,14 +112,14 @@ class TestHelpers(TestCase):
         with open(join("fixtures", "digital_object_instance.json")) as fixture_json:
             obj_data = json.load(fixture_json)
             expected_values = ("digital_object", "Digital Object: digital object", "http://google.com", "238475")
-            self.assertEqual(get_instance_data(obj_data, "digital_object"), expected_values)
+            self.assertEqual(get_instance_data([obj_data]), expected_values)
 
         with open(join("fixtures", "mixed_materials_instance.json")) as fixture_json:
             obj_data = json.load(fixture_json)
             expected_values = ("mixed materials", "Box 2",
                                "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
                                "A12345")
-            self.assertEqual(get_instance_data(obj_data, "mixed_materials"), expected_values)
+            self.assertEqual(get_instance_data([obj_data]), expected_values)
 
     def test_get_preferred_format(self):
         with open(join("fixtures", "object_digital.json")) as fixture_json:
