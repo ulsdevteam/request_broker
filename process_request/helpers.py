@@ -55,6 +55,24 @@ def get_locations(top_container_info):
     return locations
 
 
+def prepare_values(values_list):
+    """Process an iterable of lists.
+
+    For each list in the initial iterable, removes None values, deduplicates and
+    returns either a string of joined list items or  None.
+
+    Args:
+        values_list (iterable): an iterable in which each item is a list.
+
+    Returns:
+        values_list (tuple): processed values.
+    """
+    for n, item in enumerate(values_list):
+        parsed = set(filter(None, item))
+        values_list[n] = None if len(parsed) == 0 else ", ".join(list(parsed))
+    return tuple(values_list)
+
+
 def get_instance_data(instance_list):
     """Returns a dictionary of selected instance information.
 
@@ -82,10 +100,7 @@ def get_instance_data(instance_list):
             containers.append("{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator")))
             locations.append(get_locations(top_container))
             barcodes.append(top_container.get("barcode"))
-    # TODO: this does not yet account for the following cases:
-    #  - lists which contain None
-    #  - Lists which are full of None (or empty), and should return None
-    return ", ".join(set(instance_types)), ", ".join(set(containers)), ", ".join(set(locations)), ", ".join(set(barcodes))
+    return prepare_values([instance_types, containers, locations, barcodes])
 
 
 def get_preferred_format(item_json):
