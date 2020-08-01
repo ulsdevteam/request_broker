@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from process_request.views import (DeliverEmailView, DownloadCSVView,
-                                   ParseRequestView, ProcessEmailRequestView)
+from process_request.views import (DeliverEmailView,
+                                   DeliverReadingRoomRequestView,
+                                   DownloadCSVView, ParseRequestView,
+                                   ProcessEmailRequestView)
 from rest_framework import routers
 
 router = routers.DefaultRouter()
@@ -25,6 +27,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include(router.urls)),
     path("api/deliver-request/email", DeliverEmailView.as_view(), name="deliver-email"),
+    path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
     path("api/process-request/parse", ParseRequestView.as_view(), name="parse-request"),
     path("api/process-request/email", ProcessEmailRequestView.as_view(), name="process-email"),
     path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv")

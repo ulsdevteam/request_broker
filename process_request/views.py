@@ -6,7 +6,7 @@ from request_broker import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .routines import DeliverEmail, ProcessRequest
+from .routines import DeliverEmail, DeliverReadingRoomRequest, ProcessRequest
 
 
 class ParseRequestView(APIView):
@@ -43,6 +43,20 @@ class DeliverEmailView(APIView):
             subject = request.data.get("subject")
             emailed = DeliverEmail().send_message(to_address, object_list, subject)
             return Response({"detail": emailed}, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+
+
+class DeliverReadingRoomRequestView(APIView):
+    "Delivers a request for records to be delivered to the reading room."
+
+    def post(self, request):
+        try:
+            object_list = request.data.get("items")
+            scheduled_date = request.data.get("scheduled_date")
+            # TODO: what else? Look at DIMES mockups
+            delivered = DeliverReadingRoomRequest().send_request(object_list, scheduled_date)
+            return Response({"detail": delivered}, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 

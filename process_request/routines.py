@@ -241,11 +241,13 @@ class DeliverEmail(object):
 
 
 class DeliverReadingRoomRequest(object):
-    """Sends submitted data to Aeon for transaction creation in Aeon.
-    """
-    pass
+    """Sends submitted data to Aeon for transaction creation in Aeon."""
+
+    def send_request(self, object_list, scheduled_date):
+        return "Delivered!"
 
 
 class DeliverDuplicationRequest(object):
     """Sends submitted data for duplication request creation in Aeon.
     """
+    pass

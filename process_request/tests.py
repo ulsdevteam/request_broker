@@ -16,8 +16,8 @@ from rest_framework.test import APIRequestFactory
 from .helpers import get_collection_creator, get_dates
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
-from .views import (DeliverEmailView, DownloadCSVView, ParseRequestView,
-                    ProcessEmailRequestView)
+from .views import (DeliverEmailView, DeliverReadingRoomRequestView,
+                    DownloadCSVView, ParseRequestView, ProcessEmailRequestView)
 
 aspace_vcr = vcr.VCR(
     serializer='json',
@@ -186,3 +186,13 @@ class TestViews(TestCase):
             {"items": parsed}, "parse-request", ParseRequestView)
         self.assert_handles_exceptions(
             mock_parse, "bar", "parse-request", ParseRequestView)
+
+    @patch("process_request.routines.DeliverReadingRoomRequest.send_request")
+    def test_deliver_readingroomrequest_view(self, mock_send):
+        delivered = random_list()
+        mock_send.return_value = delivered
+        self.assert_handles_routine(
+            {"items": delivered, "scheduled_date": "2020-01-01"},
+            "deliver-readingroom", DeliverReadingRoomRequestView)
+        self.assert_handles_exceptions(
+            mock_send, "bar", "deliver-readingroom", DeliverReadingRoomRequestView)
