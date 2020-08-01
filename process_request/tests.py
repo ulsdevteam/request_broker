@@ -62,15 +62,12 @@ class TestUsers(TestCase):
 class TestHelpers(TestCase):
 
     def test_get_collection_creator(self):
-
-        with open(join("fixtures", "object_all.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+        obj_data = json_from_fixture("object_all.json")
+        self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
 
     def test_get_dates(self):
-        with open(join("fixtures", "object_all.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            self.assertEqual(get_dates(obj_data), "1991")
+        obj_data = json_from_fixture("object_all.json")
+        self.assertEqual(get_dates(obj_data), "1991")
 
     def test_get_container_indicators(self):
         letters = random_string(10)
@@ -103,51 +100,44 @@ class TestHelpers(TestCase):
         self.assertEqual(get_file_versions(digital_object), uri)
 
     def test_get_locations(self):
-        with open(join("fixtures", "locations.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            expected_location = "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
-            self.assertEqual(get_locations(obj_data), expected_location)
+        obj_data = json_from_fixture("locations.json")
+        expected_location = "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+        self.assertEqual(get_locations(obj_data), expected_location)
 
     def test_get_instance_data(self):
-        with open(join("fixtures", "digital_object_instance.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            expected_values = ("digital_object", "Digital Object: digital object", "http://google.com", "238475")
-            self.assertEqual(get_instance_data([obj_data]), expected_values)
+        obj_data = json_from_fixture("digital_object_instance.json")
+        expected_values = ("digital_object", "Digital Object: digital object", "http://google.com", "238475")
+        self.assertEqual(get_instance_data([obj_data]), expected_values)
 
-        with open(join("fixtures", "mixed_materials_instance.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            expected_values = ("mixed materials", "Box 2",
-                               "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
-                               "A12345")
-            self.assertEqual(get_instance_data([obj_data]), expected_values)
+        obj_data = json_from_fixture("mixed_materials_instance.json")
+        expected_values = ("mixed materials", "Box 2",
+                           "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
+                           "A12345")
+        self.assertEqual(get_instance_data([obj_data]), expected_values)
 
     def test_get_preferred_format(self):
-        with open(join("fixtures", "object_digital.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            expected_data = ("digital_object,digital_object", "Digital Object: digital object,Digital Object: digital object 2",
-                             "http://google.com,http://google2.com", "238475,238476")
-            self.assertTrue(get_preferred_format(obj_data), expected_data)
+        obj_data = json_from_fixture("object_digital.json")
+        expected_data = ("digital_object,digital_object", "Digital Object: digital object,Digital Object: digital object 2",
+                         "http://google.com,http://google2.com", "238475,238476")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
 
-        with open(join("fixtures", "object_microform.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            expected_data = ("microform, microform",
-                             "Reel 1, Reel 2",
-                             "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
-                             "A12345, A123456")
-            self.assertTrue(get_preferred_format(obj_data), expected_data)
+        obj_data = json_from_fixture("object_microform.json")
+        expected_data = ("microform, microform",
+                         "Reel 1, Reel 2",
+                         "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                         "A12345, A123456")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
 
-        with open(join("fixtures", "object_mixed.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            expected_data = ("mixed materials, mixed materials",
-                             "Reel 1, Reel 2",
-                             "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
-                             "A12345, A123456")
-            self.assertTrue(get_preferred_format(obj_data), expected_data)
+        obj_data = json_from_fixture("object_mixed.json")
+        expected_data = ("mixed materials, mixed materials",
+                         "Reel 1, Reel 2",
+                         "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                         "A12345, A123456")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
 
-        with open(join("fixtures", "object_no_instance.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            expected_data = (None, None, None, None)
-            self.assertTrue(get_preferred_format(obj_data), expected_data)
+        obj_data = json_from_fixture("object_no_instance.json")
+        expected_data = (None, None, None, None)
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
 
 
 class TestRoutines(TestCase):
