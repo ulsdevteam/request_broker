@@ -2,6 +2,7 @@ import csv
 import json
 import random
 import string
+from datetime import date
 from os.path import join
 from unittest.mock import patch
 
@@ -13,6 +14,7 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
+from .clients import AeonAPIClient
 from .helpers import get_collection_creator, get_dates
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
@@ -118,6 +120,13 @@ class TestHelpers(TestCase):
             obj_data = json.load(fixture_json)
             self.assertEqual(get_dates(obj_data), "1991")
 
+    def test_aeon_client(self):
+        # TODO: replace this with random string helper
+        baseurl = "foo"
+        client = AeonAPIClient(baseurl)
+        self.assertEqual(client.baseurl, baseurl)
+        self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
+
 
 class TestViews(TestCase):
 
@@ -187,12 +196,12 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_parse, "bar", "parse-request", ParseRequestView)
 
-    @patch("process_request.routines.DeliverReadingRoomRequest.send_request")
+    @patch("process_request.routines.AeonRequester.send_request")
     def test_deliver_readingroomrequest_view(self, mock_send):
         delivered = random_list()
         mock_send.return_value = delivered
         self.assert_handles_routine(
-            {"items": delivered, "scheduled_date": "2020-01-01"},
+            {"items": delivered, "scheduled_date": date.today().isoformat()},
             "deliver-readingroom", DeliverReadingRoomRequestView)
         self.assert_handles_exceptions(
             mock_send, "bar", "deliver-readingroom", DeliverReadingRoomRequestView)
