@@ -6,7 +6,7 @@ from request_broker import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .routines import DeliverEmail, DeliverReadingRoomRequest, ProcessRequest
+from .routines import AeonRequester, DeliverEmail, ProcessRequest
 
 
 class ParseRequestView(APIView):
@@ -52,10 +52,9 @@ class DeliverReadingRoomRequestView(APIView):
 
     def post(self, request):
         try:
-            object_list = request.data.get("items")
-            scheduled_date = request.data.get("scheduled_date")
-            # TODO: what else? Look at DIMES mockups
-            delivered = DeliverReadingRoomRequest().send_request(object_list, scheduled_date)
+            request_data = request.data
+            delivered = AeonRequester().send_request(
+                "readingroom", **request_data)
             return Response({"detail": delivered}, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)

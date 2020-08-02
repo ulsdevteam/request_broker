@@ -17,7 +17,7 @@ from rest_framework.test import APIRequestFactory
 from .clients import AeonAPIClient
 from .helpers import get_collection_creator, get_dates
 from .models import MachineUser, User
-from .routines import DeliverEmail, ProcessRequest
+from .routines import AeonRequester, DeliverEmail, ProcessRequest
 from .views import (DeliverEmailView, DeliverReadingRoomRequestView,
                     DownloadCSVView, ParseRequestView, ProcessEmailRequestView)
 
@@ -105,6 +105,21 @@ class TestRoutines(TestCase):
         get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
         self.assertEqual(len(get_as_data), 9)
+
+    @patch("requests.Session.post")
+    def test_send_aeon_requests(self, mock_post):
+        # TODO: replace with random string helper
+        return_str = "foo"
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = return_str
+        items = json_from_fixture("as_data.json")
+        data = {"scheduled_date": date.today().isoformat(), "items": [items]}
+        delivered = AeonRequester().send_request("readingroom", **data)
+        self.assertEqual(delivered, return_str)
+
+        data["format"] = "jpeg"
+        delivered = AeonRequester().send_request("duplication", **data)
+        self.assertEqual(delivered, return_str)
 
 
 class TestHelpers(TestCase):
