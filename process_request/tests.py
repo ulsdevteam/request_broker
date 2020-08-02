@@ -18,8 +18,9 @@ from .clients import AeonAPIClient
 from .helpers import get_collection_creator, get_dates
 from .models import MachineUser, User
 from .routines import AeonRequester, DeliverEmail, ProcessRequest
-from .views import (DeliverEmailView, DeliverReadingRoomRequestView,
-                    DownloadCSVView, ParseRequestView, ProcessEmailRequestView)
+from .views import (DeliverDuplicationRequestView, DeliverEmailView,
+                    DeliverReadingRoomRequestView, DownloadCSVView,
+                    ParseRequestView, ProcessEmailRequestView)
 
 aspace_vcr = vcr.VCR(
     serializer='json',
@@ -220,3 +221,13 @@ class TestViews(TestCase):
             "deliver-readingroom", DeliverReadingRoomRequestView)
         self.assert_handles_exceptions(
             mock_send, "bar", "deliver-readingroom", DeliverReadingRoomRequestView)
+
+    @patch("process_request.routines.AeonRequester.send_request")
+    def test_deliver_duplicationrequest_view(self, mock_send):
+        delivered = random_list()
+        mock_send.return_value = delivered
+        self.assert_handles_routine(
+            {"items": delivered, "format": "jpeg"},
+            "deliver-duplication", DeliverDuplicationRequestView)
+        self.assert_handles_exceptions(
+            mock_send, "bar", "deliver-duplication", DeliverDuplicationRequestView)

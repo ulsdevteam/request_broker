@@ -60,6 +60,19 @@ class DeliverReadingRoomRequestView(APIView):
             return Response({"detail": str(e)}, status=500)
 
 
+class DeliverDuplicationRequestView(APIView):
+    "Delivers a request for records to be delivered to the reading room."
+
+    def post(self, request):
+        try:
+            request_data = request.data
+            delivered = AeonRequester().send_request(
+                "duplication", **request_data)
+            return Response({"detail": delivered}, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+
+
 class Echo:
     """An object that implements just the write method of the file-like
     interface, returning the object instead of buffering. Used to stream
