@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from ordered_set import OrderedSet
 from rapidfuzz import fuzz
 
 
@@ -68,7 +69,7 @@ def prepare_values(values_list):
         values_list (tuple): processed values.
     """
     for n, item in enumerate(values_list):
-        parsed = set(filter(None, item))
+        parsed = OrderedSet(filter(None, item))
         values_list[n] = None if len(parsed) == 0 else ", ".join(list(parsed))
     return tuple(values_list)
 

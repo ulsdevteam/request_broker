@@ -15,7 +15,7 @@ from rest_framework.test import APIRequestFactory
 
 from .helpers import (get_collection_creator, get_container_indicators,
                       get_dates, get_file_versions, get_instance_data,
-                      get_locations, get_preferred_format)
+                      get_locations, get_preferred_format, prepare_values)
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
 from .test_helpers import random_string
@@ -138,6 +138,22 @@ class TestHelpers(TestCase):
         obj_data = json_from_fixture("object_no_instance.json")
         expected_data = (None, None, None, None)
         self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+    def test_prepare_values(self):
+        values_list = [["mixed materials", "mixed materials", None],
+                       ["Reel 1", "Box 2", None, "Reel 2"],
+                       ["Shelf 1", None, "Shelf 2"],
+                       ["A0001", "A0002", "A0003"]
+                       ]
+        expected_parsed = ("mixed materials", "Reel 1, Box 2, Reel 2",
+                           "Shelf 1, Shelf 2",
+                           "A0001, A0002, A0003",
+                           )
+        self.assertEqual(prepare_values(values_list), expected_parsed)
+
+        values_list = [[None], [None], [None], [None]]
+        expected_parsed = (None, None, None, None)
+        self.assertEqual(prepare_values(values_list), expected_parsed)
 
 
 class TestRoutines(TestCase):
