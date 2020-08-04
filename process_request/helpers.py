@@ -131,6 +131,16 @@ def get_preferred_format(item_json):
     return preferred
 
 
+def get_preferred_rights_info():
+    """docstring for get_preferred_rights_info"""
+    if "premis rights":
+        return "something"
+    if "restrictions boolean":
+        return "something else"
+    else:
+        return "another thing"
+
+
 def get_collection_creator(resource):
     """Returns a list of creators for a resource record.
 
