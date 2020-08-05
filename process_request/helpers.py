@@ -154,6 +154,29 @@ def get_preferred_rights(item_json):
         return "another thing"
 
 
+def get_rights_notes(item_json):
+    """Gets the conditions governing access of an archival object if it indicates a restriction or its closest ancestor with conditions governing access that indicates a restriction
+    .
+        Args:
+            item_json (dict): json for an archival object (with resolved ancestors)
+        Returns:
+            string: note content of a conditions governing access that indicates a restriction
+    """
+    restricted_words = ["closed", "restricted"]
+    if "accessrestrict" in [note.get("type") for note in item_json.get("notes")]:
+        for note in item_json.get("notes"):
+            if note.get("type") == "accessrestrict" and note.get("publish"):
+                if any(x in get_note_text(note).lower() for x in restricted_words):
+                    return "Restricted: {}".format(get_note_text(note))
+    else:
+        for ancestor in item_json.get("ancestors"):
+            if "accessrestrict" in [note.get("type") for note in ancestor.get("notes")]:
+                for note in ancestor.get("notes"):
+                    if note.get("type") == "accessrestrict" and note.get("publish"):
+                        if any(x in get_note_text(note).lower() for x in restricted_words):
+                            return "Restricted: {}".format(get_note_text(note))
+
+
 def get_collection_creator(resource):
     """Returns a list of creators for a resource record.
 
