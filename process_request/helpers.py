@@ -131,13 +131,26 @@ def get_preferred_format(item_json):
     return preferred
 
 
-def get_preferred_rights_info():
-    """docstring for get_preferred_rights_info"""
-    if "premis rights":
+def get_preferred_rights(item_json):
+    """Returns restriction information. Evaluates rights statements if they exist; if not, evaluated restrictions apply boolean and return conditions governing access text; if neither exist, evaluate note content (including ancestors) to determine if material is restricted.
+
+        Args:
+            item_json (dict): json for an archival object
+
+        Returns:
+    """
+    if item_json.get("rights_statements"):
+        # TODO: check that there's a "disseminate" act
+        # TODO: check if the "disseminate" act is restricted or conditional
+        # TODO: if restricted or conditional, get basis (NOT act) note text
         return "something"
-    if "restrictions boolean":
+    if item_json.get("restrictions_apply"):
+        # TODO: return restricted to restrctions apply field
+        # TODO: traverse conditions governing access to find note text indicating restriction + return restrictions text
         return "something else"
     else:
+        # TODO: traverse conditions governing access to find note text indicating restriction
+        # TODO: if a restriction is indicated, return restricted to restrctions apply field + return restrictions text
         return "another thing"
 
 
