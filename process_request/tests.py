@@ -13,9 +13,12 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
-from .helpers import get_collection_creator, get_dates
+from .helpers import (get_collection_creator, get_container_indicators,
+                      get_dates, get_file_versions, get_instance_data,
+                      get_locations, get_preferred_format, prepare_values)
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
+from .test_helpers import random_string
 from .views import (DeliverEmailView, DownloadCSVView, ParseRequestView,
                     ProcessEmailRequestView)
 
@@ -54,6 +57,103 @@ class TestUsers(TestCase):
         system = 'Zodiac'
         user = MachineUser(system_name="Zodiac")
         self.assertEqual(str(user), system)
+
+
+class TestHelpers(TestCase):
+
+    def test_get_collection_creator(self):
+        obj_data = json_from_fixture("object_all.json")
+        self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+
+    def test_get_dates(self):
+        obj_data = json_from_fixture("object_all.json")
+        self.assertEqual(get_dates(obj_data), "1991")
+
+    def test_get_container_indicators(self):
+        letters = random_string(10)
+        expected_title = "Digital Object: {}".format(letters)
+        item = {'instances': [{'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}]}
+        self.assertEqual(get_container_indicators(item), expected_title)
+
+        type = random_string(10)
+        number = random_string(2)
+        item = {'instances': [{'instance_type': 'mixed materials', 'sub_container':
+                               {'top_container': {'_resolved': {'type': type, 'indicator': number}}}}]}
+        expected_indicator = "{} {}".format(type.capitalize(), number)
+        self.assertEqual(get_container_indicators(item), expected_indicator)
+
+        type = random_string(10)
+        number = random_string(2)
+        letters = random_string(10)
+        item = {'instances': [{'instance_type': 'mixed materials', 'sub_container':
+                               {'top_container': {'_resolved': {'type': type, 'indicator': number}}}},
+                              {'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}]}
+        expected_containers = "{} {}, Digital Object: {}".format(type.capitalize(), number, letters)
+        self.assertEqual(get_container_indicators(item), expected_containers)
+
+        item = {'instances': []}
+        self.assertEqual(get_container_indicators(item), None)
+
+    def test_get_file_versions(self):
+        uri = random_string(10)
+        digital_object = {'file_versions': [{'file_uri': uri}]}
+        self.assertEqual(get_file_versions(digital_object), uri)
+
+    def test_get_locations(self):
+        obj_data = json_from_fixture("locations.json")
+        expected_location = "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+        self.assertEqual(get_locations(obj_data), expected_location)
+
+    def test_get_instance_data(self):
+        obj_data = json_from_fixture("digital_object_instance.json")
+        expected_values = ("digital_object", "Digital Object: digital object", "http://google.com", "238475")
+        self.assertEqual(get_instance_data([obj_data]), expected_values)
+
+        obj_data = json_from_fixture("mixed_materials_instance.json")
+        expected_values = ("mixed materials", "Box 2",
+                           "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
+                           "A12345")
+        self.assertEqual(get_instance_data([obj_data]), expected_values)
+
+    def test_get_preferred_format(self):
+        obj_data = json_from_fixture("object_digital.json")
+        expected_data = ("digital_object,digital_object", "Digital Object: digital object,Digital Object: digital object 2",
+                         "http://google.com,http://google2.com", "238475,238476")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        obj_data = json_from_fixture("object_microform.json")
+        expected_data = ("microform, microform",
+                         "Reel 1, Reel 2",
+                         "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                         "A12345, A123456")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        obj_data = json_from_fixture("object_mixed.json")
+        expected_data = ("mixed materials, mixed materials",
+                         "Reel 1, Reel 2",
+                         "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                         "A12345, A123456")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        obj_data = json_from_fixture("object_no_instance.json")
+        expected_data = (None, None, None, None)
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+    def test_prepare_values(self):
+        values_list = [["mixed materials", "mixed materials", None],
+                       ["Reel 1", "Box 2", None, "Reel 2"],
+                       ["Shelf 1", None, "Shelf 2"],
+                       ["A0001", "A0002", "A0003"]
+                       ]
+        expected_parsed = ("mixed materials", "Reel 1, Box 2, Reel 2",
+                           "Shelf 1, Shelf 2",
+                           "A0001, A0002, A0003",
+                           )
+        self.assertEqual(prepare_values(values_list), expected_parsed)
+
+        values_list = [[None], [None], [None], [None]]
+        expected_parsed = (None, None, None, None)
+        self.assertEqual(prepare_values(values_list), expected_parsed)
 
 
 class TestRoutines(TestCase):
@@ -102,21 +202,7 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 9)
-
-
-class TestHelpers(TestCase):
-
-    def test_get_collection_creator(self):
-
-        with open(join("fixtures", "object_all.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
-
-    def test_get_dates(self):
-        with open(join("fixtures", "object_all.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            self.assertEqual(get_dates(obj_data), "1991")
+        self.assertEqual(len(get_as_data), 14)
 
 
 class TestViews(TestCase):

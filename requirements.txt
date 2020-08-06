@@ -2,6 +2,7 @@ ArchivesSnake==0.8.1
 Django==2.2.10
 djangorestframework
 health-check
+ordered_set
 psycopg2-binary
 rapidfuzz==0.7.3
 vcrpy==4.0.2
