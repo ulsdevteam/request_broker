@@ -30,7 +30,7 @@ Or, if you want to remove all data
 
 * Request Pre-Processing: Iterates over a list of request URIs, fetches corresponding data from ArchivesSpace, parses the data and marks it as submittable or unsubmittable.
 * Mailer: correctly formats the body of an email message and sends an email to an address or list of addresses.
-* Creates retrieval and duplication transactions in Aeon by sending data to the Aeon API.
+* Aeon Request Submission: creates retrieval and duplication transactions in Aeon by sending data to the Aeon API.
 
 ### Routes
 
