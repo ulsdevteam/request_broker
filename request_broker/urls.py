@@ -14,19 +14,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path
 from process_request.views import (DeliverDuplicationRequestView,
                                    DeliverEmailView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, ParseRequestView,
                                    ProcessEmailRequestView)
-from rest_framework import routers
-
-router = routers.DefaultRouter()
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include(router.urls)),
     path("api/deliver-request/email", DeliverEmailView.as_view(), name="deliver-email"),
     path("api/deliver-request/duplication", DeliverDuplicationRequestView.as_view(), name="deliver-duplication"),
     path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),

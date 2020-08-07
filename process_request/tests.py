@@ -1,7 +1,4 @@
 import csv
-import json
-import random
-import string
 from datetime import date
 from os.path import join
 from unittest.mock import patch
@@ -15,9 +12,12 @@ from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
 from .clients import AeonAPIClient
-from .helpers import get_collection_creator, get_dates
+from .helpers import (get_collection_creator, get_container_indicators,
+                      get_dates, get_file_versions, get_instance_data,
+                      get_locations, get_preferred_format, prepare_values)
 from .models import MachineUser, User
 from .routines import AeonRequester, DeliverEmail, ProcessRequest
+from .test_helpers import json_from_fixture, random_list, random_string
 from .views import (DeliverDuplicationRequestView, DeliverEmailView,
                     DeliverReadingRoomRequestView, DownloadCSVView,
                     ParseRequestView, ProcessEmailRequestView)
@@ -30,17 +30,6 @@ aspace_vcr = vcr.VCR(
     filter_query_parameters=['username', 'password'],
     filter_headers=['Authorization', 'X-ArchivesSpace-Session'],
 )
-
-FIXTURES_DIR = join(settings.BASE_DIR, "fixtures")
-
-
-def random_list():
-    return random.sample(string.ascii_lowercase, random.randint(2, 10))
-
-
-def json_from_fixture(filename):
-    with open(join(FIXTURES_DIR, filename), "r") as df:
-        return json.load(df)
 
 
 class TestUsers(TestCase):
@@ -57,6 +46,110 @@ class TestUsers(TestCase):
         system = 'Zodiac'
         user = MachineUser(system_name="Zodiac")
         self.assertEqual(str(user), system)
+
+
+class TestHelpers(TestCase):
+
+    def test_get_collection_creator(self):
+        obj_data = json_from_fixture("object_all.json")
+        self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+
+    def test_get_dates(self):
+        obj_data = json_from_fixture("object_all.json")
+        self.assertEqual(get_dates(obj_data), "1991")
+
+    def test_get_container_indicators(self):
+        letters = random_string(10)
+        expected_title = "Digital Object: {}".format(letters)
+        item = {'instances': [{'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}]}
+        self.assertEqual(get_container_indicators(item), expected_title)
+
+        type = random_string(10)
+        number = random_string(2)
+        item = {'instances': [{'instance_type': 'mixed materials', 'sub_container':
+                               {'top_container': {'_resolved': {'type': type, 'indicator': number}}}}]}
+        expected_indicator = "{} {}".format(type.capitalize(), number)
+        self.assertEqual(get_container_indicators(item), expected_indicator)
+
+        type = random_string(10)
+        number = random_string(2)
+        letters = random_string(10)
+        item = {'instances': [{'instance_type': 'mixed materials', 'sub_container':
+                               {'top_container': {'_resolved': {'type': type, 'indicator': number}}}},
+                              {'instance_type': 'digital_object', 'digital_object': {'_resolved': {'title': letters}}}]}
+        expected_containers = "{} {}, Digital Object: {}".format(type.capitalize(), number, letters)
+        self.assertEqual(get_container_indicators(item), expected_containers)
+
+        item = {'instances': []}
+        self.assertEqual(get_container_indicators(item), None)
+
+    def test_get_file_versions(self):
+        uri = random_string(10)
+        digital_object = {'file_versions': [{'file_uri': uri}]}
+        self.assertEqual(get_file_versions(digital_object), uri)
+
+    def test_get_locations(self):
+        obj_data = json_from_fixture("locations.json")
+        expected_location = "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+        self.assertEqual(get_locations(obj_data), expected_location)
+
+    def test_get_instance_data(self):
+        obj_data = json_from_fixture("digital_object_instance.json")
+        expected_values = ("digital_object", "Digital Object: digital object", "http://google.com", "238475")
+        self.assertEqual(get_instance_data([obj_data]), expected_values)
+
+        obj_data = json_from_fixture("mixed_materials_instance.json")
+        expected_values = ("mixed materials", "Box 2",
+                           "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
+                           "A12345")
+        self.assertEqual(get_instance_data([obj_data]), expected_values)
+
+    def test_get_preferred_format(self):
+        obj_data = json_from_fixture("object_digital.json")
+        expected_data = ("digital_object,digital_object", "Digital Object: digital object,Digital Object: digital object 2",
+                         "http://google.com,http://google2.com", "238475,238476")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        obj_data = json_from_fixture("object_microform.json")
+        expected_data = ("microform, microform",
+                         "Reel 1, Reel 2",
+                         "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                         "A12345, A123456")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        obj_data = json_from_fixture("object_mixed.json")
+        expected_data = ("mixed materials, mixed materials",
+                         "Reel 1, Reel 2",
+                         "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                         "A12345, A123456")
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+        obj_data = json_from_fixture("object_no_instance.json")
+        expected_data = (None, None, None, None)
+        self.assertTrue(get_preferred_format(obj_data), expected_data)
+
+    def test_prepare_values(self):
+        values_list = [["mixed materials", "mixed materials", None],
+                       ["Reel 1", "Box 2", None, "Reel 2"],
+                       ["Shelf 1", None, "Shelf 2"],
+                       ["A0001", "A0002", "A0003"]
+                       ]
+        expected_parsed = ("mixed materials", "Reel 1, Box 2, Reel 2",
+                           "Shelf 1, Shelf 2",
+                           "A0001, A0002, A0003",
+                           )
+        self.assertEqual(prepare_values(values_list), expected_parsed)
+
+        values_list = [[None], [None], [None], [None]]
+        expected_parsed = (None, None, None, None)
+        self.assertEqual(prepare_values(values_list), expected_parsed)
+
+    def test_aeon_client(self):
+        # TODO: replace this with random string helper
+        baseurl = "foo"
+        client = AeonAPIClient(baseurl)
+        self.assertEqual(client.baseurl, baseurl)
+        self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
 
 
 class TestRoutines(TestCase):
@@ -105,12 +198,11 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 9)
+        self.assertEqual(len(get_as_data), 14)
 
     @patch("requests.Session.post")
     def test_send_aeon_requests(self, mock_post):
-        # TODO: replace with random string helper
-        return_str = "foo"
+        return_str = random_string(10)
         mock_post.return_value.status_code = 200
         mock_post.return_value.json.return_value = return_str
         items = json_from_fixture("as_data.json")
@@ -121,27 +213,6 @@ class TestRoutines(TestCase):
         data["format"] = "jpeg"
         delivered = AeonRequester().send_request("duplication", **data)
         self.assertEqual(delivered, return_str)
-
-
-class TestHelpers(TestCase):
-
-    def test_get_collection_creator(self):
-
-        with open(join("fixtures", "object_all.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
-
-    def test_get_dates(self):
-        with open(join("fixtures", "object_all.json")) as fixture_json:
-            obj_data = json.load(fixture_json)
-            self.assertEqual(get_dates(obj_data), "1991")
-
-    def test_aeon_client(self):
-        # TODO: replace this with random string helper
-        baseurl = "foo"
-        client = AeonAPIClient(baseurl)
-        self.assertEqual(client.baseurl, baseurl)
-        self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
 
 
 class TestViews(TestCase):

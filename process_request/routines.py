@@ -3,17 +3,11 @@ from django.core.mail import send_mail
 from request_broker import settings
 
 from .clients import AeonAPIClient
-from .helpers import get_collection_creator, get_dates
+from .helpers import (get_collection_creator, get_container_indicators,
+                      get_dates, get_preferred_format)
 
 
 class ProcessRequest(object):
-    # TODO: main section where processing happens
-    # Push requests to submitted or unsubmitted
-    # If open and delivery formats, mark as submittable
-    # TO DO: add code to read through the rights in order
-    # 1. PREMIS rights statements first
-    # 2. Conditions governing access notes
-    # 3. Next closest conditions governing access notes/rights statements (inherited)
     """
     Runs through the process of iterating through requests, getting json information,
     checking delivery formats, checking restrictrions, and adding items to lists.
@@ -32,11 +26,13 @@ class ProcessRequest(object):
                         username=settings.ARCHIVESSPACE["username"],
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
-        obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors", "top_container", "top_container::container_locations"]})
+        obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors",
+                                                          "top_container", "top_container::container_locations", "instances::digital_object"]})
         if obj.status_code == 200:
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
+            format, container, location, barcode = get_preferred_format(item_json)
             return {
                 "creator": get_collection_creator(item_collection),
                 "restrictions": "TK",
@@ -47,6 +43,11 @@ class ProcessRequest(object):
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
                 "ref": item_json.get("uri"),
+                "containers": get_container_indicators(item_json),
+                "preferred_format": format,
+                "preferred_container": container,
+                "preferred_location": location,
+                "preferred_barcode": barcode,
             }
         else:
             raise Exception(obj.json()["error"])
@@ -73,85 +74,6 @@ class ProcessRequest(object):
         Returns:
             restriction (str): String representation of a rights statement note or
             accessrestrict note that details why an item is restricted.
-        """
-        pass
-
-    def check_formats(self, obj, formats):
-        """Parses instances for existing instance types. Matches each type against
-            list of acceptable delivery formats. Returns instance information for
-            for the most desirable delivery format.
-
-        Args:
-            obj (JSONModelObject): an ArchivesSpace archival object.
-            formats (list): A list of strings of acceptable delivery formats.
-
-        Returns:
-            bool (boolean): False on no instances or if instance type is not in accepted formats.
-            instance (dict): A dict of instance information for most desirable delivery format.
-        """
-        if obj.instances:
-            for instance in obj.instances:
-                if instance.instance_type in formats:
-                    pass
-                else:
-                    False
-        else:
-            return False
-
-    def create_instance_data(self, instance):
-        """Constructs a dictionary of instance information and location data.
-        Calls get_top_container.
-
-        Args:
-            instance (dict): ArchivesSpace instance information.
-
-        Returns:
-            instance_data (dict): a constructed dictionary of instance data.
-                This will include barcode, container indicators, container type,
-                and location information.
-        """
-        pass
-
-    def get_top_container(self, container):
-        """Retrieves and returns top container data from a top container url information.
-            Calls get_location_information.
-
-        Args:
-            container (JSONModelObject): an ArchivesSpace top container object.
-
-        Returns:
-            container_data (dict): a dictionary of combined top_container and location
-                information.
-        """
-        pass
-
-    def get_location_information(self, location):
-        """Retrieves and returns location information for an ArchivesSpace location.
-
-        Args:
-            location (JSONModelObject): an ArchivesSpace location object.
-
-        Returns:
-            location_data (str): a concatenated string of location information.
-        """
-        pass
-
-    def create_readingroom_request(self, obj, instance_data, restriction, creators, collection_title, dates):
-        """Constructs a request for reading room materials out of provided data.
-
-        Args:
-            obj (JSONModelObject): an ArchivesSpace object
-            instance_data (dict): a dictionary containing instance and location information for
-                most desirable delivery format.
-            restriction (str): a string representation of a restriction note or accessrestrict
-            note contents.
-            creators (list): a list of strings including all creator names.
-            collection_title (str): a string representation of a collection title.
-            dates (str): a date expression.
-
-        Returns:
-            readingroom_request (dict): a JSON compliant request that validates against
-            RAC requirements for Reading Room request data.
         """
         pass
 
