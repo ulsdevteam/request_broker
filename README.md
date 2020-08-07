@@ -1,6 +1,6 @@
 # Request Broker
 
-An application that accepts requests with lists of ArchivesSpace URIs from users of our discovery system and for each item grabs data from ArchivesSpace. Formats that data for delivery to our item retrieval system (Aeon) for retrieval or digital duplication, or formats the data for email delivery or CSV download. Routes formatted data to retrieval management system or to an email for researcher use.
+An application that accepts requests with lists of ArchivesSpace URIs from users of our discovery system. For each item, the application fetches data from ArchivesSpace, formats that data for delivery to our retrieval management system (Aeon) to enable reading room or duplication requests, or formats the data for email delivery or CSV download. It routes formatted data to the retrieval system or to an email for researcher use. This is a passthrough service; users cannot create requests directly in the application.
 
 The request broker is part of [Project Electron](https://github.com/RockefellerArchiveCenter/project_electron), an initiative to build sustainable, open and user-centered infrastructure for the archival management of digital records at the [Rockefeller Archive Center](http://rockarch.org/).
 
