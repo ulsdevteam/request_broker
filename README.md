@@ -28,7 +28,7 @@ Or, if you want to remove all data
 
 ## Services
 
-* Iterates over a list of request URIs and gets corresponding data from ArchivesSpace and parses over the data and marks it as submittable or unsubmittable.
+* Request Pre-Processing: Iterates over a list of request URIs, fetches corresponding data from ArchivesSpace, parses the data and marks it as submittable or unsubmittable.
 * Converts AS data into strings and it to the message body of an email and then sends an email to an address or list of addresses.
 * Creates retrieval and duplication transactions in Aeon by sending data to the Aeon API.
 
