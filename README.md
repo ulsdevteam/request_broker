@@ -29,7 +29,7 @@ Or, if you want to remove all data
 ## Services
 
 * Request Pre-Processing: Iterates over a list of request URIs, fetches corresponding data from ArchivesSpace, parses the data and marks it as submittable or unsubmittable.
-* Converts AS data into strings and it to the message body of an email and then sends an email to an address or list of addresses.
+* Mailer: correctly formats the body of an email message and sends an email to an address or list of addresses.
 * Creates retrieval and duplication transactions in Aeon by sending data to the Aeon API.
 
 ### Routes
