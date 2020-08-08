@@ -145,8 +145,7 @@ class TestHelpers(TestCase):
         self.assertEqual(prepare_values(values_list), expected_parsed)
 
     def test_aeon_client(self):
-        # TODO: replace this with random string helper
-        baseurl = "foo"
+        baseurl = random_string(20)
         client = AeonAPIClient(baseurl)
         self.assertEqual(client.baseurl, baseurl)
         self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
