@@ -48,7 +48,7 @@ class DeliverEmailView(APIView):
 
 
 class DeliverReadingRoomRequestView(APIView):
-    "Delivers a request for records to be delivered to the reading room."
+    """Delivers a request for records to be delivered to the reading room."""
 
     def post(self, request):
         try:
@@ -61,7 +61,7 @@ class DeliverReadingRoomRequestView(APIView):
 
 
 class DeliverDuplicationRequestView(APIView):
-    "Delivers a request for records to be delivered to the reading room."
+    """Delivers a request for records to be delivered to the reading room."""
 
     def post(self, request):
         try:
