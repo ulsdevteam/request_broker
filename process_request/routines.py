@@ -2,6 +2,7 @@ from asnake.aspace import ASpace
 from django.core.mail import send_mail
 from request_broker import settings
 
+from .clients import AeonAPIClient
 from .helpers import (get_collection_creator, get_container_indicators,
                       get_dates, get_preferred_format)
 
@@ -162,12 +163,73 @@ class DeliverEmail(object):
         return message
 
 
-class DeliverReadingRoomRequest(object):
-    """Sends submitted data to Aeon for transaction creation in Aeon.
-    """
-    pass
+class AeonRequester(object):
+    """Creates transactions in Aeon by sending data to the Aeon API."""
 
+    def __init__(self):
+        self.client = AeonAPIClient(settings.AEON_BASEURL)
 
-class DeliverDuplicationRequest(object):
-    """Sends submitted data for duplication request creation in Aeon.
-    """
+    def send_request(self, request_type, **kwargs):
+        """Delivers request to Aeon."""
+        if request_type == "readingroom":
+            data = self.prepare_reading_room_request(kwargs)
+        elif request_type == "duplication":
+            data = self.prepare_duplication_request(kwargs)
+        else:
+            raise Exception(
+                "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
+        resp = self.client.post("url", json=data)
+        if resp.status_code == 200:
+            return resp.json()
+        else:
+            raise Exception(resp.json())
+
+    def prepare_duplication_request(self, request_data):
+        """Maps duplication request data to Aeon fields."""
+        return {
+            "RequestType": "Loan",
+            "DocumentType": "Default",
+            "GroupingIdentifier": "GroupingField",
+            "ScheduledDate": request_data.get("scheduled_date"),
+            "UserReview": "No",
+            "Items": self.parse_items(request_data.get("items"))
+        }
+
+    def prepare_reading_room_request(self, request_data):
+        """Maps reading room request data to Aeon fields."""
+        return {
+            "RequestType": "Copy",
+            "DocumentType": "Default",
+            "Format": request_data.get("format"),
+            "GroupingIdentifier": "GroupingField",
+            "SkipOrderEstimate": "Yes",
+            "UserReview": "No",
+            "Items": self.parse_items(request_data.get("items"))
+        }
+
+    def parse_items(self, items):
+        parsed = []
+        for i in items:
+            parsed.append({
+                "CallNumber": i["resource_id"],
+                # TODO: GroupingField should be the container ref
+                # "GroupingField": ,
+                "ItemAuthor": i["creator"],
+                # TODO: ItemCitation is the RefID (consider if this is still useful)
+                # "ItemCitation": ,
+                "ItemDate": i["dates"],
+                "ItemInfo1": i["title"],
+                # TODO: should this be restrictions or restrictions_text?
+                "ItemInfo2": i["restrictions_text"],
+                "ItemInfo3": i["ref"],
+                # TODO: ItemInfo4 is description of materials to copy (duplication requests only)
+                # "ItemInfo4": ,
+                # TODO: ItemIssue is Subcontainer type2/indicator2 info
+                # "ItemIssue": ,
+                "ItemNumber": i["barcode"],
+                "ItemSubtitle": i["aggregation"],
+                "ItemTitle": i["collection_name"],
+                "ItemVolume": i["preferred_container"],
+                "Location": i["preferred_location"]
+            })
+        return parsed

@@ -1,7 +1,5 @@
 import csv
-import json
-import random
-import string
+from datetime import date
 from os.path import join
 from unittest.mock import patch
 
@@ -13,14 +11,16 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
+from .clients import AeonAPIClient
 from .helpers import (get_collection_creator, get_container_indicators,
                       get_dates, get_file_versions, get_instance_data,
                       get_locations, get_preferred_format, prepare_values)
 from .models import MachineUser, User
-from .routines import DeliverEmail, ProcessRequest
-from .test_helpers import random_string
-from .views import (DeliverEmailView, DownloadCSVView, ParseRequestView,
-                    ProcessEmailRequestView)
+from .routines import AeonRequester, DeliverEmail, ProcessRequest
+from .test_helpers import json_from_fixture, random_list, random_string
+from .views import (DeliverDuplicationRequestView, DeliverEmailView,
+                    DeliverReadingRoomRequestView, DownloadCSVView,
+                    ParseRequestView, ProcessEmailRequestView)
 
 aspace_vcr = vcr.VCR(
     serializer='json',
@@ -30,17 +30,6 @@ aspace_vcr = vcr.VCR(
     filter_query_parameters=['username', 'password'],
     filter_headers=['Authorization', 'X-ArchivesSpace-Session'],
 )
-
-FIXTURES_DIR = join(settings.BASE_DIR, "fixtures")
-
-
-def random_list():
-    return random.sample(string.ascii_lowercase, random.randint(2, 10))
-
-
-def json_from_fixture(filename):
-    with open(join(FIXTURES_DIR, filename), "r") as df:
-        return json.load(df)
 
 
 class TestUsers(TestCase):
@@ -155,6 +144,12 @@ class TestHelpers(TestCase):
         expected_parsed = (None, None, None, None)
         self.assertEqual(prepare_values(values_list), expected_parsed)
 
+    def test_aeon_client(self):
+        baseurl = random_string(20)
+        client = AeonAPIClient(baseurl)
+        self.assertEqual(client.baseurl, baseurl)
+        self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
+
 
 class TestRoutines(TestCase):
 
@@ -203,6 +198,20 @@ class TestRoutines(TestCase):
         get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
         self.assertEqual(len(get_as_data), 14)
+
+    @patch("requests.Session.post")
+    def test_send_aeon_requests(self, mock_post):
+        return_str = random_string(10)
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = return_str
+        items = json_from_fixture("as_data.json")
+        data = {"scheduled_date": date.today().isoformat(), "items": [items]}
+        delivered = AeonRequester().send_request("readingroom", **data)
+        self.assertEqual(delivered, return_str)
+
+        data["format"] = "jpeg"
+        delivered = AeonRequester().send_request("duplication", **data)
+        self.assertEqual(delivered, return_str)
 
 
 class TestViews(TestCase):
@@ -272,3 +281,23 @@ class TestViews(TestCase):
             {"items": parsed}, "parse-request", ParseRequestView)
         self.assert_handles_exceptions(
             mock_parse, "bar", "parse-request", ParseRequestView)
+
+    @patch("process_request.routines.AeonRequester.send_request")
+    def test_deliver_readingroomrequest_view(self, mock_send):
+        delivered = random_list()
+        mock_send.return_value = delivered
+        self.assert_handles_routine(
+            {"items": delivered, "scheduled_date": date.today().isoformat()},
+            "deliver-readingroom", DeliverReadingRoomRequestView)
+        self.assert_handles_exceptions(
+            mock_send, "bar", "deliver-readingroom", DeliverReadingRoomRequestView)
+
+    @patch("process_request.routines.AeonRequester.send_request")
+    def test_deliver_duplicationrequest_view(self, mock_send):
+        delivered = random_list()
+        mock_send.return_value = delivered
+        self.assert_handles_routine(
+            {"items": delivered, "format": "jpeg"},
+            "deliver-duplication", DeliverDuplicationRequestView)
+        self.assert_handles_exceptions(
+            mock_send, "bar", "deliver-duplication", DeliverDuplicationRequestView)

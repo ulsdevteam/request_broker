@@ -131,3 +131,6 @@ EMAIL_DEFAULT_FROM = CF.DEFAULT_FROM_EMAIL
 
 EXPORT_FIELDS = ["creator", "collection_name", "aggregation", "dates",
                  "resource_id", "container", "title", "restrictions", "ref"]
+
+AEON_API_KEY = CF.AEON_API_KEY
+AEON_BASEURL = CF.AEON_BASEURL

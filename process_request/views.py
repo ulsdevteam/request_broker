@@ -6,7 +6,7 @@ from request_broker import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .routines import DeliverEmail, ProcessRequest
+from .routines import AeonRequester, DeliverEmail, ProcessRequest
 
 
 class ParseRequestView(APIView):
@@ -43,6 +43,32 @@ class DeliverEmailView(APIView):
             subject = request.data.get("subject")
             emailed = DeliverEmail().send_message(to_address, object_list, subject)
             return Response({"detail": emailed}, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+
+
+class DeliverReadingRoomRequestView(APIView):
+    """Delivers a request for records to be delivered to the reading room."""
+
+    def post(self, request):
+        try:
+            request_data = request.data
+            delivered = AeonRequester().send_request(
+                "readingroom", **request_data)
+            return Response({"detail": delivered}, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+
+
+class DeliverDuplicationRequestView(APIView):
+    """Delivers a request for records to be duplicated."""
+
+    def post(self, request):
+        try:
+            request_data = request.data
+            delivered = AeonRequester().send_request(
+                "duplication", **request_data)
+            return Response({"detail": delivered}, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 
