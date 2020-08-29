@@ -9,68 +9,67 @@ from rest_framework.views import APIView
 from .routines import AeonRequester, DeliverEmail, ProcessRequest
 
 
-class ParseRequestView(APIView):
-    """Parses requests into a submittable and unsubmittable list."""
+class BaseRequestView(APIView):
+    """Base view which handles POST requests returns the appropriate response.
+
+    Requires children to implement a `get_response_data` method."""
 
     def post(self, request, format=None):
         try:
-            object_list = request.data.get("items")
-            parsed = ProcessRequest().parse_items(object_list)
-            return Response({"items": parsed}, status=200)
+            data = self.get_response_data(request)
+            return Response(data, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 
 
-class ProcessEmailRequestView(APIView):
+
+class ParseRequestView(BaseRequestView):
+    """Parses requests into a submittable and unsubmittable list."""
+
+    def get_response_data(self, request):
+        object_list = request.data.get("items")
+        parsed = ProcessRequest().parse_items(object_list)
+        return {"items": parsed}
+
+
+class ProcessEmailRequestView(BaseRequestView):
     """Processes data in preparation for sending an email."""
 
-    def post(self, request):
-        try:
-            object_list = request.data.get("items")
-            processed = ProcessRequest().process_email_request(object_list)
-            return Response({"items": processed}, status=200)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=500)
+    def get_response_data(self, request):
+        object_list = request.data.get("items")
+        processed = ProcessRequest().process_email_request(object_list)
+        return {"items": processed}
 
 
-class DeliverEmailView(APIView):
+class DeliverEmailView(BaseRequestView):
     """Delivers email messages containing data."""
 
-    def post(self, request):
-        try:
-            object_list = request.data.get("items")
-            to_address = request.data.get("to_address")
-            subject = request.data.get("subject")
-            emailed = DeliverEmail().send_message(to_address, object_list, subject)
-            return Response({"detail": emailed}, status=200)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=500)
+    def get_response_data(self, request):
+        object_list = request.data.get("items")
+        to_address = request.data.get("to_address")
+        subject = request.data.get("subject")
+        emailed = DeliverEmail().send_message(to_address, object_list, subject)
+        return {"detail": emailed}
 
 
-class DeliverReadingRoomRequestView(APIView):
+class DeliverReadingRoomRequestView(BaseRequestView):
     """Delivers a request for records to be delivered to the reading room."""
 
-    def post(self, request):
-        try:
-            request_data = request.data
-            delivered = AeonRequester().send_request(
-                "readingroom", **request_data)
-            return Response({"detail": delivered}, status=200)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=500)
+    def get_response_data(self, request):
+        request_data = request.data
+        delivered = AeonRequester().send_request(
+            "readingroom", **request_data)
+        return {"detail": delivered}
 
 
-class DeliverDuplicationRequestView(APIView):
+class DeliverDuplicationRequestView(BaseRequestView):
     """Delivers a request for records to be duplicated."""
 
-    def post(self, request):
-        try:
-            request_data = request.data
-            delivered = AeonRequester().send_request(
-                "duplication", **request_data)
-            return Response({"detail": delivered}, status=200)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=500)
+    def get_response_data(self, request):
+        request_data = request.data
+        delivered = AeonRequester().send_request(
+            "duplication", **request_data)
+        return {"detail": delivered}
 
 
 class Echo:
