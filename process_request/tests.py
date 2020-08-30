@@ -224,7 +224,7 @@ class TestViews(TestCase):
     def assert_handles_routine(self, request_data, view_str, view):
         request = self.factory.post(
             reverse(view_str), request_data, format="json")
-        request.META.update({"HTTP_AUTHORIZATION": "Api-Key {}".format(self.apikey)})
+        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = view.as_view()(request)
         self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
         self.assertEqual(len(response.data), 1)
@@ -233,7 +233,7 @@ class TestViews(TestCase):
         patched_fn.side_effect = Exception(exception_text)
         request = self.factory.post(
             reverse(view_str), {"items": random_list()}, format="json")
-        request.META.update({"HTTP_AUTHORIZATION": "Api-Key {}".format(self.apikey)})
+        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = view.as_view()(request)
         self.assertEqual(
             response.status_code, 500, "Request did not return a 500 response")
@@ -246,7 +246,7 @@ class TestViews(TestCase):
         to_process = random_list()
         request = self.factory.post(
             reverse("download-csv"), {"items": to_process}, format="json")
-        request.META.update({"HTTP_AUTHORIZATION": "Api-Key {}".format(self.apikey)})
+        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = DownloadCSVView.as_view()(request)
         self.assertTrue(isinstance(response, StreamingHttpResponse))
         self.assertEqual(response.get('Content-Type'), "text/csv")

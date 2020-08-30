@@ -122,6 +122,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = CF.STATIC_ROOT
 
 # Permissions settings
+API_KEY_CUSTOM_HEADER = "HTTP_X_REQUEST_BROKER_KEY"
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework_api_key.permissions.HasAPIKey",
