@@ -10,6 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
+from rest_framework_api_key.models import APIKey
 
 from .clients import AeonAPIClient
 from .helpers import (get_collection_creator, get_container_indicators,
@@ -218,10 +219,12 @@ class TestViews(TestCase):
 
     def setUp(self):
         self.factory = APIRequestFactory()
+        self.apikey = APIKey.objects.create_key(name="test-service")[1]
 
     def assert_handles_routine(self, request_data, view_str, view):
         request = self.factory.post(
             reverse(view_str), request_data, format="json")
+        request.META.update({"HTTP_AUTHORIZATION": "Api-Key {}".format(self.apikey)})
         response = view.as_view()(request)
         self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
         self.assertEqual(len(response.data), 1)
@@ -230,6 +233,7 @@ class TestViews(TestCase):
         patched_fn.side_effect = Exception(exception_text)
         request = self.factory.post(
             reverse(view_str), {"items": random_list()}, format="json")
+        request.META.update({"HTTP_AUTHORIZATION": "Api-Key {}".format(self.apikey)})
         response = view.as_view()(request)
         self.assertEqual(
             response.status_code, 500, "Request did not return a 500 response")
@@ -242,6 +246,7 @@ class TestViews(TestCase):
         to_process = random_list()
         request = self.factory.post(
             reverse("download-csv"), {"items": to_process}, format="json")
+        request.META.update({"HTTP_AUTHORIZATION": "Api-Key {}".format(self.apikey)})
         response = DownloadCSVView.as_view()(request)
         self.assertTrue(isinstance(response, StreamingHttpResponse))
         self.assertEqual(response.get('Content-Type'), "text/csv")

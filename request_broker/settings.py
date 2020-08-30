@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'process_request',
+    'rest_framework',
+    'rest_framework_api_key',
 ]
 
 MIDDLEWARE = [
@@ -118,6 +120,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = CF.STATIC_ROOT
+
+# Permissions settings
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework_api_key.permissions.HasAPIKey",
+    ]
+}
 
 ARCHIVESSPACE = CF.ARCHIVESSPACE
 
