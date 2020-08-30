@@ -16,7 +16,7 @@ from .clients import AeonAPIClient
 from .helpers import (get_collection_creator, get_container_indicators,
                       get_dates, get_file_versions, get_instance_data,
                       get_locations, get_preferred_format, prepare_values)
-from .models import MachineUser, User
+from .models import User
 from .routines import AeonRequester, DeliverEmail, ProcessRequest
 from .test_helpers import json_from_fixture, random_list, random_string
 from .views import (DeliverDuplicationRequestView, DeliverEmailView,
@@ -42,11 +42,6 @@ class TestUsers(TestCase):
             email="pgalligan@rockarch.org")
         self.assertEqual(user.full_name, "Patrick Galligan")
         self.assertEqual(str(user), "Patrick Galligan <pgalligan@rockarch.org>")
-
-    def test_machineuser(self):
-        system = 'Zodiac'
-        user = MachineUser(system_name="Zodiac")
-        self.assertEqual(str(user), system)
 
 
 class TestHelpers(TestCase):
