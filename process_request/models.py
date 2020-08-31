@@ -1,5 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, AbstractUser
-from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
@@ -26,22 +25,3 @@ class User(AbstractUser):
         Returns the full name and email of a user.
         """
         return '{} <{}>'.format(self.full_name, self.email)
-
-
-class MachineUser(AbstractBaseUser):
-    username = None
-    system_name = models.CharField(blank=False, max_length=255, unique=True)
-    host_location = models.URLField(blank=False)
-    api_key = models.CharField(blank=False, max_length=255)
-
-    is_active = models.BooleanField(
-        default=True,
-    )
-
-    USERNAME_FIELD = 'system_name'
-
-    def __str__(self):
-        """
-        Returns the system name.
-        """
-        return self.system_name

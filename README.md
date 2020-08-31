@@ -31,7 +31,7 @@ Or, if you want to remove all data
 * Request Pre-Processing: Iterates over a list of request URIs, fetches corresponding data from ArchivesSpace, parses the data and marks it as submittable or unsubmittable.
 * Mailer: correctly formats the body of an email message and sends an email to an address or list of addresses.
 * Aeon Request Submission: creates retrieval and duplication transactions in Aeon by sending data to the Aeon API.
-* CSV Download: formats parsed ArchivesSpace data into rows and columns for CSV download. 
+* CSV Download: formats parsed ArchivesSpace data into rows and columns for CSV download.
 
 ### Routes
 
@@ -41,6 +41,18 @@ Or, if you want to remove all data
 |POST|/api/process-request/parse| |200|Parses requests into a submittable and unsubmittable list|
 |POST|/api/process-request/email| |200|Processes data in preparation for sending an email|
 |POST|/api/download-csv/| |200|Downloads a CSV file of items|
+
+### Authorization
+
+This application uses the [Django REST Framework API Key](https://florimondmanca.github.io/djangorestframework-api-key/) library to limit which external applications are able to use its endpoints. All requests must include a `X-Request-Broker-Key` header key with the value of a valid API Key.
+
+API Keys can be be generated in the Django shell:
+```
+>>> from rest_framework_api_key.models import APIKey
+>>> api_key, key = APIKey.objects.create_key(name="remote-service")
+```
+
+For further details on usage, look at Request Broker's tests or [Django REST Framework API Key documentation](https://florimondmanca.github.io/djangorestframework-api-key/).
 
 ## Requirements
 
