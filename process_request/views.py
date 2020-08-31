@@ -22,7 +22,6 @@ class BaseRequestView(APIView):
             return Response({"detail": str(e)}, status=500)
 
 
-
 class ParseRequestView(BaseRequestView):
     """Parses requests into a submittable and unsubmittable list."""
 
