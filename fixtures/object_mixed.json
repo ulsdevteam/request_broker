@@ -39,7 +39,7 @@
 					"top_container": {
 						"ref": "/repositories/2/top_containers/191157",
 						"_resolved": {
-							"barcode": "A12346",
+							"barcode": "A123456",
 							"indicator": "2",
 							"created_for_collection": "/repositories/2/resources/13063",
 							"type": "box",

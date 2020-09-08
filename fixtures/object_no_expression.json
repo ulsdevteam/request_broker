@@ -194,8 +194,8 @@
         }],
         "dates": [{
           "lock_version": 0,
-          "expression": "1991",
           "begin": "1991",
+          "end": "1992",
           "created_by": "k.martin",
           "last_modified_by": "k.martin",
           "create_time": "2020-02-03T13:35:31Z",

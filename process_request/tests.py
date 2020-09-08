@@ -54,6 +54,12 @@ class TestHelpers(TestCase):
         obj_data = json_from_fixture("object_all.json")
         self.assertEqual(get_dates(obj_data), "1991")
 
+        obj_data = json_from_fixture("object_no_expression.json")
+        self.assertEqual(get_dates(obj_data), "1991-1992")
+
+        obj_data = json_from_fixture("object_no_expression_no_end.json")
+        self.assertEqual(get_dates(obj_data), "1993")
+
     def test_get_container_indicators(self):
         letters = random_string(10)
         expected_title = "Digital Object: {}".format(letters)
@@ -102,27 +108,27 @@ class TestHelpers(TestCase):
 
     def test_get_preferred_format(self):
         obj_data = json_from_fixture("object_digital.json")
-        expected_data = ("digital_object,digital_object", "Digital Object: digital object,Digital Object: digital object 2",
-                         "http://google.com,http://google2.com", "238475,238476")
-        self.assertTrue(get_preferred_format(obj_data), expected_data)
+        expected_data = ("digital_object", "Digital Object: digital object, Digital Object: digital object 2",
+                         "http://google.com, http://google2.com", "238475, 238476")
+        self.assertEqual(get_preferred_format(obj_data), expected_data)
 
         obj_data = json_from_fixture("object_microform.json")
-        expected_data = ("microform, microform",
+        expected_data = ("microform",
                          "Reel 1, Reel 2",
                          "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
                          "A12345, A123456")
-        self.assertTrue(get_preferred_format(obj_data), expected_data)
+        self.assertEqual(get_preferred_format(obj_data), expected_data)
 
         obj_data = json_from_fixture("object_mixed.json")
-        expected_data = ("mixed materials, mixed materials",
-                         "Reel 1, Reel 2",
+        expected_data = ("mixed materials",
+                         "Box 1, Box 2",
                          "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
                          "A12345, A123456")
-        self.assertTrue(get_preferred_format(obj_data), expected_data)
+        self.assertEqual(get_preferred_format(obj_data), expected_data)
 
         obj_data = json_from_fixture("object_no_instance.json")
         expected_data = (None, None, None, None)
-        self.assertTrue(get_preferred_format(obj_data), expected_data)
+        self.assertEqual(get_preferred_format(obj_data), expected_data)
 
     def test_prepare_values(self):
         values_list = [["mixed materials", "mixed materials", None],
@@ -208,6 +214,10 @@ class TestRoutines(TestCase):
         data["format"] = "jpeg"
         delivered = AeonRequester().send_request("duplication", **data)
         self.assertEqual(delivered, return_str)
+
+        request_type = "foo"
+        with self.assertRaises(Exception, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
+            AeonRequester().send_request(request_type, **data)
 
 
 class TestViews(TestCase):
