@@ -1,0 +1,6 @@
+[report]
+show_missing = True
+omit =
+  */settings.py
+  */config.py
+  */__init__.py
