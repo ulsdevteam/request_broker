@@ -122,9 +122,9 @@ def get_preferred_format(item_json):
     preferred = None, None, None, None
     if item_json.get("instances"):
         instances = item_json.get("instances")
-        if "digital_object" in instances:
+        if any("digital_object" in obj for obj in instances):
             preferred = get_instance_data([i for i in instances if i["instance_type"] == "digital_object"])
-        elif "microform" in instances:
+        elif any(obj.get("instance_type") == "microform" for obj in instances):
             preferred = get_instance_data([i for i in instances if i["instance_type"] == "microform"])
         else:
             preferred = get_instance_data([i for i in instances])
