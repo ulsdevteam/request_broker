@@ -1,10 +1,11 @@
 from asnake.aspace import ASpace
 from django.core.mail import send_mail
+
 from request_broker import settings
 
 from .clients import AeonAPIClient
-from .helpers import (get_resource_creator, get_container_indicators,
-                      get_dates, get_preferred_format)
+from .helpers import (get_container_indicators, get_dates,
+                      get_preferred_format, get_resource_creator)
 
 
 class Processor(object):

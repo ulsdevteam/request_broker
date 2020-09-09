@@ -15,11 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+
 from process_request.views import (DeliverDuplicationRequestView,
-                                   MailerView,
                                    DeliverReadingRoomRequestView,
-                                   DownloadCSVView, ParseRequestView,
-                                   ProcessEmailRequestView)
+                                   DownloadCSVView, MailerView,
+                                   ParseRequestView, ProcessEmailRequestView)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

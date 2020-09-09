@@ -8,19 +8,20 @@ from django.core import mail
 from django.http import StreamingHttpResponse
 from django.test import TestCase
 from django.urls import reverse
-from request_broker import settings
 from rest_framework.test import APIRequestFactory
 from rest_framework_api_key.models import APIKey
 
+from request_broker import settings
+
 from .clients import AeonAPIClient
-from .helpers import (get_resource_creator, get_container_indicators,
-                      get_dates, get_file_versions, get_instance_data,
-                      get_locations, get_preferred_format, prepare_values)
+from .helpers import (get_container_indicators, get_dates, get_file_versions,
+                      get_instance_data, get_locations, get_preferred_format,
+                      get_resource_creator, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
-from .views import (DeliverDuplicationRequestView, MailerView,
-                    DeliverReadingRoomRequestView, DownloadCSVView,
+from .views import (DeliverDuplicationRequestView,
+                    DeliverReadingRoomRequestView, DownloadCSVView, MailerView,
                     ParseRequestView, ProcessEmailRequestView)
 
 aspace_vcr = vcr.VCR(
