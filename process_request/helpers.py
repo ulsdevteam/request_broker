@@ -42,7 +42,7 @@ def get_file_versions(digital_object):
 
 
 def get_locations(top_container_info):
-    """Gets a human-readable location string for a top container
+    """Gets a string representation of a location for an ArchivesSpace top container.
 
     Args:
         top_container_info (dict): json for a top container (with resolved container locations)
@@ -75,7 +75,8 @@ def prepare_values(values_list):
 
 
 def get_instance_data(instance_list):
-    """Returns a dictionary of selected instance information.
+    """Creates a standardized tuple for each item in an instance list depending on
+    the item's instance type.
 
     Args:
         instance_list (list): A list of ArchivesSpace instance information with
@@ -105,11 +106,11 @@ def get_instance_data(instance_list):
 
 
 def get_preferred_format(item_json):
-    """Returns information about the format preferred for delivery.
+    """Gets the instance data for the preferred delivery format of the current archival
+    object.
 
-    Iterates over instances in an archival object and gets the preferred
-    delivery format based on instance types. Prioritizes digital objects,
-    then microform, and then returns anything if there is an instance.
+    Prioritizes digital objects, then microform, and then returns anything if there
+    is an instance.
 
     Args:
         item_json (dict): ArchivesSpace archival object information that has
@@ -131,8 +132,9 @@ def get_preferred_format(item_json):
     return preferred
 
 
-def get_collection_creator(resource):
-    """Returns a list of creators for a resource record.
+def get_resource_creator(resource):
+    """Gets all creators of a resource record and concatenate them into a string
+    separated by commas.
 
     Args:
         resource (dict): resource record data.
@@ -149,9 +151,12 @@ def get_collection_creator(resource):
 
 
 def get_dates(archival_object):
-    """Gets the dates of an archival object or its closest ancestor with a date.
+    """Gets the date expressions of an archival object or the date expressions of the
+    object's closest ancestor with date information.
+
         Args:
             archival_object (dict): json for an archival object (with resolved ancestors)
+
         Returns:
             string: all dates associated with an archival object or its closest ancestor, separated by a comma
     """
@@ -166,9 +171,12 @@ def get_dates(archival_object):
 
 
 def get_expression(date):
-    """Returns a date expression for a date object. Concatenates start and end dates if no date expression exists.
+    """Gets a date expression for a date object. Concatenates start and end dates
+    into a string if no date expression exists.
+
     Args:
         date (dict): an ArchivesSpace date
+
     Returns:
         string: date expression for the date object
     """
@@ -184,15 +192,21 @@ def get_expression(date):
 
 def get_note_text(note):
     """Parses note content from different note types.
-    :param dict: an ArchivesSpace note.
-    :returns: a list containing note content.
-    :rtype: list
+
+    Args:
+        note (dict): an ArchivesSpace note.
+
+    Returns:
+        list: a list containing note content.
     """
     def parse_subnote(subnote):
         """Parses note content from subnotes.
-        :param dict: an ArchivesSpace subnote.
-        :returns: a list containing subnote content.
-        :rtype: list
+
+        Args:
+            subnote (dict): an ArchivesSpace subnote.
+
+        Returns:
+            list: a list containing subnote content.
         """
         if subnote.get("jsonmodel_type") in [
                 "note_orderedlist", "note_index"]:
@@ -230,11 +244,14 @@ def get_note_text(note):
 
 def text_in_note(note, query_string):
     """Performs fuzzy searching against note text.
-    :param dict note: an ArchivesSpace note.
-    :param str query_string: a string to match against.
-    :returns: True if a match is found for `query_string`, False if no match is
+
+    Args:
+        note (dict): an ArchivesSpace note.
+        query_string (str): a string to match against.
+
+    Returns:
+        bool: True if a match is found for `query_string`, False if no match is
             found.
-    :rtype: bool
     """
     CONFIDENCE_RATIO = 97
     """int: Minimum confidence ratio to match against."""
@@ -248,9 +265,13 @@ def text_in_note(note, query_string):
 
 def indicates_restriction(rights_statement, restriction_acts):
     """Parses a rights statement to determine if it indicates a restriction.
-    :param dict rights_statement: an ArchivesSpace rights statement.
-    :returns: True if rights statement indicates a restriction, False if not.
-    :rtype: bool
+
+    Args:
+        rights_statement (dict): an ArchivesSpace rights statement.
+        restriction_acts (list): a list of act restrictions.
+
+    Returns:
+        bool: True if rights statement indicates a restriction, False if not.
     """
     def is_expired(date):
         today = datetime.now()
@@ -268,15 +289,16 @@ def indicates_restriction(rights_statement, restriction_acts):
 
 
 def is_restricted(archival_object, query_string, restriction_acts):
-    """Parses an archival object to determine if it is restricted.
-    Iterates through notes, looking for a conditions governing access note
-    which contains a particular set of strings.
-    Also looks for associated rights statements which indicate object may be
-    restricted.
-    :param dict archival_object: an ArchivesSpace archival_object.
-    :param list restriction_acts: a list of strings to match restriction act against.
-    :returns: True if archival object is restricted, False if not.
-    :rtype: bool
+    """Parses an archival object to determine if it is restricted based on note text
+    and rights statements.
+
+    Args:
+        archival_object (dict): an ArchivesSpace archival_object.
+        query_string (str): string of text to match against.
+        restriction_acts (list): a list of act restrictions.
+
+    Returns:
+        bool: True if archival object is restricted, False if not.
     """
     for note in archival_object.get("notes"):
         if note.get("type") == "accessrestrict":

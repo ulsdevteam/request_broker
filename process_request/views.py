@@ -6,7 +6,7 @@ from request_broker import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .routines import AeonRequester, DeliverEmail, ProcessRequest
+from .routines import AeonRequester, Mailer, Processor
 
 
 class BaseRequestView(APIView):
@@ -27,7 +27,7 @@ class ParseRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         object_list = request.data.get("items")
-        parsed = ProcessRequest().parse_items(object_list)
+        parsed = Processor().parse_items(object_list)
         return {"items": parsed}
 
 
@@ -36,18 +36,18 @@ class ProcessEmailRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         object_list = request.data.get("items")
-        processed = ProcessRequest().process_email_request(object_list)
+        processed = Processor().process_email_request(object_list)
         return {"items": processed}
 
 
-class DeliverEmailView(BaseRequestView):
+class MailerView(BaseRequestView):
     """Delivers email messages containing data."""
 
     def get_response_data(self, request):
         object_list = request.data.get("items")
         to_address = request.data.get("to_address")
         subject = request.data.get("subject")
-        emailed = DeliverEmail().send_message(to_address, object_list, subject)
+        emailed = Mailer().send_message(to_address, object_list, subject)
         return {"detail": emailed}
 
 
@@ -96,7 +96,7 @@ class DownloadCSVView(APIView):
         """Streams a large CSV file."""
         try:
             submitted = request.data.get("items")
-            processor = ProcessRequest()
+            processor = Processor()
             fetched = [processor.get_data(item) for item in submitted]
             response = StreamingHttpResponse(
                 streaming_content=(self.iter_items(fetched, Echo())),
