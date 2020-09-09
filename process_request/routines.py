@@ -1,6 +1,5 @@
 from asnake.aspace import ASpace
 from django.core.mail import send_mail
-
 from request_broker import settings
 
 from .clients import AeonAPIClient
