@@ -8,10 +8,9 @@ from django.core import mail
 from django.http import StreamingHttpResponse
 from django.test import TestCase
 from django.urls import reverse
+from request_broker import settings
 from rest_framework.test import APIRequestFactory
 from rest_framework_api_key.models import APIKey
-
-from request_broker import settings
 
 from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
