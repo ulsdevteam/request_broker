@@ -14,9 +14,18 @@ def random_string(length=20):
 
 
 def random_list():
+    """Returns a random list."""
     return random.sample(string.ascii_lowercase, random.randint(2, 10))
 
 
 def json_from_fixture(filename):
+    """Gets json information from a file.
+
+    Args:
+        filename (string): a file to read.
+
+    Returns:
+        dict: json data from the file.
+    """
     with open(join(FIXTURES_DIR, filename), "r") as df:
         return json.load(df)

@@ -3,18 +3,18 @@ from django.core.mail import send_mail
 from request_broker import settings
 
 from .clients import AeonAPIClient
-from .helpers import (get_collection_creator, get_container_indicators,
-                      get_dates, get_preferred_format)
+from .helpers import (get_container_indicators, get_dates,
+                      get_preferred_format, get_resource_creator)
 
 
-class ProcessRequest(object):
+class Processor(object):
     """
-    Runs through the process of iterating through requests, getting json information,
-    checking delivery formats, checking restrictrions, and adding items to lists.
+    Processes requests by getting json information, checking restrictions, and getting
+    delivery formats.
     """
 
     def get_data(self, item):
-        """Gets an archival object from ArchivesSpace.
+        """Gets data about an archival object from ArchivesSpace.
 
         Args:
             item (str): An ArchivesSpace URI.
@@ -34,7 +34,7 @@ class ProcessRequest(object):
             aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
             format, container, location, barcode = get_preferred_format(item_json)
             return {
-                "creator": get_collection_creator(item_collection),
+                "creator": get_resource_creator(item_collection),
                 "restrictions": "TK",
                 "restrictions_text": "TK",
                 "collection_name": item_collection.get("title"),
@@ -64,9 +64,7 @@ class ProcessRequest(object):
         pass
 
     def inherit_restrictions(self, obj):
-        """Iterates up through an object's parents, including resource level,
-            to find the nearest restriction act note or accessrestrict note. Parses accessrestrict
-            notes for note content.
+        """Checks for restrictions on an ancestor of the current archival object.
 
         Args:
             obj (JSONModelObject): An ArchivesSpace archival object.
@@ -130,12 +128,20 @@ class ProcessRequest(object):
         return object_list
 
 
-class DeliverEmail(object):
+class Mailer(object):
     """Email delivery class."""
 
     def send_message(self, to_address, object_list, subject=None):
         """Sends an email with request data to an email address or list of
         addresses.
+
+        Args:
+            to_address (str): email address to send email to.
+            object_list (list): list of requested objects.
+            subject (str): string to attach to the subject of the email.
+
+        Returns:
+            str: a string message that the emails were sent.
         """
         recipient_list = to_address if isinstance(to_address, list) else [to_address]
         subject = subject if subject else "My List from DIMES"
@@ -153,6 +159,12 @@ class DeliverEmail(object):
         """Converts dicts into strings and appends them to message body.
 
         Location and barcode are not appended to the message.
+
+        Args:
+            object_list (list): list of requested objects.
+
+        Returns:
+            message (str): a string respresentation of the converted dicts.
         """
         message = ""
         for obj in object_list:
@@ -170,7 +182,19 @@ class AeonRequester(object):
         self.client = AeonAPIClient(settings.AEON_BASEURL)
 
     def send_request(self, request_type, **kwargs):
-        """Delivers request to Aeon."""
+        """Delivers request to Aeon.
+
+        Args:
+            request_type (str): string indicating whether the request is for the
+            readingroom or duplication.
+
+        Returns:
+            dict: json response.
+
+        Raise:
+            ValueError: if request_type is not readingroom or duplicate.
+            ValueError: if resp.status_code does not equal 200.
+        """
         if request_type == "readingroom":
             data = self.prepare_reading_room_request(kwargs)
         elif request_type == "duplication":
@@ -185,7 +209,14 @@ class AeonRequester(object):
             raise Exception(resp.json())
 
     def prepare_duplication_request(self, request_data):
-        """Maps duplication request data to Aeon fields."""
+        """Maps duplication request data to Aeon fields.
+
+        Args:
+            request_data (dict): data about user-submitted requests.
+
+        Returns:
+            dict: data mapped from request_data to Aeon duplication fields.
+        """
         return {
             "RequestType": "Loan",
             "DocumentType": "Default",
@@ -196,7 +227,14 @@ class AeonRequester(object):
         }
 
     def prepare_reading_room_request(self, request_data):
-        """Maps reading room request data to Aeon fields."""
+        """Maps reading room request data to Aeon fields.
+
+        Args:
+            request_data (dict): data about user-submitted requests.
+
+        Returns:
+            dict: data mapped from request_data to Aeon reading room fields.
+        """
         return {
             "RequestType": "Copy",
             "DocumentType": "Default",
@@ -208,6 +246,14 @@ class AeonRequester(object):
         }
 
     def parse_items(self, items):
+        """Assigns item data to Aeon request fields.
+
+        Args:
+            items (list): a list of items from a request.
+
+        Returns:
+            parsed (list): a list of dictionaries containing parsed item data.
+        """
         parsed = []
         for i in items:
             parsed.append({

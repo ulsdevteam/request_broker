@@ -13,14 +13,14 @@ from rest_framework.test import APIRequestFactory
 from rest_framework_api_key.models import APIKey
 
 from .clients import AeonAPIClient
-from .helpers import (get_collection_creator, get_container_indicators,
-                      get_dates, get_file_versions, get_instance_data,
-                      get_locations, get_preferred_format, prepare_values)
+from .helpers import (get_container_indicators, get_dates, get_file_versions,
+                      get_instance_data, get_locations, get_preferred_format,
+                      get_resource_creator, prepare_values)
 from .models import User
-from .routines import AeonRequester, DeliverEmail, ProcessRequest
+from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
-from .views import (DeliverDuplicationRequestView, DeliverEmailView,
-                    DeliverReadingRoomRequestView, DownloadCSVView,
+from .views import (DeliverDuplicationRequestView,
+                    DeliverReadingRoomRequestView, DownloadCSVView, MailerView,
                     ParseRequestView, ProcessEmailRequestView)
 
 aspace_vcr = vcr.VCR(
@@ -46,9 +46,9 @@ class TestUsers(TestCase):
 
 class TestHelpers(TestCase):
 
-    def test_get_collection_creator(self):
+    def test_get_resource_creator(self):
         obj_data = json_from_fixture("object_all.json")
-        self.assertEqual(get_collection_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+        self.assertEqual(get_resource_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
@@ -155,7 +155,7 @@ class TestHelpers(TestCase):
 
 class TestRoutines(TestCase):
 
-    @patch("process_request.routines.ProcessRequest.get_data")
+    @patch("process_request.routines.Processor.get_data")
     def test_parse_items(self, mock_get_data):
         item = json_from_fixture("as_data.json")
         mock_get_data.return_value = item
@@ -165,20 +165,20 @@ class TestRoutines(TestCase):
                 ("conditional", "foobar", True, None)]:
             mock_get_data.return_value["restrictions"] = restrictions
             mock_get_data.return_value["restrictions_text"] = text
-            parsed = ProcessRequest().parse_items([mock_get_data.return_value])[0]
+            parsed = Processor().parse_items([mock_get_data.return_value])[0]
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value["preferred_format"] = format
-            parsed = ProcessRequest().parse_items([item])[0]
+            parsed = Processor().parse_items([item])[0]
             self.assertEqual(parsed["submit"], submit)
 
-    @patch("process_request.routines.ProcessRequest.get_data")
+    @patch("process_request.routines.Processor.get_data")
     def test_process_email_request(self, mock_get_data):
         mock_get_data.return_value = json_from_fixture("as_data.json")
         to_process = random_list()
-        processed = ProcessRequest().process_email_request(to_process)
+        processed = Processor().process_email_request(to_process)
         self.assertEqual(len(to_process), len(processed))
         self.assertTrue([isinstance(item, dict) for item in processed])
 
@@ -188,7 +188,7 @@ class TestRoutines(TestCase):
                 ("test@example.com", "Subject"),
                 (["foo@example.com", "bar@example.com"], None)]:
             expected_to = to if isinstance(to, list) else [to]
-            emailed = DeliverEmail().send_message(to, object_list, subject)
+            emailed = Mailer().send_message(to, object_list, subject)
             self.assertEqual(emailed, "email sent to {}".format(", ".join(expected_to)))
             self.assertTrue(isinstance(mail.outbox[0].to, list))
             self.assertIsNot(mail.outbox[0].subject, None)
@@ -197,7 +197,7 @@ class TestRoutines(TestCase):
 
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_get_data(self):
-        get_as_data = ProcessRequest().get_data("/repositories/2/archival_objects/1134638")
+        get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
         self.assertEqual(len(get_as_data), 14)
 
@@ -245,7 +245,7 @@ class TestViews(TestCase):
         self.assertEqual(
             response.data["detail"], exception_text, "Exception string not in response")
 
-    @patch("process_request.routines.ProcessRequest.get_data")
+    @patch("process_request.routines.Processor.get_data")
     def test_download_csv_view(self, mock_get_data):
         mock_get_data.return_value = json_from_fixture("as_data.json")
         to_process = random_list()
@@ -265,7 +265,7 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_get_data, "foobar", "download-csv", DownloadCSVView)
 
-    @patch("process_request.routines.ProcessRequest.process_email_request")
+    @patch("process_request.routines.Processor.process_email_request")
     def test_process_email_request_view(self, mock_processed):
         mock_processed.return_value = [json_from_fixture("as_data.json")]
         self.assert_handles_routine(
@@ -273,17 +273,17 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_processed, "foobar", "process-email", ProcessEmailRequestView)
 
-    @patch("process_request.routines.DeliverEmail.send_message")
+    @patch("process_request.routines.Mailer.send_message")
     def test_send_email_request_view(self, mock_sent):
         mock_sent.return_value = "email sent"
         self.assert_handles_routine(
             {"items": random_list(), "to_address": "test@example.com", "subject": "DIMES list"},
             "deliver-email",
-            DeliverEmailView)
+            MailerView)
         self.assert_handles_exceptions(
-            mock_sent, "foobar", "process-email", DeliverEmailView)
+            mock_sent, "foobar", "process-email", MailerView)
 
-    @patch("process_request.routines.ProcessRequest.parse_items")
+    @patch("process_request.routines.Processor.parse_items")
     def test_parse_request_view(self, mock_parse):
         parsed = random_list()
         mock_parse.return_value = parsed
