@@ -1,0 +1,13 @@
+{
+  "notes": [{
+    "jsonmodel_type": "note_multipart",
+    "persistent_id": "0322d44b863ca218398f207f55a074cc",
+    "type": "accessrestrict",
+    "subnotes": [{
+      "jsonmodel_type": "note_text",
+      "content": "We have no idea about this one.",
+      "publish": true
+    }],
+    "publish": true
+  }]
+}
