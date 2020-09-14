@@ -1,7 +1,4 @@
 import csv
-import json
-import random
-import string
 from os.path import join
 from unittest.mock import patch
 
@@ -19,7 +16,7 @@ from .helpers import (get_collection_creator, get_container_indicators,
                       get_rights_status, get_rights_text, prepare_values)
 from .models import MachineUser, User
 from .routines import DeliverEmail, ProcessRequest
-from .test_helpers import random_string
+from .test_helpers import json_from_fixture, random_list, random_string
 from .views import (DeliverEmailView, DownloadCSVView, ParseRequestView,
                     ProcessEmailRequestView)
 
@@ -31,17 +28,6 @@ aspace_vcr = vcr.VCR(
     filter_query_parameters=['username', 'password'],
     filter_headers=['Authorization', 'X-ArchivesSpace-Session'],
 )
-
-FIXTURES_DIR = join(settings.BASE_DIR, "fixtures")
-
-
-def random_list():
-    return random.sample(string.ascii_lowercase, random.randint(2, 10))
-
-
-def json_from_fixture(filename):
-    with open(join(FIXTURES_DIR, filename), "r") as df:
-        return json.load(df)
 
 
 class TestUsers(TestCase):
