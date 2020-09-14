@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from request_broker import settings
 
 from .helpers import (get_collection_creator, get_container_indicators,
-                      get_dates, get_preferred_format)
+                      get_dates, get_preferred_format, get_rights_info)
 
 
 class ProcessRequest(object):
@@ -32,10 +32,11 @@ class ProcessRequest(object):
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
             format, container, location, barcode = get_preferred_format(item_json)
+            restrictions, restrictions_text = get_rights_info(item_json)
             return {
                 "creator": get_collection_creator(item_collection),
-                "restrictions": "TK",
-                "restrictions_text": "TK",
+                "restrictions": restrictions,
+                "restrictions_text": restrictions_text,
                 "collection_name": item_collection.get("title"),
                 "aggregation": aggregation,
                 "dates": get_dates(item_json),
