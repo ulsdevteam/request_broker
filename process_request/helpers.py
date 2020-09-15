@@ -83,26 +83,30 @@ def get_instance_data(instance_list):
             resolved top containers and digital objects.
 
     Returns:
-        tuple: a tuple containing instance type, indicator, location, and
-            barcode for the instance.
+        tuple: a tuple containing instance type, indicator, location,
+            barcode, and container ref for the instance.
     """
     instance_types = []
     containers = []
     locations = []
     barcodes = []
+    refs = []
     for instance in instance_list:
         if instance["instance_type"] == "digital_object":
             instance_types.append("digital_object")
             containers.append("Digital Object: {}".format(instance.get("digital_object").get("_resolved").get("title")))
             locations.append(get_file_versions(instance.get("digital_object").get("_resolved")))
             barcodes.append(instance.get("digital_object").get("_resolved").get("digital_object_id"))
+            refs.append(instance.get("digital_object").get("ref"))
+            print(instance_types, containers, locations, barcodes, refs)
         else:
             instance_types.append(instance["instance_type"])
             top_container = instance.get("sub_container").get("top_container").get("_resolved")
             containers.append("{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator")))
             locations.append(get_locations(top_container))
             barcodes.append(top_container.get("barcode"))
-    return prepare_values([instance_types, containers, locations, barcodes])
+            refs.append(instance.get("sub_container").get("top_container").get("ref"))
+    return prepare_values([instance_types, containers, locations, barcodes, refs])
 
 
 def get_preferred_format(item_json):
@@ -120,7 +124,7 @@ def get_preferred_format(item_json):
         preferred (tuple): a tuple containing concatenated information of the
             preferred format retrieved by get_instance_data.
     """
-    preferred = None, None, None, None
+    preferred = None, None, None, None, None
     if item_json.get("instances"):
         instances = item_json.get("instances")
         if any("digital_object" in obj for obj in instances):
