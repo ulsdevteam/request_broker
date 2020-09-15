@@ -2,18 +2,20 @@ from asnake.aspace import ASpace
 from django.core.mail import send_mail
 from request_broker import settings
 
-from .helpers import (get_collection_creator, get_container_indicators,
-                      get_dates, get_preferred_format, get_rights_info)
+from .clients import AeonAPIClient
+from .helpers import (get_container_indicators, get_dates,
+                      get_preferred_format, get_resource_creator,
+                      get_rights_info)
 
 
-class ProcessRequest(object):
+class Processor(object):
     """
-    Runs through the process of iterating through requests, getting json information,
-    checking delivery formats, checking restrictrions, and adding items to lists.
+    Processes requests by getting json information, checking restrictions, and getting
+    delivery formats.
     """
 
     def get_data(self, item):
-        """Gets an archival object from ArchivesSpace.
+        """Gets data about an archival object from ArchivesSpace.
 
         Args:
             item (str): An ArchivesSpace URI.
@@ -34,7 +36,7 @@ class ProcessRequest(object):
             format, container, location, barcode = get_preferred_format(item_json)
             restrictions, restrictions_text = get_rights_info(item_json)
             return {
-                "creator": get_collection_creator(item_collection),
+                "creator": get_resource_creator(item_collection),
                 "restrictions": restrictions,
                 "restrictions_text": restrictions_text,
                 "collection_name": item_collection.get("title"),
@@ -64,9 +66,7 @@ class ProcessRequest(object):
         pass
 
     def inherit_restrictions(self, obj):
-        """Iterates up through an object's parents, including resource level,
-            to find the nearest restriction act note or accessrestrict note. Parses accessrestrict
-            notes for note content.
+        """Checks for restrictions on an ancestor of the current archival object.
 
         Args:
             obj (JSONModelObject): An ArchivesSpace archival object.
@@ -130,12 +130,20 @@ class ProcessRequest(object):
         return object_list
 
 
-class DeliverEmail(object):
+class Mailer(object):
     """Email delivery class."""
 
     def send_message(self, to_address, object_list, subject=None):
         """Sends an email with request data to an email address or list of
         addresses.
+
+        Args:
+            to_address (str): email address to send email to.
+            object_list (list): list of requested objects.
+            subject (str): string to attach to the subject of the email.
+
+        Returns:
+            str: a string message that the emails were sent.
         """
         recipient_list = to_address if isinstance(to_address, list) else [to_address]
         subject = subject if subject else "My List from DIMES"
@@ -153,6 +161,12 @@ class DeliverEmail(object):
         """Converts dicts into strings and appends them to message body.
 
         Location and barcode are not appended to the message.
+
+        Args:
+            object_list (list): list of requested objects.
+
+        Returns:
+            message (str): a string respresentation of the converted dicts.
         """
         message = ""
         for obj in object_list:
@@ -163,12 +177,107 @@ class DeliverEmail(object):
         return message
 
 
-class DeliverReadingRoomRequest(object):
-    """Sends submitted data to Aeon for transaction creation in Aeon.
-    """
-    pass
+class AeonRequester(object):
+    """Creates transactions in Aeon by sending data to the Aeon API."""
 
+    def __init__(self):
+        self.client = AeonAPIClient(settings.AEON_BASEURL)
 
-class DeliverDuplicationRequest(object):
-    """Sends submitted data for duplication request creation in Aeon.
-    """
+    def send_request(self, request_type, **kwargs):
+        """Delivers request to Aeon.
+
+        Args:
+            request_type (str): string indicating whether the request is for the
+            readingroom or duplication.
+
+        Returns:
+            dict: json response.
+
+        Raise:
+            ValueError: if request_type is not readingroom or duplicate.
+            ValueError: if resp.status_code does not equal 200.
+        """
+        if request_type == "readingroom":
+            data = self.prepare_reading_room_request(kwargs)
+        elif request_type == "duplication":
+            data = self.prepare_duplication_request(kwargs)
+        else:
+            raise Exception(
+                "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
+        resp = self.client.post("url", json=data)
+        if resp.status_code == 200:
+            return resp.json()
+        else:
+            raise Exception(resp.json())
+
+    def prepare_duplication_request(self, request_data):
+        """Maps duplication request data to Aeon fields.
+
+        Args:
+            request_data (dict): data about user-submitted requests.
+
+        Returns:
+            dict: data mapped from request_data to Aeon duplication fields.
+        """
+        return {
+            "RequestType": "Loan",
+            "DocumentType": "Default",
+            "GroupingIdentifier": "GroupingField",
+            "ScheduledDate": request_data.get("scheduled_date"),
+            "UserReview": "No",
+            "Items": self.parse_items(request_data.get("items"))
+        }
+
+    def prepare_reading_room_request(self, request_data):
+        """Maps reading room request data to Aeon fields.
+
+        Args:
+            request_data (dict): data about user-submitted requests.
+
+        Returns:
+            dict: data mapped from request_data to Aeon reading room fields.
+        """
+        return {
+            "RequestType": "Copy",
+            "DocumentType": "Default",
+            "Format": request_data.get("format"),
+            "GroupingIdentifier": "GroupingField",
+            "SkipOrderEstimate": "Yes",
+            "UserReview": "No",
+            "Items": self.parse_items(request_data.get("items"))
+        }
+
+    def parse_items(self, items):
+        """Assigns item data to Aeon request fields.
+
+        Args:
+            items (list): a list of items from a request.
+
+        Returns:
+            parsed (list): a list of dictionaries containing parsed item data.
+        """
+        parsed = []
+        for i in items:
+            parsed.append({
+                "CallNumber": i["resource_id"],
+                # TODO: GroupingField should be the container ref
+                # "GroupingField": ,
+                "ItemAuthor": i["creator"],
+                # TODO: ItemCitation is the RefID (consider if this is still useful)
+                # "ItemCitation": ,
+                "ItemDate": i["dates"],
+                "ItemInfo1": i["title"],
+                # TODO: should this be restrictions or restrictions_text?
+                "ItemInfo2": i["restrictions_text"],
+                "ItemInfo3": i["ref"],
+                # TODO: ItemInfo4 is description of materials to copy (duplication requests only)
+                # "ItemInfo4": ,
+                # TODO: ItemIssue is Subcontainer type2/indicator2 info
+                # "ItemIssue": ,
+                "ItemNumber": i["barcode"],
+                "ItemSubtitle": i["aggregation"],
+                "ItemTitle": i["collection_name"],
+                "ItemVolume": i["preferred_container"],
+                "Location": i["preferred_location"]
+            })
+        return parsed

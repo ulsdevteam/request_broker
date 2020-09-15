@@ -1,13 +1,13 @@
 {
-	"ref_id": "421d180c96c333c196091b797617208c",
-	"title": "test1",
-	"display_string": "test1",
-	"created_by": "k.martin",
-	"last_modified_by": "admin",
-	"create_time": "2019-12-12T15:52:52Z",
-	"system_mtime": "2020-04-14T15:36:25Z",
-	"user_mtime": "2020-04-14T15:36:25Z",
-	"level": "subseries",
-	"jsonmodel_type": "archival_object",
-	"instances": []
+    "ref_id": "421d180c96c333c196091b797617208c",
+    "title": "test1",
+    "display_string": "test1",
+    "created_by": "k.martin",
+    "last_modified_by": "admin",
+    "create_time": "2019-12-12T15:52:52Z",
+    "system_mtime": "2020-04-14T15:36:25Z",
+    "user_mtime": "2020-04-14T15:36:25Z",
+    "level": "subseries",
+    "jsonmodel_type": "archival_object",
+    "instances": []
 }

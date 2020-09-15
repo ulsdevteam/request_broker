@@ -44,7 +44,7 @@ def get_file_versions(digital_object):
 
 
 def get_locations(top_container_info):
-    """Gets a human-readable location string for a top container
+    """Gets a string representation of a location for an ArchivesSpace top container.
 
     Args:
         top_container_info (dict): json for a top container (with resolved container locations)
@@ -77,7 +77,8 @@ def prepare_values(values_list):
 
 
 def get_instance_data(instance_list):
-    """Returns a dictionary of selected instance information.
+    """Creates a standardized tuple for each item in an instance list depending on
+    the item's instance type.
 
     Args:
         instance_list (list): A list of ArchivesSpace instance information with
@@ -107,11 +108,11 @@ def get_instance_data(instance_list):
 
 
 def get_preferred_format(item_json):
-    """Returns information about the format preferred for delivery.
+    """Gets the instance data for the preferred delivery format of the current archival
+    object.
 
-    Iterates over instances in an archival object and gets the preferred
-    delivery format based on instance types. Prioritizes digital objects,
-    then microform, and then returns anything if there is an instance.
+    Prioritizes digital objects, then microform, and then returns anything if there
+    is an instance.
 
     Args:
         item_json (dict): ArchivesSpace archival object information that has
@@ -124,9 +125,9 @@ def get_preferred_format(item_json):
     preferred = None, None, None, None
     if item_json.get("instances"):
         instances = item_json.get("instances")
-        if "digital_object" in instances:
+        if any("digital_object" in obj for obj in instances):
             preferred = get_instance_data([i for i in instances if i["instance_type"] == "digital_object"])
-        elif "microform" in instances:
+        elif any(obj.get("instance_type") == "microform" for obj in instances):
             preferred = get_instance_data([i for i in instances if i["instance_type"] == "microform"])
         else:
             preferred = get_instance_data([i for i in instances])
@@ -206,8 +207,9 @@ def get_rights_text(item_json):
     return text
 
 
-def get_collection_creator(resource):
-    """Returns a list of creators for a resource record.
+def get_resource_creator(resource):
+    """Gets all creators of a resource record and concatenate them into a string
+    separated by commas.
 
     Args:
         resource (dict): resource record data.
@@ -224,9 +226,12 @@ def get_collection_creator(resource):
 
 
 def get_dates(archival_object):
-    """Gets the dates of an archival object or its closest ancestor with a date.
+    """Gets the date expressions of an archival object or the date expressions of the
+    object's closest ancestor with date information.
+
         Args:
             archival_object (dict): json for an archival object (with resolved ancestors)
+
         Returns:
             string: all dates associated with an archival object or its closest ancestor, separated by a comma
     """
@@ -241,10 +246,12 @@ def get_dates(archival_object):
 
 
 def get_expression(date):
-    """Returns a date expression for a date object. Concatenates start and end dates if no date expression exists.
+    """Gets a date expression for a date object. Concatenates start and end dates
+    into a string if no date expression exists.
 
     Args:
         date (dict): an ArchivesSpace date
+
     Returns:
         string: date expression for the date object
     """
@@ -263,6 +270,7 @@ def get_note_text(note):
 
     Args:
         note (dict): an ArchivesSpace note.
+
     Returns:
         list: a list containing note content.
     """
@@ -272,6 +280,7 @@ def get_note_text(note):
 
         Args:
             subnote (dict): an ArchivesSpace subnote.
+
         Returns:
             list: a list containing subnote content.
         """
@@ -317,6 +326,7 @@ def text_in_note(note, query_string):
     Args:
         note (dict): an ArchivesSpace note.
         query_string (str): a string to match against.
+
     Returns:
         bool: True if a match is found for `query_string`, False if no match is
             found.

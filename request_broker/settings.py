@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'process_request',
+    'rest_framework',
+    'rest_framework_api_key',
+    'django_nose',
 ]
 
 MIDDLEWARE = [
@@ -97,7 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'process_request.MachineUser'
+AUTH_USER_MODEL = 'process_request.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -119,6 +122,23 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = CF.STATIC_ROOT
 
+# Test runner settings
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = [
+    '--cover-erase',
+    '--with-coverage',
+    '--cover-package=process_request,request_broker',
+    '--verbosity=1'
+]
+
+# Permissions settings
+API_KEY_CUSTOM_HEADER = "HTTP_X_REQUEST_BROKER_KEY"
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework_api_key.permissions.HasAPIKey",
+    ]
+}
+
 ARCHIVESSPACE = CF.ARCHIVESSPACE
 
 EMAIL_HOST = CF.EMAIL_HOST
@@ -131,3 +151,6 @@ EMAIL_DEFAULT_FROM = CF.DEFAULT_FROM_EMAIL
 
 EXPORT_FIELDS = ["creator", "collection_name", "aggregation", "dates",
                  "resource_id", "container", "title", "restrictions", "ref"]
+
+AEON_API_KEY = CF.AEON_API_KEY
+AEON_BASEURL = CF.AEON_BASEURL
