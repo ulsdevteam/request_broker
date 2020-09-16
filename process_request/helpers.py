@@ -140,6 +140,18 @@ def get_preferred_format(item_json):
 
 
 def get_rights_info(item_json):
+    """Gets rights status and text for an archival object.
+
+    If no parseable rights status is available, it is assumed the item is open.
+
+    Args:
+        item_json (dict): json for an archival object
+
+    Returns:
+        status, text: A tuple containing the rights status and text. Status is
+        one of "closed", "conditional" or "open". Text is either None or a string
+        describing the restriction.
+    """
     status = get_rights_status(item_json)
     if not status:
         for ancestor in item_json["ancestors"]:
@@ -152,7 +164,7 @@ def get_rights_info(item_json):
             text = get_rights_text(ancestor["_resolved"])
             if text:
                 break
-    return status, text
+    return status if status else "open", text
 
 
 def get_rights_status(item_json):
@@ -174,7 +186,6 @@ def get_rights_status(item_json):
         status = "closed"
     elif item_json.get("rights_statements"):
         for stmnt in item_json["rights_statements"]:
-            # TODO: check expired
             if any([act["restriction"].lower() == "disallow" for act in stmnt.get("acts", [])]):
                 status = "closed"
             elif any([act["restriction"].lower() == "conditional" for act in stmnt.get("acts", [])]):
@@ -192,7 +203,6 @@ def get_rights_status(item_json):
 
 def get_rights_text(item_json):
     """Fetches text describing restrictions on an archival object.
-
 
     Args:
         item_json (dict): json for an archival object (with resolved ancestors)
