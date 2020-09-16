@@ -55,29 +55,6 @@ class Processor(object):
         else:
             raise Exception(obj.json()["error"])
 
-    def is_restricted(self, obj):
-        """Checks whether an object is restricted in ArchivesSpace.
-
-        Args:
-            obj (JSONModelObject): An ArchivesSpace archival object.
-
-        Returns:
-            bool (boolean): True on any match with restrictions_apply. None on no match.
-        """
-        pass
-
-    def inherit_restrictions(self, obj):
-        """Checks for restrictions on an ancestor of the current archival object.
-
-        Args:
-            obj (JSONModelObject): An ArchivesSpace archival object.
-
-        Returns:
-            restriction (str): String representation of a rights statement note or
-            accessrestrict note that details why an item is restricted.
-        """
-        pass
-
     def process_email_request(self, object_list):
         """Processes email requests.
 
