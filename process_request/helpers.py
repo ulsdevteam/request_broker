@@ -84,7 +84,8 @@ def get_instance_data(instance_list):
 
     Returns:
         tuple: a tuple containing instance type, indicator, location,
-            barcode, and container ref for the instance.
+            container barcode or digital object id, and container/digital object
+            ref for the instance.
     """
     instance_types = []
     containers = []
