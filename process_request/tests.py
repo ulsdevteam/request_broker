@@ -170,8 +170,8 @@ class TestHelpers(TestCase):
     def test_get_rights_text(self):
         for fixture, status in [
                 ("object_restricted_boolean.json", None),
-                ("object_restricted_note.json", "Closed to research. However you can look at some other things."),
-                ("object_restricted_note_conditional.json", "We have no idea about this one."),
+                ("object_restricted_note.json", "Restricted - Open 2025"),
+                ("object_restricted_note_conditional.json", "Access copy unavailable. Please contact an archivist."),
                 ("object_restricted_note_open.json", "Open for research."),
                 ("object_restricted_rights_statement.json", "Rights statement note."),
                 ("object_restricted_rights_statement_conditional.json", None)]:
