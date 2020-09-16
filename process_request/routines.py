@@ -4,7 +4,8 @@ from request_broker import settings
 
 from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates,
-                      get_preferred_format, get_resource_creator)
+                      get_preferred_format, get_resource_creator,
+                      get_rights_info)
 
 
 class Processor(object):
@@ -33,10 +34,11 @@ class Processor(object):
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
             format, container, location, barcode, ref = get_preferred_format(item_json)
+            restrictions, restrictions_text = get_rights_info(item_json)
             return {
                 "creator": get_resource_creator(item_collection),
-                "restrictions": "TK",
-                "restrictions_text": "TK",
+                "restrictions": restrictions,
+                "restrictions_text": restrictions_text,
                 "collection_name": item_collection.get("title"),
                 "aggregation": aggregation,
                 "dates": get_dates(item_json),
@@ -52,29 +54,6 @@ class Processor(object):
             }
         else:
             raise Exception(obj.json()["error"])
-
-    def is_restricted(self, obj):
-        """Checks whether an object is restricted in ArchivesSpace.
-
-        Args:
-            obj (JSONModelObject): An ArchivesSpace archival object.
-
-        Returns:
-            bool (boolean): True on any match with restrictions_apply. None on no match.
-        """
-        pass
-
-    def inherit_restrictions(self, obj):
-        """Checks for restrictions on an ancestor of the current archival object.
-
-        Args:
-            obj (JSONModelObject): An ArchivesSpace archival object.
-
-        Returns:
-            restriction (str): String representation of a rights statement note or
-            accessrestrict note that details why an item is restricted.
-        """
-        pass
 
     def process_email_request(self, object_list):
         """Processes email requests.

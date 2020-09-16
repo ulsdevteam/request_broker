@@ -1,7 +1,9 @@
-from datetime import datetime
-
 from ordered_set import OrderedSet
 from rapidfuzz import fuzz
+
+CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
+OPEN_TEXT = "open"
+CLOSED_TEXT = "restricted"
 
 
 def get_container_indicators(item_json):
@@ -137,6 +139,89 @@ def get_preferred_format(item_json):
     return preferred
 
 
+def get_rights_info(item_json):
+    """Gets rights status and text for an archival object.
+
+    If no parseable rights status is available, it is assumed the item is open.
+
+    Args:
+        item_json (dict): json for an archival object
+
+    Returns:
+        status, text: A tuple containing the rights status and text. Status is
+        one of "closed", "conditional" or "open". Text is either None or a string
+        describing the restriction.
+    """
+    status = get_rights_status(item_json)
+    if not status:
+        for ancestor in item_json["ancestors"]:
+            status = get_rights_status(ancestor["_resolved"])
+            if status:
+                break
+    text = get_rights_text(item_json)
+    if not text:
+        for ancestor in item_json["ancestors"]:
+            text = get_rights_text(ancestor["_resolved"])
+            if text:
+                break
+    return status if status else "open", text
+
+
+def get_rights_status(item_json):
+    """Determines restrictions status for an archival object.
+
+    Evaluates an object's `restrictions_apply` boolean field, rights statements
+    and accessrestrict notes (in that order) to determine if restrictions have
+    been explicitly set on the archival object. Returns None if restrictions
+    cannot be parsed from those three sources.
+
+    Args:
+        item_json (dict): json for an archival object
+
+    Returns:
+        status: One of "closed", "conditional", "open", None
+    """
+    status = None
+    if item_json.get("restrictions_apply"):
+        status = "closed"
+    elif item_json.get("rights_statements"):
+        for stmnt in item_json["rights_statements"]:
+            if any([act["restriction"].lower() == "disallow" for act in stmnt.get("acts", [])]):
+                status = "closed"
+            elif any([act["restriction"].lower() == "conditional" for act in stmnt.get("acts", [])]):
+                status = "conditional"
+    elif [n for n in item_json.get("notes", []) if n["type"] == "accessrestrict"]:
+        notes = [n for n in item_json["notes"] if n["type"] == "accessrestrict"]
+        if any([text_in_note(n, CLOSED_TEXT) for n in notes]):
+            status = "closed"
+        elif any([text_in_note(n, OPEN_TEXT) for n in notes]):
+            status = "open"
+        else:
+            status = "conditional"
+    return status
+
+
+def get_rights_text(item_json):
+    """Fetches text describing restrictions on an archival object.
+
+    Args:
+        item_json (dict): json for an archival object (with resolved ancestors)
+    Returns:
+        string: note content of a conditions governing access that indicates a restriction
+    """
+    text = None
+    if [n for n in item_json.get("notes", []) if (n["type"] == "accessrestrict" and n["publish"])]:
+        text = ", ".join(
+            [", ".join(get_note_text(n)) for n in item_json["notes"] if (n["type"] == "accessrestrict" and n["publish"])])
+    elif item_json.get("rights_statements"):
+        string = ""
+        for stmnt in item_json["rights_statements"]:
+            for note in stmnt["notes"]:
+                string += ", ".join(get_note_text(note))
+        text = string if string else None
+    return text
+
+
 def get_resource_creator(resource):
     """Gets all creators of a resource record and concatenate them into a string
     separated by commas.
@@ -204,6 +289,7 @@ def get_note_text(note):
     Returns:
         list: a list containing note content.
     """
+
     def parse_subnote(subnote):
         """Parses note content from subnotes.
 
@@ -227,7 +313,9 @@ def get_note_text(note):
                 subnote.get("content"), list) else [subnote.get("content")]
         return content
 
-    if note.get("jsonmodel_type") in ["note_singlepart", "note_langmaterial"]:
+    if note.get("jsonmodel_type") in [
+            "note_singlepart", "note_langmaterial", "note_rights_statement",
+            "note_rights_statement_act"]:
         content = note.get("content")
     elif note.get("jsonmodel_type") == "note_bibliography":
         data = []
@@ -258,58 +346,9 @@ def text_in_note(note, query_string):
         bool: True if a match is found for `query_string`, False if no match is
             found.
     """
-    CONFIDENCE_RATIO = 97
-    """int: Minimum confidence ratio to match against."""
     note_content = get_note_text(note)
-    ratio = fuzz.token_sort_ratio(
+    ratio = fuzz.partial_ratio(
         " ".join([n.lower() for n in note_content]),
         query_string.lower(),
         score_cutoff=CONFIDENCE_RATIO)
     return bool(ratio)
-
-
-def indicates_restriction(rights_statement, restriction_acts):
-    """Parses a rights statement to determine if it indicates a restriction.
-
-    Args:
-        rights_statement (dict): an ArchivesSpace rights statement.
-        restriction_acts (list): a list of act restrictions.
-
-    Returns:
-        bool: True if rights statement indicates a restriction, False if not.
-    """
-    def is_expired(date):
-        today = datetime.now()
-        date = date if date else datetime.strftime("%Y-%m-%d")
-        return False if (
-            datetime.strptime(date, "%Y-%m-%d") >= today) else True
-
-    if is_expired(rights_statement.get("end_date")):
-        return False
-    for act in rights_statement.get("acts"):
-        if (act.get("restriction")
-                in restriction_acts and not is_expired(act.get("end_date"))):
-            return True
-    return False
-
-
-def is_restricted(archival_object, query_string, restriction_acts):
-    """Parses an archival object to determine if it is restricted based on note text
-    and rights statements.
-
-    Args:
-        archival_object (dict): an ArchivesSpace archival_object.
-        query_string (str): string of text to match against.
-        restriction_acts (list): a list of act restrictions.
-
-    Returns:
-        bool: True if archival object is restricted, False if not.
-    """
-    for note in archival_object.get("notes"):
-        if note.get("type") == "accessrestrict":
-            if text_in_note(note, query_string.lower()):
-                return True
-    for rights_statement in archival_object.get("rights_statements"):
-        if indicates_restriction(rights_statement, restriction_acts):
-            return True
-    return False

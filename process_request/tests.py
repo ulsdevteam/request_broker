@@ -15,7 +15,8 @@ from rest_framework_api_key.models import APIKey
 from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_preferred_format,
-                      get_resource_creator, prepare_values)
+                      get_resource_creator, get_rights_info, get_rights_status,
+                      get_rights_text, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -147,6 +148,35 @@ class TestHelpers(TestCase):
         values_list = [[None], [None], [None], [None]]
         expected_parsed = (None, None, None, None)
         self.assertEqual(prepare_values(values_list), expected_parsed)
+
+    def test_get_rights_info(self):
+        item = json_from_fixture("object_restricted_ancestor.json")
+        info = get_rights_info(item)
+        self.assertTrue(isinstance(info, tuple))
+        self.assertEqual(info[0], "closed")
+        self.assertEqual(info[1], "Ancestor Note")
+
+    def test_get_rights_status(self):
+        for fixture, status in [
+                ("object_restricted_boolean.json", "closed"),
+                ("object_restricted_note.json", "closed"),
+                ("object_restricted_note_conditional.json", "conditional"),
+                ("object_restricted_note_open.json", "open"),
+                ("object_restricted_rights_statement.json", "closed"),
+                ("object_restricted_rights_statement_conditional.json", "conditional")]:
+            item = json_from_fixture(fixture)
+            self.assertEqual(get_rights_status(item), status)
+
+    def test_get_rights_text(self):
+        for fixture, status in [
+                ("object_restricted_boolean.json", None),
+                ("object_restricted_note.json", "Restricted - Open 2025"),
+                ("object_restricted_note_conditional.json", "Access copy unavailable. Please contact an archivist."),
+                ("object_restricted_note_open.json", "Open for research."),
+                ("object_restricted_rights_statement.json", "Rights statement note."),
+                ("object_restricted_rights_statement_conditional.json", None)]:
+            item = json_from_fixture(fixture)
+            self.assertEqual(get_rights_text(item), status)
 
     def test_aeon_client(self):
         baseurl = random_string(20)

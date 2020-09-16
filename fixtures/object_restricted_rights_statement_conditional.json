@@ -1,0 +1,42 @@
+{
+  "rights_statements": [{
+    "lock_version": 0,
+    "identifier": "aa1d36b57fbb9c05202e6b84921ef156",
+    "created_by": "admin",
+    "last_modified_by": "admin",
+    "create_time": "2020-02-10T18:34:17Z",
+    "system_mtime": "2020-02-10T18:34:17Z",
+    "user_mtime": "2020-02-10T18:34:17Z",
+    "start_date": "2020-02-07",
+    "end_date": "2020-02-15",
+    "determination_date": "2020-02-06",
+    "rights_type": "copyright",
+    "status": "copyrighted",
+    "jurisdiction": "US",
+    "jsonmodel_type": "rights_statement",
+    "external_documents": [],
+    "acts": [{
+      "start_date": "2020-02-07",
+      "end_date": "2020-02-15",
+      "created_by": "admin",
+      "last_modified_by": "admin",
+      "create_time": "2020-02-10T18:34:17Z",
+      "system_mtime": "2020-02-10T18:34:17Z",
+      "user_mtime": "2020-02-10T18:34:17Z",
+      "act_type": "disseminate",
+      "restriction": "conditional",
+      "jsonmodel_type": "rights_statement_act",
+      "notes": [{
+        "jsonmodel_type": "note_rights_statement_act",
+        "type": "additional_information",
+        "content": [
+          "act note"
+        ],
+        "persistent_id": "0b2de25be1bb35d44a9bab8ae5a8f96f",
+        "publish": true
+      }]
+    }],
+    "linked_agents": [],
+    "notes": []
+  }]
+}
