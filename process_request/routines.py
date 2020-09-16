@@ -32,7 +32,7 @@ class Processor(object):
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
-            format, container, location, barcode = get_preferred_format(item_json)
+            format, container, location, barcode, ref = get_preferred_format(item_json)
             return {
                 "creator": get_resource_creator(item_collection),
                 "restrictions": "TK",
@@ -48,6 +48,7 @@ class Processor(object):
                 "preferred_container": container,
                 "preferred_location": location,
                 "preferred_barcode": barcode,
+                "preferred_ref": ref,
             }
         else:
             raise Exception(obj.json()["error"])

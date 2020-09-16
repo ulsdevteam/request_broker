@@ -97,37 +97,39 @@ class TestHelpers(TestCase):
 
     def test_get_instance_data(self):
         obj_data = json_from_fixture("digital_object_instance.json")
-        expected_values = ("digital_object", "Digital Object: digital object", "http://google.com", "238475")
+        expected_values = ("digital_object", "Digital Object: digital object", "http://google.com", "238475",
+                           "/repositories/2/digital_objects/3367")
         self.assertEqual(get_instance_data([obj_data]), expected_values)
 
         obj_data = json_from_fixture("mixed_materials_instance.json")
         expected_values = ("mixed materials", "Box 2",
                            "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
-                           "A12345")
+                           "A12345", "/repositories/2/top_containers/191161")
         self.assertEqual(get_instance_data([obj_data]), expected_values)
 
     def test_get_preferred_format(self):
         obj_data = json_from_fixture("object_digital.json")
         expected_data = ("digital_object", "Digital Object: digital object, Digital Object: digital object 2",
-                         "http://google.com, http://google2.com", "238475, 238476")
+                         "http://google.com, http://google2.com", "238475, 238476",
+                         "/repositories/2/digital_objects/3367, /repositories/2/digital_objects/3368")
         self.assertEqual(get_preferred_format(obj_data), expected_data)
 
         obj_data = json_from_fixture("object_microform.json")
         expected_data = ("microform",
                          "Reel 1, Reel 2",
                          "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
-                         "A12345, A123456")
+                         "A12345, A123456", "/repositories/2/top_containers/191157, /repositories/2/top_containers/191158")
         self.assertEqual(get_preferred_format(obj_data), expected_data)
 
         obj_data = json_from_fixture("object_mixed.json")
         expected_data = ("mixed materials",
                          "Box 1, Box 2",
                          "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
-                         "A12345, A123456")
+                         "A12345, A123456", "/repositories/2/top_containers/191157, /repositories/2/top_containers/191158")
         self.assertEqual(get_preferred_format(obj_data), expected_data)
 
         obj_data = json_from_fixture("object_no_instance.json")
-        expected_data = (None, None, None, None)
+        expected_data = (None, None, None, None, None)
         self.assertEqual(get_preferred_format(obj_data), expected_data)
 
     def test_prepare_values(self):
@@ -199,7 +201,7 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 14)
+        self.assertEqual(len(get_as_data), 15)
 
     @patch("requests.Session.post")
     def test_send_aeon_requests(self, mock_post):
