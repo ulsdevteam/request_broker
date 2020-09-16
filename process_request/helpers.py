@@ -3,7 +3,7 @@ from rapidfuzz import fuzz
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = "open"
-CLOSED_TEXT = "closed to research"
+CLOSED_TEXT = "restricted"
 
 
 def get_container_indicators(item_json):
