@@ -1,55 +1,60 @@
 {
-  "ref_id": "421d180c96c333c196091b797617208c",
-  "title": "test1",
-  "display_string": "test1",
-  "created_by": "k.martin",
-  "last_modified_by": "admin",
-  "create_time": "2019-12-12T15:52:52Z",
-  "system_mtime": "2020-04-14T15:36:25Z",
-  "user_mtime": "2020-04-14T15:36:25Z",
-  "level": "subseries",
-  "jsonmodel_type": "archival_object",
-  "instances": [{
-      "instance_type": "mixed materials",
-      "sub_container": {
-        "jsonmodel_type": "sub_container",
-        "top_container": {
-          "ref": "/repositories/2/top_containers/191157",
-          "_resolved": {
-            "barcode": "A12345",
-            "indicator": "1",
-            "created_for_collection": "/repositories/2/resources/13063",
-            "type": "box",
-            "jsonmodel_type": "top_container",
-            "container_locations": [{
-              "_resolved": {
-                "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
-              }
-            }]
-          }
+    "ref_id": "421d180c96c333c196091b797617208c",
+    "title": "test1",
+    "display_string": "test1",
+    "created_by": "k.martin",
+    "last_modified_by": "admin",
+    "create_time": "2019-12-12T15:52:52Z",
+    "system_mtime": "2020-04-14T15:36:25Z",
+    "user_mtime": "2020-04-14T15:36:25Z",
+    "level": "subseries",
+    "jsonmodel_type": "archival_object",
+    "instances": [
+        {
+            "instance_type": "mixed materials",
+            "sub_container": {
+                "jsonmodel_type": "sub_container",
+                "top_container": {
+                    "ref": "/repositories/2/top_containers/191157",
+                    "_resolved": {
+                        "barcode": "A12345",
+                        "indicator": "1",
+                        "created_for_collection": "/repositories/2/resources/13063",
+                        "type": "box",
+                        "jsonmodel_type": "top_container",
+                        "container_locations": [
+                            {
+                                "_resolved": {
+                                    "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "instance_type": "mixed materials",
+            "sub_container": {
+                "jsonmodel_type": "sub_container",
+                "top_container": {
+                    "ref": "/repositories/2/top_containers/191158",
+                    "_resolved": {
+                        "barcode": "A123456",
+                        "indicator": "2",
+                        "created_for_collection": "/repositories/2/resources/13063",
+                        "type": "box",
+                        "jsonmodel_type": "top_container",
+                        "container_locations": [
+                            {
+                                "_resolved": {
+                                    "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
         }
-      }
-    },
-    {
-      "instance_type": "mixed materials",
-      "sub_container": {
-        "jsonmodel_type": "sub_container",
-        "top_container": {
-          "ref": "/repositories/2/top_containers/191157",
-          "_resolved": {
-            "barcode": "A123456",
-            "indicator": "2",
-            "created_for_collection": "/repositories/2/resources/13063",
-            "type": "box",
-            "jsonmodel_type": "top_container",
-            "container_locations": [{
-              "_resolved": {
-                "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]"
-              }
-            }]
-          }
-        }
-      }
-    }
-  ]
+    ]
 }
