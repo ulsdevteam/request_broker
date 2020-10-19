@@ -4,6 +4,7 @@ from os.path import join
 from unittest.mock import patch
 
 import vcr
+from asnake.aspace import ASpace
 from django.core import mail
 from django.http import StreamingHttpResponse
 from django.test import TestCase
@@ -47,19 +48,26 @@ class TestUsers(TestCase):
 
 class TestHelpers(TestCase):
 
+    @aspace_vcr.use_cassette("aspace_request.json")
+    def setUp(self):
+        self.client = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"],
+                             username=settings.ARCHIVESSPACE["username"],
+                             password=settings.ARCHIVESSPACE["password"],
+                             repository=settings.ARCHIVESSPACE["repo_id"]).client
+
     def test_get_resource_creator(self):
         obj_data = json_from_fixture("object_all.json")
         self.assertEqual(get_resource_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
-        self.assertEqual(get_dates(obj_data), "1991")
+        self.assertEqual(get_dates(obj_data, self.client), "1991")
 
         obj_data = json_from_fixture("object_no_expression.json")
-        self.assertEqual(get_dates(obj_data), "1991-1992")
+        self.assertEqual(get_dates(obj_data, self.client), "1991-1992")
 
         obj_data = json_from_fixture("object_no_expression_no_end.json")
-        self.assertEqual(get_dates(obj_data), "1993")
+        self.assertEqual(get_dates(obj_data, self.client), "1993")
 
     def test_get_container_indicators(self):
         letters = random_string(10)
@@ -151,7 +159,7 @@ class TestHelpers(TestCase):
 
     def test_get_rights_info(self):
         item = json_from_fixture("object_restricted_ancestor.json")
-        info = get_rights_info(item)
+        info = get_rights_info(item, self.client)
         self.assertTrue(isinstance(info, tuple))
         self.assertEqual(info[0], "closed")
         self.assertEqual(info[1], "Ancestor Note")
@@ -165,7 +173,7 @@ class TestHelpers(TestCase):
                 ("object_restricted_rights_statement.json", "closed"),
                 ("object_restricted_rights_statement_conditional.json", "conditional")]:
             item = json_from_fixture(fixture)
-            self.assertEqual(get_rights_status(item), status)
+            self.assertEqual(get_rights_status(item, self.client), status)
 
     def test_get_rights_text(self):
         for fixture, status in [
@@ -176,7 +184,7 @@ class TestHelpers(TestCase):
                 ("object_restricted_rights_statement.json", "Rights statement note."),
                 ("object_restricted_rights_statement_conditional.json", None)]:
             item = json_from_fixture(fixture)
-            self.assertEqual(get_rights_text(item), status)
+            self.assertEqual(get_rights_text(item, self.client), status)
 
     def test_aeon_client(self):
         baseurl = random_string(20)
