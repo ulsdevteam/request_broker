@@ -1,5 +1,5 @@
+from asnake.utils import get_date_display, get_note_text, text_in_note
 from ordered_set import OrderedSet
-from rapidfuzz import fuzz
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = "open"
@@ -139,35 +139,36 @@ def get_preferred_format(item_json):
     return preferred
 
 
-def get_rights_info(item_json):
+def get_rights_info(item_json, client):
     """Gets rights status and text for an archival object.
 
     If no parseable rights status is available, it is assumed the item is open.
 
     Args:
         item_json (dict): json for an archival object
+        client: an ASnake client
 
     Returns:
         status, text: A tuple containing the rights status and text. Status is
         one of "closed", "conditional" or "open". Text is either None or a string
         describing the restriction.
     """
-    status = get_rights_status(item_json)
+    status = get_rights_status(item_json, client)
     if not status:
         for ancestor in item_json["ancestors"]:
-            status = get_rights_status(ancestor["_resolved"])
+            status = get_rights_status(ancestor["_resolved"], client)
             if status:
                 break
-    text = get_rights_text(item_json)
+    text = get_rights_text(item_json, client)
     if not text:
         for ancestor in item_json["ancestors"]:
-            text = get_rights_text(ancestor["_resolved"])
+            text = get_rights_text(ancestor["_resolved"], client)
             if text:
                 break
     return status if status else "open", text
 
 
-def get_rights_status(item_json):
+def get_rights_status(item_json, client):
     """Determines restrictions status for an archival object.
 
     Evaluates an object's `restrictions_apply` boolean field, rights statements
@@ -177,6 +178,7 @@ def get_rights_status(item_json):
 
     Args:
         item_json (dict): json for an archival object
+        client: an ASnake client
 
     Returns:
         status: One of "closed", "conditional", "open", None
@@ -192,16 +194,16 @@ def get_rights_status(item_json):
                 status = "conditional"
     elif [n for n in item_json.get("notes", []) if n["type"] == "accessrestrict"]:
         notes = [n for n in item_json["notes"] if n["type"] == "accessrestrict"]
-        if any([text_in_note(n, CLOSED_TEXT) for n in notes]):
+        if any([text_in_note(n, CLOSED_TEXT, client) for n in notes]):
             status = "closed"
-        elif any([text_in_note(n, OPEN_TEXT) for n in notes]):
+        elif any([text_in_note(n, OPEN_TEXT, client) for n in notes]):
             status = "open"
         else:
             status = "conditional"
     return status
 
 
-def get_rights_text(item_json):
+def get_rights_text(item_json, client):
     """Fetches text describing restrictions on an archival object.
 
     Args:
@@ -212,12 +214,12 @@ def get_rights_text(item_json):
     text = None
     if [n for n in item_json.get("notes", []) if (n["type"] == "accessrestrict" and n["publish"])]:
         text = ", ".join(
-            [", ".join(get_note_text(n)) for n in item_json["notes"] if (n["type"] == "accessrestrict" and n["publish"])])
+            [", ".join(get_note_text(n, client)) for n in item_json["notes"] if (n["type"] == "accessrestrict" and n["publish"])])
     elif item_json.get("rights_statements"):
         string = ""
         for stmnt in item_json["rights_statements"]:
             for note in stmnt["notes"]:
-                string += ", ".join(get_note_text(note))
+                string += ", ".join(note["content"])
         text = string if string else None
     return text
 
@@ -240,7 +242,7 @@ def get_resource_creator(resource):
     return ",".join(creators)
 
 
-def get_dates(archival_object):
+def get_dates(archival_object, client):
     """Gets the date expressions of an archival object or the date expressions of the
     object's closest ancestor with date information.
 
@@ -252,103 +254,9 @@ def get_dates(archival_object):
     """
     dates = []
     if archival_object.get("dates"):
-        dates = [get_expression(d) for d in archival_object.get("dates")]
+        dates = [get_date_display(d, client) for d in archival_object.get("dates")]
     else:
         for a in archival_object.get("ancestors"):
             if a.get("_resolved").get("dates"):
-                dates = [get_expression(d) for d in a.get("_resolved").get("dates")]
+                dates = [get_date_display(d, client) for d in a.get("_resolved").get("dates")]
     return ",".join(dates)
-
-
-def get_expression(date):
-    """Gets a date expression for a date object. Concatenates start and end dates
-    into a string if no date expression exists.
-
-    Args:
-        date (dict): an ArchivesSpace date
-
-    Returns:
-        string: date expression for the date object
-    """
-    try:
-        expression = date["expression"]
-    except KeyError:
-        if date.get("end"):
-            expression = "{0}-{1}".format(date["begin"], date["end"])
-        else:
-            expression = date["begin"]
-    return expression
-
-
-def get_note_text(note):
-    """Parses note content from different note types.
-
-    Args:
-        note (dict): an ArchivesSpace note.
-
-    Returns:
-        list: a list containing note content.
-    """
-
-    def parse_subnote(subnote):
-        """Parses note content from subnotes.
-
-        Args:
-            subnote (dict): an ArchivesSpace subnote.
-
-        Returns:
-            list: a list containing subnote content.
-        """
-        if subnote.get("jsonmodel_type") in [
-                "note_orderedlist", "note_index"]:
-            content = subnote.get("items")
-        elif subnote.get("jsonmodel_type") in ["note_chronology", "note_definedlist"]:
-            content = []
-            for k in subnote.get("items"):
-                for i in k:
-                    content += k.get(i) if isinstance(k.get(i),
-                                                      list) else [k.get(i)]
-        else:
-            content = subnote.get("content") if isinstance(
-                subnote.get("content"), list) else [subnote.get("content")]
-        return content
-
-    if note.get("jsonmodel_type") in [
-            "note_singlepart", "note_langmaterial", "note_rights_statement",
-            "note_rights_statement_act"]:
-        content = note.get("content")
-    elif note.get("jsonmodel_type") == "note_bibliography":
-        data = []
-        data += note.get("content")
-        data += note.get("items")
-        content = data
-    elif note.get("jsonmodel_type") == "note_index":
-        data = []
-        for item in note.get("items"):
-            data.append(item.get("value"))
-        content = data
-    else:
-        subnote_content_list = list(parse_subnote(sn)
-                                    for sn in note.get("subnotes"))
-        content = [
-            c for subnote_content in subnote_content_list for c in subnote_content]
-    return content
-
-
-def text_in_note(note, query_string):
-    """Performs fuzzy searching against note text.
-
-    Args:
-        note (dict): an ArchivesSpace note.
-        query_string (str): a string to match against.
-
-    Returns:
-        bool: True if a match is found for `query_string`, False if no match is
-            found.
-    """
-    note_content = get_note_text(note)
-    ratio = fuzz.partial_ratio(
-        " ".join([n.lower() for n in note_content]),
-        query_string.lower(),
-        score_cutoff=CONFIDENCE_RATIO)
-    return bool(ratio)

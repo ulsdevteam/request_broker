@@ -34,14 +34,14 @@ class Processor(object):
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
             format, container, location, barcode, ref = get_preferred_format(item_json)
-            restrictions, restrictions_text = get_rights_info(item_json)
+            restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
             return {
                 "creator": get_resource_creator(item_collection),
                 "restrictions": restrictions,
                 "restrictions_text": restrictions_text,
                 "collection_name": item_collection.get("title"),
                 "aggregation": aggregation,
-                "dates": get_dates(item_json),
+                "dates": get_dates(item_json, aspace.client),
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
                 "ref": item_json.get("uri"),
