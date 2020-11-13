@@ -100,12 +100,14 @@ class Processor(object):
         Returns:
             object_list (list): A list of dicts containing parsed item information.
         """
+        parsed = []
         for item in object_list:
             data = self.get_data(item)
             submit, reason = self.is_submittable(data)
             data["submit"] = submit
             data["submit_reason"] = reason
-        return object_list
+            parsed.append(data)
+        return parsed
 
 
 class Mailer(object):
