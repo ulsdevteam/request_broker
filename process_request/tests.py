@@ -16,8 +16,8 @@ from rest_framework_api_key.models import APIKey
 from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_preferred_format,
-                      get_resource_creator, get_rights_info, get_rights_status,
-                      get_rights_text, prepare_values)
+                      get_resource_creators, get_rights_info,
+                      get_rights_status, get_rights_text, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -55,9 +55,9 @@ class TestHelpers(TestCase):
                              password=settings.ARCHIVESSPACE["password"],
                              repository=settings.ARCHIVESSPACE["repo_id"]).client
 
-    def test_get_resource_creator(self):
+    def test_get_resource_creators(self):
         obj_data = json_from_fixture("object_all.json")
-        self.assertEqual(get_resource_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+        self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
@@ -178,7 +178,7 @@ class TestHelpers(TestCase):
     def test_get_rights_text(self):
         for fixture, status in [
                 ("object_restricted_boolean.json", None),
-                ("object_restricted_note.json", "Restricted - Open 2025"),
+                ("object_restricted_note.json", "Restricted material - Open 2025"),
                 ("object_restricted_note_conditional.json", "Access copy unavailable. Please contact an archivist."),
                 ("object_restricted_note_open.json", "Open for research."),
                 ("object_restricted_rights_statement.json", "Rights statement note."),
@@ -239,7 +239,7 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 15)
+        self.assertEqual(len(get_as_data), 11)
 
     @patch("requests.Session.post")
     def test_send_aeon_requests(self, mock_post):

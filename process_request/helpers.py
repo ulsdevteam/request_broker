@@ -101,7 +101,6 @@ def get_instance_data(instance_list):
             locations.append(get_file_versions(instance.get("digital_object").get("_resolved")))
             barcodes.append(instance.get("digital_object").get("_resolved").get("digital_object_id"))
             refs.append(instance.get("digital_object").get("ref"))
-            print(instance_types, containers, locations, barcodes, refs)
         else:
             instance_types.append(instance["instance_type"])
             top_container = instance.get("sub_container").get("top_container").get("_resolved")
@@ -224,7 +223,7 @@ def get_rights_text(item_json, client):
     return text
 
 
-def get_resource_creator(resource):
+def get_resource_creators(resource):
     """Gets all creators of a resource record and concatenate them into a string
     separated by commas.
 
@@ -232,14 +231,14 @@ def get_resource_creator(resource):
         resource (dict): resource record data.
 
     Returns:
-        creators (string): resource creators, separated by a comma.
+        creators (string): comma-separated list of resource creators.
     """
     creators = []
     if resource.get("linked_agents"):
         for linked_agent in resource.get("linked_agents"):
             if linked_agent.get("role") == "creator":
                 creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
-    return ",".join(creators)
+    return ", ".join(creators)
 
 
 def get_dates(archival_object, client):
@@ -259,4 +258,4 @@ def get_dates(archival_object, client):
         for a in archival_object.get("ancestors"):
             if a.get("_resolved").get("dates"):
                 dates = [get_date_display(d, client) for d in a.get("_resolved").get("dates")]
-    return ",".join(dates)
+    return ", ".join(dates)

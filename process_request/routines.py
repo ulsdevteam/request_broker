@@ -4,7 +4,7 @@ from request_broker import settings
 
 from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates,
-                      get_preferred_format, get_resource_creator,
+                      get_preferred_format, get_resource_creators,
                       get_rights_info)
 
 
@@ -32,25 +32,27 @@ class Processor(object):
         if obj.status_code == 200:
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
-            aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
+            parent = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
             format, container, location, barcode, ref = get_preferred_format(item_json)
             restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
             return {
-                "creator": get_resource_creator(item_collection),
+                "creators": get_resource_creators(item_collection),
                 "restrictions": restrictions,
                 "restrictions_text": restrictions_text,
                 "collection_name": item_collection.get("title"),
-                "aggregation": aggregation,
+                "parent": parent,
                 "dates": get_dates(item_json, aspace.client),
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
                 "ref": item_json.get("uri"),
                 "containers": get_container_indicators(item_json),
-                "preferred_format": format,
-                "preferred_container": container,
-                "preferred_location": location,
-                "preferred_barcode": barcode,
-                "preferred_ref": ref,
+                "preferred_instance": {
+                    "format": format,
+                    "container": container,
+                    "location": location,
+                    "barcode": barcode,
+                    "ref": ref,
+                }
             }
         else:
             raise Exception(obj.json()["error"])

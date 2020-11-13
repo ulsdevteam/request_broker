@@ -5,7 +5,7 @@
     "type": "accessrestrict",
     "subnotes": [{
       "jsonmodel_type": "note_text",
-      "content": "Restricted - Open 2025",
+      "content": "Restricted material - Open 2025",
       "publish": true
     }],
     "publish": true
