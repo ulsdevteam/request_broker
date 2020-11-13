@@ -205,13 +205,13 @@ class TestRoutines(TestCase):
                 ("conditional", "foobar", True, None)]:
             mock_get_data.return_value["restrictions"] = restrictions
             mock_get_data.return_value["restrictions_text"] = text
-            parsed = Processor().parse_items([mock_get_data.return_value])[0]
+            parsed = Processor().parse_items([mock_get_data.return_value["ref"]])[0]
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value["preferred_format"] = format
-            parsed = Processor().parse_items([item])[0]
+            parsed = Processor().parse_items([item["ref"]])[0]
             self.assertEqual(parsed["submit"], submit)
 
     @patch("process_request.routines.Processor.get_data")
