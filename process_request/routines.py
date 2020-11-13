@@ -84,10 +84,10 @@ class Processor(object):
         """
         submit = True
         reason = None
-        if item.get("restrictions").lower() in ["closed"]:
+        if item["restrictions"] == "closed":
             submit = False
             reason = "Item is restricted: {}".format(item.get("restrictions_text"))
-        elif item.get("preferred_format").lower() == "digital":
+        elif item["preferred_instance"]["format"] == "digital":
             submit = False
             reason = "This item is available online."
         return submit, reason
