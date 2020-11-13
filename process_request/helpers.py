@@ -2,8 +2,8 @@ from asnake.utils import get_date_display, get_note_text, text_in_note
 from ordered_set import OrderedSet
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
-OPEN_TEXT = "open"
-CLOSED_TEXT = "restricted"
+OPEN_TEXT = "Open for research"
+CLOSED_TEXT = "Restricted material"
 
 
 def get_container_indicators(item_json):
@@ -194,9 +194,9 @@ def get_rights_status(item_json, client):
                 status = "conditional"
     elif [n for n in item_json.get("notes", []) if n["type"] == "accessrestrict"]:
         notes = [n for n in item_json["notes"] if n["type"] == "accessrestrict"]
-        if any([text_in_note(n, CLOSED_TEXT, client) for n in notes]):
+        if any([text_in_note(n, CLOSED_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
             status = "closed"
-        elif any([text_in_note(n, OPEN_TEXT, client) for n in notes]):
+        elif any([text_in_note(n, OPEN_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
             status = "open"
         else:
             status = "conditional"
