@@ -122,15 +122,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = CF.STATIC_ROOT
 
-# Test runner settings
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--cover-erase',
-    '--with-coverage',
-    '--cover-package=process_request,request_broker',
-    '--verbosity=1'
-]
-
 # Permissions settings
 API_KEY_CUSTOM_HEADER = "HTTP_X_REQUEST_BROKER_KEY"
 REST_FRAMEWORK = {
