@@ -5,6 +5,10 @@ services:
     image: postgres:10.4
     volumes:
       - request_broker_dbvolume:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=request_broker_dev
   request-broker-web:
     build: .
     entrypoint: /code/entrypoint.sh
@@ -14,6 +18,21 @@ services:
       - "8000:8000"
     depends_on:
       - request-broker-db
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=obop2gifqn6wncaha^dt!w3an-%vkj_&1a@(w-2ci0))^o%#f4
+      - DJANGO_ALLOWED_HOSTS=request-broker-web localhost
+      - SQL_ENGINE=django.db.backends.postgresql
+      - SQL_DATABASE=postgres
+      - SQL_USER=postgres
+      - SQL_PASSWORD=postgres
+      - SQL_HOST=request-broker-db
+      - SQL_PORT=5432
+      - AS_BASEURL=http://sandbox.archivesspace.org:8089/
+      - AS_USERNAME=admin
+      - AS_PASSWORD=admin
+      - AS_REPO_ID=2
+      - CORS_ORIGIN_WHITELIST=http://localhost:3000
 
 volumes:
   request_broker_dbvolume:

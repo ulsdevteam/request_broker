@@ -1,8 +1,9 @@
 *.DS_Store
 .archivessnake.yml
 *.pickle
-*/config.py
+*.env.dev
 .coverage
+
 
 ### Django ###
 *.log
