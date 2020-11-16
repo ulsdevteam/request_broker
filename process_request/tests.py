@@ -201,7 +201,7 @@ class TestRoutines(TestCase):
         for restrictions, text, submit, reason in [
                 ("closed", "foo", False, "Item is restricted: foo"),
                 ("open", "bar", True, None),
-                ("conditional", "foobar", True, None)]:
+                ("conditional", "foobar", True, "Item may be restricted: foobar")]:
             mock_get_data.return_value["restrictions"] = restrictions
             mock_get_data.return_value["restrictions_text"] = text
             parsed = Processor().parse_items([mock_get_data.return_value["uri"]])[0]
