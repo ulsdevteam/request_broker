@@ -84,7 +84,6 @@ class Processor(object):
         """
         submit = True
         reason = None
-        print(item)
         if item["restrictions"] == "closed":
             submit = False
             reason = "Item is restricted: {}".format(item.get("restrictions_text"))
