@@ -84,12 +84,15 @@ class Processor(object):
         """
         submit = True
         reason = None
+        print(item)
         if item["restrictions"] == "closed":
             submit = False
             reason = "Item is restricted: {}".format(item.get("restrictions_text"))
-        elif item["preferred_instance"]["format"].lower() == "digital":
+        elif "digital" in item["preferred_instance"]["format"].lower():
             submit = False
             reason = "This item is available online."
+        elif item["restrictions"] == "conditional":
+            reason = "Item may be restricted: {}".format(item.get("restrictions_text"))
         return submit, reason
 
     def parse_items(self, object_list):

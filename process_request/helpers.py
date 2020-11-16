@@ -195,6 +195,8 @@ def get_rights_status(item_json, client):
         notes = [n for n in item_json["notes"] if n["type"] == "accessrestrict"]
         if any([text_in_note(n, CLOSED_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
             status = "closed"
+            if any([text_in_note(n, OPEN_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
+                status = "open"
         elif any([text_in_note(n, OPEN_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
             status = "open"
         else:
