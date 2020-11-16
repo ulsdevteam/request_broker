@@ -139,7 +139,8 @@ EMAIL_USE_TLS = CF.EMAIL_USE_TLS
 EMAIL_USE_SSL = CF.EMAIL_USE_SSL
 EMAIL_DEFAULT_FROM = CF.DEFAULT_FROM_EMAIL
 
-EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id", "containers", "title", "restrictions_text", "uri"]
+EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id",
+                 "containers", "title", "restrictions_text", "uri"]
 
 AEON_API_KEY = CF.AEON_API_KEY
 AEON_BASEURL = CF.AEON_BASEURL
