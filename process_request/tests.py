@@ -11,7 +11,6 @@ from django.test import TestCase
 from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
-from rest_framework_api_key.models import APIKey
 
 from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
@@ -178,7 +177,7 @@ class TestHelpers(TestCase):
     def test_get_rights_text(self):
         for fixture, status in [
                 ("object_restricted_boolean.json", None),
-                ("object_restricted_note.json", "Restricted material - Open 2025"),
+                ("object_restricted_note.json", "Restricted - Open 2025"),
                 ("object_restricted_note_conditional.json", "Access copy unavailable. Please contact an archivist."),
                 ("object_restricted_note_open.json", "Open for research."),
                 ("object_restricted_rights_statement.json", "Rights statement note."),
@@ -205,13 +204,13 @@ class TestRoutines(TestCase):
                 ("conditional", "foobar", True, None)]:
             mock_get_data.return_value["restrictions"] = restrictions
             mock_get_data.return_value["restrictions_text"] = text
-            parsed = Processor().parse_items([mock_get_data.return_value["ref"]])[0]
+            parsed = Processor().parse_items([mock_get_data.return_value["uri"]])[0]
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
-            mock_get_data.return_value["preferred_format"] = format
-            parsed = Processor().parse_items([item["ref"]])[0]
+            mock_get_data.return_value["preferred_instance"]["format"] = format
+            parsed = Processor().parse_items([item["uri"]])[0]
             self.assertEqual(parsed["submit"], submit)
 
     @patch("process_request.routines.Processor.get_data")
@@ -264,12 +263,10 @@ class TestViews(TestCase):
 
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.apikey = APIKey.objects.create_key(name="test-service")[1]
 
     def assert_handles_routine(self, request_data, view_str, view):
         request = self.factory.post(
             reverse(view_str), request_data, format="json")
-        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = view.as_view()(request)
         self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
         self.assertEqual(len(response.data), 1)
@@ -278,7 +275,6 @@ class TestViews(TestCase):
         patched_fn.side_effect = Exception(exception_text)
         request = self.factory.post(
             reverse(view_str), {"items": random_list()}, format="json")
-        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = view.as_view()(request)
         self.assertEqual(
             response.status_code, 500, "Request did not return a 500 response")
@@ -291,7 +287,6 @@ class TestViews(TestCase):
         to_process = random_list()
         request = self.factory.post(
             reverse("download-csv"), {"items": to_process}, format="json")
-        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = DownloadCSVView.as_view()(request)
         self.assertTrue(isinstance(response, StreamingHttpResponse))
         self.assertEqual(response.get('Content-Type'), "text/csv")

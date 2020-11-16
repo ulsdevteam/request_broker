@@ -13,6 +13,7 @@ DATABASES = {
 }
 
 ALLOWED_HOSTS = ['request-broker-web', 'localhost']
+ALLOWED_IPS = ["127.0.0.1", "192.168.1"]
 
 ARCHIVESSPACE = {
   "baseurl": "http://localhost:8089/",

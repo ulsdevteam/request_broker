@@ -33,7 +33,7 @@ class Processor(object):
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             parent = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
-            format, container, location, barcode, ref = get_preferred_format(item_json)
+            format, container, location, barcode, container_uri = get_preferred_format(item_json)
             restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
             return {
                 "creators": get_resource_creators(item_collection),
@@ -44,14 +44,14 @@ class Processor(object):
                 "dates": get_dates(item_json, aspace.client),
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
-                "ref": item_json.get("uri"),
+                "uri": item_json.get("uri"),
                 "containers": get_container_indicators(item_json),
                 "preferred_instance": {
                     "format": format,
                     "container": container,
                     "location": location,
                     "barcode": barcode,
-                    "ref": ref,
+                    "uri": container_uri,
                 }
             }
         else:
@@ -87,7 +87,7 @@ class Processor(object):
         if item["restrictions"] == "closed":
             submit = False
             reason = "Item is restricted: {}".format(item.get("restrictions_text"))
-        elif item["preferred_instance"]["format"] == "digital":
+        elif item["preferred_instance"]["format"].lower() == "digital":
             submit = False
             reason = "This item is available online."
         return submit, reason
@@ -106,9 +106,8 @@ class Processor(object):
         for item in object_list:
             data = self.get_data(item)
             submit, reason = self.is_submittable(data)
-            data["submit"] = submit
-            data["submit_reason"] = reason
-            parsed.append(data)
+            parsed.append(
+                {"uri": data["uri"], "submit": submit, "submit_reason": reason})
         return parsed
 
 
@@ -251,15 +250,15 @@ class AeonRequester(object):
                 "ItemInfo1": i["title"],
                 # TODO: should this be restrictions or restrictions_text?
                 "ItemInfo2": i["restrictions_text"],
-                "ItemInfo3": i["ref"],
+                "ItemInfo3": i["uri"],
                 # TODO: ItemInfo4 is description of materials to copy (duplication requests only)
                 # "ItemInfo4": ,
                 # TODO: ItemIssue is Subcontainer type2/indicator2 info
                 # "ItemIssue": ,
                 "ItemNumber": i["barcode"],
-                "ItemSubtitle": i["aggregation"],
+                "ItemSubtitle": i["parent"],
                 "ItemTitle": i["collection_name"],
-                "ItemVolume": i["preferred_container"],
-                "Location": i["preferred_location"]
+                "ItemVolume": i["preferred_instance"]["container"],
+                "Location": i["preferred_instance"]["location"]
             })
         return parsed

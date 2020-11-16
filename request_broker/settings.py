@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'process_request',
     'rest_framework',
-    'rest_framework_api_key',
     'django_nose',
 ]
 
@@ -123,10 +122,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = CF.STATIC_ROOT
 
 # Permissions settings
-API_KEY_CUSTOM_HEADER = "HTTP_X_REQUEST_BROKER_KEY"
+ALLOWED_IPS = CF.ALLOWED_IPS
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework_api_key.permissions.HasAPIKey",
+        "process_request.auth.AllowedListPermission",
     ]
 }
 
@@ -140,8 +139,7 @@ EMAIL_USE_TLS = CF.EMAIL_USE_TLS
 EMAIL_USE_SSL = CF.EMAIL_USE_SSL
 EMAIL_DEFAULT_FROM = CF.DEFAULT_FROM_EMAIL
 
-EXPORT_FIELDS = ["creator", "collection_name", "aggregation", "dates",
-                 "resource_id", "container", "title", "restrictions", "ref"]
+EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id", "containers", "title", "restrictions_text", "uri"]
 
 AEON_API_KEY = CF.AEON_API_KEY
 AEON_BASEURL = CF.AEON_BASEURL

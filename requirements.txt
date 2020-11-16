@@ -9,7 +9,6 @@ coverage==5.2.1
 Django==2.2.10
 django-nose==1.4.7
 djangorestframework==3.11.1
-djangorestframework-api-key==2.0.0
 gitdb==4.0.5
 GitPython==3.1.7
 health-check==3.4.1
