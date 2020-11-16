@@ -3,7 +3,7 @@ from ordered_set import OrderedSet
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = "Open for research"
-CLOSED_TEXT = "Restricted material"
+CLOSED_TEXT = "Restricted"
 
 
 def get_container_indicators(item_json):
