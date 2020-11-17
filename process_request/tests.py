@@ -22,7 +22,7 @@ from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
 from .views import (DeliverDuplicationRequestView,
                     DeliverReadingRoomRequestView, DownloadCSVView, MailerView,
-                    ParseRequestView, ProcessEmailRequestView)
+                    ParseRequestView)
 
 aspace_vcr = vcr.VCR(
     serializer='json',
@@ -222,7 +222,7 @@ class TestRoutines(TestCase):
         self.assertTrue([isinstance(item, dict) for item in processed])
 
     def test_deliver_email(self):
-        object_list = [json_from_fixture("as_data.json")]
+        object_list = [json_from_fixture("as_data.json")["uri"]]
         for to, subject in [
                 ("test@example.com", "Subject"),
                 (["foo@example.com", "bar@example.com"], None)]:
@@ -300,14 +300,6 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_get_data, "foobar", "download-csv", DownloadCSVView)
 
-    @patch("process_request.routines.Processor.process_email_request")
-    def test_process_email_request_view(self, mock_processed):
-        mock_processed.return_value = [json_from_fixture("as_data.json")]
-        self.assert_handles_routine(
-            {"items": random_list()}, "process-email", ProcessEmailRequestView)
-        self.assert_handles_exceptions(
-            mock_processed, "foobar", "process-email", ProcessEmailRequestView)
-
     @patch("process_request.routines.Mailer.send_message")
     def test_send_email_request_view(self, mock_sent):
         mock_sent.return_value = "email sent"
@@ -316,7 +308,7 @@ class TestViews(TestCase):
             "deliver-email",
             MailerView)
         self.assert_handles_exceptions(
-            mock_sent, "foobar", "process-email", MailerView)
+            mock_sent, "foobar", "deliver-email", MailerView)
 
     @patch("process_request.routines.Processor.parse_item")
     def test_parse_request_view(self, mock_parse):

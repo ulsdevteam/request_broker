@@ -30,15 +30,6 @@ class ParseRequestView(BaseRequestView):
         return Processor().parse_item(uri)
 
 
-class ProcessEmailRequestView(BaseRequestView):
-    """Processes data in preparation for sending an email."""
-
-    def get_response_data(self, request):
-        object_list = request.data.get("items")
-        processed = Processor().process_email_request(object_list)
-        return {"items": processed}
-
-
 class MailerView(BaseRequestView):
     """Delivers email messages containing data."""
 

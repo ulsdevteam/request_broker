@@ -129,7 +129,7 @@ class Mailer(object):
         recipient_list = email if isinstance(email, list) else [email]
         subject = subject if subject else "My List from DIMES"
         processor = Processor()
-        fetched = [processor.get_data(item["uri"]) for item in object_list]
+        fetched = [processor.get_data(item) for item in object_list]
         message += self.format_items(fetched)
         # TODO: decide if we want to send html messages
         send_mail(
