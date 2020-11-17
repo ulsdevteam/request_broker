@@ -23,12 +23,11 @@ class BaseRequestView(APIView):
 
 
 class ParseRequestView(BaseRequestView):
-    """Parses requests into a submittable and unsubmittable list."""
+    """Parses an item to determine whether or not it is submittable."""
 
     def get_response_data(self, request):
-        object_list = request.data.get("items")
-        parsed = Processor().parse_items(object_list)
-        return {"items": parsed}
+        uri = request.data.get("item")
+        return Processor().parse_item(uri)
 
 
 class ProcessEmailRequestView(BaseRequestView):

@@ -195,7 +195,7 @@ class TestHelpers(TestCase):
 class TestRoutines(TestCase):
 
     @patch("process_request.routines.Processor.get_data")
-    def test_parse_items(self, mock_get_data):
+    def test_parse_item(self, mock_get_data):
         item = json_from_fixture("as_data.json")
         mock_get_data.return_value = item
         for restrictions, text, submit, reason in [
@@ -204,13 +204,13 @@ class TestRoutines(TestCase):
                 ("conditional", "foobar", True, "Item may be restricted: foobar")]:
             mock_get_data.return_value["restrictions"] = restrictions
             mock_get_data.return_value["restrictions_text"] = text
-            parsed = Processor().parse_items([mock_get_data.return_value["uri"]])[0]
+            parsed = Processor().parse_item(mock_get_data.return_value["uri"])
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value["preferred_instance"]["format"] = format
-            parsed = Processor().parse_items([item["uri"]])[0]
+            parsed = Processor().parse_item(item["uri"])
             self.assertEqual(parsed["submit"], submit)
 
     @patch("process_request.routines.Processor.get_data")
@@ -318,12 +318,12 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_sent, "foobar", "process-email", MailerView)
 
-    @patch("process_request.routines.Processor.parse_items")
+    @patch("process_request.routines.Processor.parse_item")
     def test_parse_request_view(self, mock_parse):
-        parsed = random_list()
+        parsed = {"foo": "bar"}
         mock_parse.return_value = parsed
         self.assert_handles_routine(
-            {"items": parsed}, "parse-request", ParseRequestView)
+            {"item": random_string()}, "parse-request", ParseRequestView)
         self.assert_handles_exceptions(
             mock_parse, "bar", "parse-request", ParseRequestView)
 

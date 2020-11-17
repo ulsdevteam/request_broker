@@ -14,11 +14,11 @@ class Processor(object):
     delivery formats.
     """
 
-    def get_data(self, item):
+    def get_data(self, uri):
         """Gets data about an archival object from ArchivesSpace.
 
         Args:
-            item (str): An ArchivesSpace URI.
+            uris (str): An ArchivesSpace URI.
 
         Returns:
             obj (dict): A JSON representation of an ArchivesSpace Archival Object.
@@ -27,8 +27,8 @@ class Processor(object):
                         username=settings.ARCHIVESSPACE["username"],
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
-        obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors",
-                                                          "top_container", "top_container::container_locations", "instances::digital_object"]})
+        obj = aspace.client.get(uri, params={"resolve": ["resource::linked_agents", "ancestors",
+                                                         "top_container", "top_container::container_locations", "instances::digital_object"]})
         if obj.status_code == 200:
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
@@ -94,23 +94,19 @@ class Processor(object):
             reason = "Item may be restricted: {}".format(item.get("restrictions_text"))
         return submit, reason
 
-    def parse_items(self, object_list):
+    def parse_item(self, uri):
         """Parses requested items to determine which are submittable. Adds a
         `submit` and `submit_reason` attribute to each item.
 
         Args:
-            object_list (list): A list of AS archival object URIs.
+            uri (list): An AS archival object URI.
 
         Returns:
-            object_list (list): A list of dicts containing parsed item information.
+            parsed (dict): A dicts containing parsed item information.
         """
-        parsed = []
-        for item in object_list:
-            data = self.get_data(item)
-            submit, reason = self.is_submittable(data)
-            parsed.append(
-                {"uri": data["uri"], "submit": submit, "submit_reason": reason})
-        return parsed
+        data = self.get_data(uri)
+        submit, reason = self.is_submittable(data)
+        return {"uri": uri, "submit": submit, "submit_reason": reason}
 
 
 class Mailer(object):
@@ -133,7 +129,7 @@ class Mailer(object):
         recipient_list = email if isinstance(email, list) else [email]
         subject = subject if subject else "My List from DIMES"
         processor = Processor()
-        fetched = [processor.get_data(item) for item in object_list]
+        fetched = [processor.get_data(item["uri"]) for item in object_list]
         message += self.format_items(fetched)
         # TODO: decide if we want to send html messages
         send_mail(
@@ -182,14 +178,14 @@ class AeonRequester(object):
 
         Raise:
             ValueError: if request_type is not readingroom or duplicate.
-            ValueError: if resp.status_code does not equal 200.
+            Exception: if resp.status_code does not equal 200.
         """
         if request_type == "readingroom":
             data = self.prepare_reading_room_request(kwargs)
         elif request_type == "duplication":
             data = self.prepare_duplication_request(kwargs)
         else:
-            raise Exception(
+            raise ValueError(
                 "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
         resp = self.client.post("url", json=data)
         if resp.status_code == 200:
