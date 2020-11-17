@@ -45,9 +45,10 @@ class MailerView(BaseRequestView):
 
     def get_response_data(self, request):
         object_list = request.data.get("items")
-        to_address = request.data.get("to_address")
+        to_address = request.data.get("email")
         subject = request.data.get("subject")
-        emailed = Mailer().send_message(to_address, object_list, subject)
+        message = request.data.get("message")
+        emailed = Mailer().send_message(to_address, object_list, subject, message)
         return {"detail": emailed}
 
 

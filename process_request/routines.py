@@ -116,21 +116,25 @@ class Processor(object):
 class Mailer(object):
     """Email delivery class."""
 
-    def send_message(self, to_address, object_list, subject=None):
+    def send_message(self, email, object_list, subject=None, message=""):
         """Sends an email with request data to an email address or list of
         addresses.
 
         Args:
-            to_address (str): email address to send email to.
-            object_list (list): list of requested objects.
+            email (str): email address to send email to.
+            object_list (list): list of URIs for requested objects.
             subject (str): string to attach to the subject of the email.
+            message (str): message to prepend to the email body.
 
         Returns:
             str: a string message that the emails were sent.
         """
-        recipient_list = to_address if isinstance(to_address, list) else [to_address]
+        message = message + "\n" if message else message
+        recipient_list = email if isinstance(email, list) else [email]
         subject = subject if subject else "My List from DIMES"
-        message = self.format_items(object_list)
+        processor = Processor()
+        fetched = [processor.get_data(item) for item in object_list]
+        message += self.format_items(fetched)
         # TODO: decide if we want to send html messages
         send_mail(
             subject,
