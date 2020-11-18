@@ -85,10 +85,10 @@ class Processor(object):
         reason = None
         if item["restrictions"] == "closed":
             submit = False
-            reason = "Item is restricted: {}".format(item.get("restrictions_text"))
+            reason = "This object is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text"))
         elif "digital" in item["preferred_instance"]["format"].lower():
             submit = False
-            reason = "This item is available online."
+            reason = "This item is already available online. It will not be included in request."
         elif item["restrictions"] == "conditional":
             reason = "Item may be restricted: {}".format(item.get("restrictions_text"))
         return submit, reason
