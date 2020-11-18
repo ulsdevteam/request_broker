@@ -179,6 +179,7 @@ class AeonRequester(object):
             "GroupingOption_ItemInfo3": "FirstValue",
             "GroupingOption_ItemCitation": "FirstValue",
             "UserReview": "No",
+            "SubmitButton": "Submit Request",
         }
 
     def get_request_data(self, request_type, **kwargs):
