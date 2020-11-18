@@ -29,7 +29,7 @@ services:
       - SQL_PASSWORD=postgres
       - SQL_HOST=request-broker-db
       - SQL_PORT=5432
-      - AS_BASEURL=http://as.rockarch.org:8089/
+      - AS_BASEURL=http://sandbox.archivesspace:8089/
       - AS_USERNAME=admin
       - AS_PASSWORD=admin
       - AS_REPO_ID=2
