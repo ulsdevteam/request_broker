@@ -12,7 +12,6 @@ from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
 
-from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_preferred_format,
                       get_resource_creators, get_rights_info,
@@ -185,11 +184,12 @@ class TestHelpers(TestCase):
             item = json_from_fixture(fixture)
             self.assertEqual(get_rights_text(item, self.client), status)
 
-    def test_aeon_client(self):
-        baseurl = random_string(20)
-        client = AeonAPIClient(baseurl)
-        self.assertEqual(client.baseurl, baseurl)
-        self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
+    # Test is commented out as the code is currently not used, and this allows us to shed a few configs
+    # def test_aeon_client(self):
+    #     baseurl = random_string(20)
+    #     client = AeonAPIClient(baseurl)
+    #     self.assertEqual(client.baseurl, baseurl)
+    #     self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
 
 
 class TestRoutines(TestCase):
@@ -240,23 +240,21 @@ class TestRoutines(TestCase):
         self.assertTrue(isinstance(get_as_data, dict))
         self.assertEqual(len(get_as_data), 11)
 
-    @patch("requests.Session.post")
-    def test_send_aeon_requests(self, mock_post):
-        return_str = random_string(10)
-        mock_post.return_value.status_code = 200
-        mock_post.return_value.json.return_value = return_str
-        items = json_from_fixture("as_data.json")
-        data = {"scheduled_date": date.today().isoformat(), "items": [items]}
-        delivered = AeonRequester().send_request("readingroom", **data)
-        self.assertEqual(delivered, return_str)
+    @patch("process_request.routines.Processor.get_data")
+    def test_send_aeon_requests(self, mock_get_data):
+        mock_get_data.return_value = json_from_fixture("as_data.json")
+
+        data = {"scheduled_date": date.today().isoformat(), "items": random_list()}
+        delivered = AeonRequester().get_request_data("readingroom", **data)
+        self.assertTrue(isinstance(delivered, dict))
 
         data["format"] = "jpeg"
-        delivered = AeonRequester().send_request("duplication", **data)
-        self.assertEqual(delivered, return_str)
+        delivered = AeonRequester().get_request_data("duplication", **data)
+        self.assertTrue(isinstance(delivered, dict))
 
         request_type = "foo"
         with self.assertRaises(Exception, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
-            AeonRequester().send_request(request_type, **data)
+            AeonRequester().get_request_data(request_type, **data)
 
 
 class TestViews(TestCase):
@@ -319,9 +317,9 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_parse, "bar", "parse-request", ParseRequestView)
 
-    @patch("process_request.routines.AeonRequester.send_request")
+    @patch("process_request.routines.AeonRequester.get_request_data")
     def test_deliver_readingroomrequest_view(self, mock_send):
-        delivered = random_list()
+        delivered = {"foo": "bar"}
         mock_send.return_value = delivered
         self.assert_handles_routine(
             {"items": delivered, "scheduled_date": date.today().isoformat()},
@@ -329,9 +327,9 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_send, "bar", "deliver-readingroom", DeliverReadingRoomRequestView)
 
-    @patch("process_request.routines.AeonRequester.send_request")
+    @patch("process_request.routines.AeonRequester.get_request_data")
     def test_deliver_duplicationrequest_view(self, mock_send):
-        delivered = random_list()
+        delivered = {"foo": "bar"}
         mock_send.return_value = delivered
         self.assert_handles_routine(
             {"items": delivered, "format": "jpeg"},

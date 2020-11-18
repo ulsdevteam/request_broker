@@ -157,6 +157,3 @@ EMAIL_DEFAULT_FROM = os.environ.get("DEFAULT_FROM_EMAIL", "alerts@example.org")
 
 EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id",
                  "containers", "title", "restrictions_text", "uri"]
-
-AEON_API_KEY = os.environ.get("AEON_API_KEY", "123556abcdefg")
-AEON_BASEURL = os.environ.get("AEON_BASEURL", "http://example.com/aeon")

@@ -2,7 +2,6 @@ from asnake.aspace import ASpace
 from django.core.mail import send_mail
 from request_broker import settings
 
-from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates,
                       get_preferred_format, get_resource_creators,
                       get_rights_info)
@@ -164,9 +163,25 @@ class AeonRequester(object):
     """Creates transactions in Aeon by sending data to the Aeon API."""
 
     def __init__(self):
-        self.client = AeonAPIClient(settings.AEON_BASEURL)
+        self.request_defaults = {
+            "AeonForm": "EADRequest",
+            "DocumentType": "Default",
+            "GroupingIdentifier": "GroupingField",
+            "GroupingOption_ItemInfo1": "Concatenate",
+            "GroupingOption_ItemDate": "Concatenate",
+            "GroupingOption_ItemTitle": "FirstValue",
+            "GroupingOption_ItemAuthor": "FirstValue",
+            "GroupingOption_ItemSubtitle": "FirstValue",
+            "GroupingOption_ItemVolume": "FirstValue",
+            "GroupingOption_ItemIssue": "Concatenate",
+            "GroupingOption_ItemInfo2": "Concatenate",
+            "GroupingOption_CallNumber": "FirstValue",
+            "GroupingOption_ItemInfo3": "FirstValue",
+            "GroupingOption_ItemCitation": "FirstValue",
+            "UserReview": "No",
+        }
 
-    def send_request(self, request_type, **kwargs):
+    def get_request_data(self, request_type, **kwargs):
         """Delivers request to Aeon.
 
         Args:
@@ -174,93 +189,88 @@ class AeonRequester(object):
             readingroom or duplication.
 
         Returns:
-            dict: json response.
+            dict: Request data.
 
         Raise:
             ValueError: if request_type is not readingroom or duplicate.
-            Exception: if resp.status_code does not equal 200.
         """
+        processor = Processor()
+        fetched = [processor.get_data(item) for item in kwargs.get("items")]
         if request_type == "readingroom":
-            data = self.prepare_reading_room_request(kwargs)
+            data = self.prepare_reading_room_request(fetched, kwargs)
         elif request_type == "duplication":
-            data = self.prepare_duplication_request(kwargs)
+            data = self.prepare_duplication_request(fetched, kwargs)
         else:
             raise ValueError(
                 "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
-        resp = self.client.post("url", json=data)
-        if resp.status_code == 200:
-            return resp.json()
-        else:
-            raise Exception(resp.json())
+        return data
 
-    def prepare_duplication_request(self, request_data):
-        """Maps duplication request data to Aeon fields.
-
-        Args:
-            request_data (dict): data about user-submitted requests.
-
-        Returns:
-            dict: data mapped from request_data to Aeon duplication fields.
-        """
-        return {
-            "RequestType": "Loan",
-            "DocumentType": "Default",
-            "GroupingIdentifier": "GroupingField",
-            "ScheduledDate": request_data.get("scheduled_date"),
-            "UserReview": "No",
-            "Items": self.parse_items(request_data.get("items"))
-        }
-
-    def prepare_reading_room_request(self, request_data):
+    def prepare_reading_room_request(self, items, request_data):
         """Maps reading room request data to Aeon fields.
 
         Args:
+            items (list): Resolved data about AS archival objects.
             request_data (dict): data about user-submitted requests.
 
         Returns:
-            dict: data mapped from request_data to Aeon reading room fields.
+            data: Submission data for Aeon.
         """
-        return {
-            "RequestType": "Copy",
-            "DocumentType": "Default",
-            "Format": request_data.get("format"),
-            "GroupingIdentifier": "GroupingField",
-            "SkipOrderEstimate": "Yes",
-            "UserReview": "No",
-            "Items": self.parse_items(request_data.get("items"))
+        reading_room_defaults = {
+            "WebRequestForm": "DefaultRequest",
+            "RequestType": "Loan",
+            "ScheduledDate": request_data.get("scheduledDate"),
+            "SpecialRequest": request_data.get("questions"),
         }
+        request_data = self.parse_items(items)
+        return dict(**self.request_defaults, **reading_room_defaults, **request_data)
 
-    def parse_items(self, items):
+    def prepare_duplication_request(self, items, request_data):
+        """Maps duplication request data to Aeon fields.
+
+        Args:
+            items (list): Resolved data about AS archival objects.
+            request_data (dict): data about user-submitted requests.
+
+        Returns:
+            data: Submission data for Aeon.
+        """
+        duplication_defaults = {
+            "WebRequestForm": "PhotoduplicationRequest",
+            "RequestType": "Copy",
+            "Format": request_data.get("format"),
+            "SpecialRequest": request_data.get("questions"),
+            "SkipOrderEstimate": "Yes",
+        }
+        request_data = self.parse_items(items, request_data.get("description", ""))
+        return dict(**self.request_defaults, **duplication_defaults, **request_data)
+
+    def parse_items(self, items, description=""):
         """Assigns item data to Aeon request fields.
 
         Args:
             items (list): a list of items from a request.
 
         Returns:
-            parsed (list): a list of dictionaries containing parsed item data.
+            parsed (dict): a dictionary containing parsed item data.
         """
-        parsed = []
+        parsed = {"Request": []}
         for i in items:
-            parsed.append({
-                "CallNumber": i["resource_id"],
-                # TODO: GroupingField should be the container ref
-                # "GroupingField": ,
-                "ItemAuthor": i["creator"],
-                # TODO: ItemCitation is the RefID (consider if this is still useful)
-                # "ItemCitation": ,
-                "ItemDate": i["dates"],
-                "ItemInfo1": i["title"],
-                # TODO: should this be restrictions or restrictions_text?
-                "ItemInfo2": i["restrictions_text"],
-                "ItemInfo3": i["uri"],
-                # TODO: ItemInfo4 is description of materials to copy (duplication requests only)
-                # "ItemInfo4": ,
-                # TODO: ItemIssue is Subcontainer type2/indicator2 info
-                # "ItemIssue": ,
-                "ItemNumber": i["barcode"],
-                "ItemSubtitle": i["parent"],
-                "ItemTitle": i["collection_name"],
-                "ItemVolume": i["preferred_instance"]["container"],
-                "Location": i["preferred_instance"]["location"]
+            request_prefix = i["uri"].split("/")[-1]
+            parsed["Request"].append(request_prefix)
+            parsed.update({
+                "CallNumber_{}".format(request_prefix): i["resource_id"],
+                "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
+                "ItemAuthor_{}".format(request_prefix): i["creators"],
+                "ItemCitation_{}".format(request_prefix): i["uri"],
+                "ItemDate_{}".format(request_prefix): i["dates"],
+                "ItemInfo1_{}".format(request_prefix): i["title"],
+                "ItemInfo2_{}".format(request_prefix): i["restrictions_text"],
+                "ItemInfo3_{}".format(request_prefix): i["uri"],
+                "ItemInfo4_{}".format(request_prefix): description,
+                "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
+                "ItemSubtitle_{}".format(request_prefix): i["parent"],
+                "ItemTitle_{}".format(request_prefix): i["collection_name"],
+                "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],
+                "Location_{}".format(request_prefix): i["preferred_instance"]["location"]
             })
         return parsed

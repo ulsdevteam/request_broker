@@ -47,9 +47,9 @@ class DeliverReadingRoomRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        delivered = AeonRequester().send_request(
+        delivered = AeonRequester().get_request_data(
             "readingroom", **request_data)
-        return {"detail": delivered}
+        return delivered
 
 
 class DeliverDuplicationRequestView(BaseRequestView):
@@ -57,9 +57,9 @@ class DeliverDuplicationRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        delivered = AeonRequester().send_request(
+        delivered = AeonRequester().get_request_data(
             "duplication", **request_data)
-        return {"detail": delivered}
+        return delivered
 
 
 class Echo:
