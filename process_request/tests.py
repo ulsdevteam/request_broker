@@ -199,7 +199,7 @@ class TestRoutines(TestCase):
         item = json_from_fixture("as_data.json")
         mock_get_data.return_value = item
         for restrictions, text, submit, reason in [
-                ("closed", "foo", False, "Item is restricted: foo"),
+                ("closed", "foo", False, "This object is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
                 ("conditional", "foobar", True, "Item may be restricted: foobar")]:
             mock_get_data.return_value["restrictions"] = restrictions
@@ -221,7 +221,9 @@ class TestRoutines(TestCase):
         self.assertEqual(len(to_process), len(processed))
         self.assertTrue([isinstance(item, dict) for item in processed])
 
-    def test_deliver_email(self):
+    @patch("process_request.routines.Processor.get_data")
+    def test_deliver_email(self, mock_get_data):
+        mock_get_data.return_value = json_from_fixture("as_data.json")
         object_list = [json_from_fixture("as_data.json")["uri"]]
         for to, subject in [
                 ("test@example.com", "Subject"),
