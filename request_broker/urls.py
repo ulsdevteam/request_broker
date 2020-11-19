@@ -18,7 +18,7 @@ from django.urls import path
 from process_request.views import (DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, MailerView,
-                                   ParseRequestView, ProcessEmailRequestView)
+                                   ParseRequestView)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -26,6 +26,5 @@ urlpatterns = [
     path("api/deliver-request/duplication", DeliverDuplicationRequestView.as_view(), name="deliver-duplication"),
     path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
     path("api/process-request/parse", ParseRequestView.as_view(), name="parse-request"),
-    path("api/process-request/email", ProcessEmailRequestView.as_view(), name="process-email"),
     path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv")
 ]

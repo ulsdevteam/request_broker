@@ -23,21 +23,11 @@ class BaseRequestView(APIView):
 
 
 class ParseRequestView(BaseRequestView):
-    """Parses requests into a submittable and unsubmittable list."""
+    """Parses an item to determine whether or not it is submittable."""
 
     def get_response_data(self, request):
-        object_list = request.data.get("items")
-        parsed = Processor().parse_items(object_list)
-        return {"items": parsed}
-
-
-class ProcessEmailRequestView(BaseRequestView):
-    """Processes data in preparation for sending an email."""
-
-    def get_response_data(self, request):
-        object_list = request.data.get("items")
-        processed = Processor().process_email_request(object_list)
-        return {"items": processed}
+        uri = request.data.get("item")
+        return Processor().parse_item(uri)
 
 
 class MailerView(BaseRequestView):
@@ -45,9 +35,10 @@ class MailerView(BaseRequestView):
 
     def get_response_data(self, request):
         object_list = request.data.get("items")
-        to_address = request.data.get("to_address")
+        to_address = request.data.get("email")
         subject = request.data.get("subject")
-        emailed = Mailer().send_message(to_address, object_list, subject)
+        message = request.data.get("message")
+        emailed = Mailer().send_message(to_address, object_list, subject, message)
         return {"detail": emailed}
 
 
@@ -56,9 +47,9 @@ class DeliverReadingRoomRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        delivered = AeonRequester().send_request(
+        delivered = AeonRequester().get_request_data(
             "readingroom", **request_data)
-        return {"detail": delivered}
+        return delivered
 
 
 class DeliverDuplicationRequestView(BaseRequestView):
@@ -66,9 +57,9 @@ class DeliverDuplicationRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        delivered = AeonRequester().send_request(
+        delivered = AeonRequester().get_request_data(
             "duplication", **request_data)
-        return {"detail": delivered}
+        return delivered
 
 
 class Echo:

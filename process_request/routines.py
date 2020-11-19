@@ -2,9 +2,8 @@ from asnake.aspace import ASpace
 from django.core.mail import send_mail
 from request_broker import settings
 
-from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates,
-                      get_preferred_format, get_resource_creator,
+                      get_preferred_format, get_resource_creators,
                       get_rights_info)
 
 
@@ -14,11 +13,11 @@ class Processor(object):
     delivery formats.
     """
 
-    def get_data(self, item):
+    def get_data(self, uri):
         """Gets data about an archival object from ArchivesSpace.
 
         Args:
-            item (str): An ArchivesSpace URI.
+            uris (str): An ArchivesSpace URI.
 
         Returns:
             obj (dict): A JSON representation of an ArchivesSpace Archival Object.
@@ -27,30 +26,32 @@ class Processor(object):
                         username=settings.ARCHIVESSPACE["username"],
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
-        obj = aspace.client.get(item, params={"resolve": ["resource::linked_agents", "ancestors",
-                                                          "top_container", "top_container::container_locations", "instances::digital_object"]})
+        obj = aspace.client.get(uri, params={"resolve": ["resource::linked_agents", "ancestors",
+                                                         "top_container", "top_container::container_locations", "instances::digital_object"]})
         if obj.status_code == 200:
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
-            aggregation = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
-            format, container, location, barcode, ref = get_preferred_format(item_json)
+            parent = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
+            format, container, location, barcode, container_uri = get_preferred_format(item_json)
             restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
             return {
-                "creator": get_resource_creator(item_collection),
+                "creators": get_resource_creators(item_collection),
                 "restrictions": restrictions,
                 "restrictions_text": restrictions_text,
                 "collection_name": item_collection.get("title"),
-                "aggregation": aggregation,
+                "parent": parent,
                 "dates": get_dates(item_json, aspace.client),
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
-                "ref": item_json.get("uri"),
+                "uri": item_json.get("uri"),
                 "containers": get_container_indicators(item_json),
-                "preferred_format": format,
-                "preferred_container": container,
-                "preferred_location": location,
-                "preferred_barcode": barcode,
-                "preferred_ref": ref,
+                "preferred_instance": {
+                    "format": format,
+                    "container": container,
+                    "location": location,
+                    "barcode": barcode,
+                    "uri": container_uri,
+                }
             }
         else:
             raise Exception(obj.json()["error"])
@@ -82,50 +83,53 @@ class Processor(object):
         """
         submit = True
         reason = None
-        if item.get("restrictions").lower() in ["closed"]:
+        if item["restrictions"] == "closed":
             submit = False
-            reason = "Item is restricted: {}".format(item.get("restrictions_text"))
-        elif item.get("preferred_format").lower() == "digital":
+            reason = "This item is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text"))
+        elif "digital" in item["preferred_instance"]["format"].lower():
             submit = False
-            reason = "This item is available online."
+            reason = "This item is already available online. It will not be included in request."
+        elif item["restrictions"] == "conditional":
+            reason = "This item may be currently unavailable for request. It will be included in request. Reason: {}".format(item.get("restrictions_text"))
         return submit, reason
 
-    def parse_items(self, object_list):
+    def parse_item(self, uri):
         """Parses requested items to determine which are submittable. Adds a
         `submit` and `submit_reason` attribute to each item.
 
         Args:
-            object_list (list): A list of AS archival object URIs.
+            uri (str): An AS archival object URI.
 
         Returns:
-            object_list (list): A list of dicts containing parsed item information.
+            parsed (dict): A dicts containing parsed item information.
         """
-        for item in object_list:
-            data = self.get_data(item)
-            submit, reason = self.is_submittable(data)
-            data["submit"] = submit
-            data["submit_reason"] = reason
-        return object_list
+        data = self.get_data(uri)
+        submit, reason = self.is_submittable(data)
+        return {"uri": uri, "submit": submit, "submit_reason": reason}
 
 
 class Mailer(object):
     """Email delivery class."""
 
-    def send_message(self, to_address, object_list, subject=None):
+    def send_message(self, email, object_list, subject=None, message=""):
         """Sends an email with request data to an email address or list of
         addresses.
 
         Args:
-            to_address (str): email address to send email to.
-            object_list (list): list of requested objects.
+            email (str): email address to send email to.
+            object_list (list): list of URIs for requested objects.
             subject (str): string to attach to the subject of the email.
+            message (str): message to prepend to the email body.
 
         Returns:
             str: a string message that the emails were sent.
         """
-        recipient_list = to_address if isinstance(to_address, list) else [to_address]
+        message = message + "\n" if message else message
+        recipient_list = email if isinstance(email, list) else [email]
         subject = subject if subject else "My List from DIMES"
-        message = self.format_items(object_list)
+        processor = Processor()
+        fetched = [processor.get_data(item) for item in object_list]
+        message += self.format_items(fetched)
         # TODO: decide if we want to send html messages
         send_mail(
             subject,
@@ -159,9 +163,26 @@ class AeonRequester(object):
     """Creates transactions in Aeon by sending data to the Aeon API."""
 
     def __init__(self):
-        self.client = AeonAPIClient(settings.AEON_BASEURL)
+        self.request_defaults = {
+            "AeonForm": "EADRequest",
+            "DocumentType": "Default",
+            "GroupingIdentifier": "GroupingField",
+            "GroupingOption_ItemInfo1": "Concatenate",
+            "GroupingOption_ItemDate": "Concatenate",
+            "GroupingOption_ItemTitle": "FirstValue",
+            "GroupingOption_ItemAuthor": "FirstValue",
+            "GroupingOption_ItemSubtitle": "FirstValue",
+            "GroupingOption_ItemVolume": "FirstValue",
+            "GroupingOption_ItemIssue": "Concatenate",
+            "GroupingOption_ItemInfo2": "Concatenate",
+            "GroupingOption_CallNumber": "FirstValue",
+            "GroupingOption_ItemInfo3": "FirstValue",
+            "GroupingOption_ItemCitation": "FirstValue",
+            "UserReview": "No",
+            "SubmitButton": "Submit Request",
+        }
 
-    def send_request(self, request_type, **kwargs):
+    def get_request_data(self, request_type, **kwargs):
         """Delivers request to Aeon.
 
         Args:
@@ -169,93 +190,88 @@ class AeonRequester(object):
             readingroom or duplication.
 
         Returns:
-            dict: json response.
+            dict: Request data.
 
         Raise:
             ValueError: if request_type is not readingroom or duplicate.
-            ValueError: if resp.status_code does not equal 200.
         """
+        processor = Processor()
+        fetched = [processor.get_data(item) for item in kwargs.get("items")]
         if request_type == "readingroom":
-            data = self.prepare_reading_room_request(kwargs)
+            data = self.prepare_reading_room_request(fetched, kwargs)
         elif request_type == "duplication":
-            data = self.prepare_duplication_request(kwargs)
+            data = self.prepare_duplication_request(fetched, kwargs)
         else:
-            raise Exception(
+            raise ValueError(
                 "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
-        resp = self.client.post("url", json=data)
-        if resp.status_code == 200:
-            return resp.json()
-        else:
-            raise Exception(resp.json())
+        return data
 
-    def prepare_duplication_request(self, request_data):
-        """Maps duplication request data to Aeon fields.
-
-        Args:
-            request_data (dict): data about user-submitted requests.
-
-        Returns:
-            dict: data mapped from request_data to Aeon duplication fields.
-        """
-        return {
-            "RequestType": "Loan",
-            "DocumentType": "Default",
-            "GroupingIdentifier": "GroupingField",
-            "ScheduledDate": request_data.get("scheduled_date"),
-            "UserReview": "No",
-            "Items": self.parse_items(request_data.get("items"))
-        }
-
-    def prepare_reading_room_request(self, request_data):
+    def prepare_reading_room_request(self, items, request_data):
         """Maps reading room request data to Aeon fields.
 
         Args:
+            items (list): Resolved data about AS archival objects.
             request_data (dict): data about user-submitted requests.
 
         Returns:
-            dict: data mapped from request_data to Aeon reading room fields.
+            data: Submission data for Aeon.
         """
-        return {
-            "RequestType": "Copy",
-            "DocumentType": "Default",
-            "Format": request_data.get("format"),
-            "GroupingIdentifier": "GroupingField",
-            "SkipOrderEstimate": "Yes",
-            "UserReview": "No",
-            "Items": self.parse_items(request_data.get("items"))
+        reading_room_defaults = {
+            "WebRequestForm": "DefaultRequest",
+            "RequestType": "Loan",
+            "ScheduledDate": request_data.get("scheduledDate"),
+            "SpecialRequest": request_data.get("questions"),
         }
+        request_data = self.parse_items(items)
+        return dict(**self.request_defaults, **reading_room_defaults, **request_data)
 
-    def parse_items(self, items):
+    def prepare_duplication_request(self, items, request_data):
+        """Maps duplication request data to Aeon fields.
+
+        Args:
+            items (list): Resolved data about AS archival objects.
+            request_data (dict): data about user-submitted requests.
+
+        Returns:
+            data: Submission data for Aeon.
+        """
+        duplication_defaults = {
+            "WebRequestForm": "PhotoduplicationRequest",
+            "RequestType": "Copy",
+            "Format": request_data.get("format"),
+            "SpecialRequest": request_data.get("questions"),
+            "SkipOrderEstimate": "Yes",
+        }
+        request_data = self.parse_items(items, request_data.get("description", ""))
+        return dict(**self.request_defaults, **duplication_defaults, **request_data)
+
+    def parse_items(self, items, description=""):
         """Assigns item data to Aeon request fields.
 
         Args:
             items (list): a list of items from a request.
 
         Returns:
-            parsed (list): a list of dictionaries containing parsed item data.
+            parsed (dict): a dictionary containing parsed item data.
         """
-        parsed = []
+        parsed = {"Request": []}
         for i in items:
-            parsed.append({
-                "CallNumber": i["resource_id"],
-                # TODO: GroupingField should be the container ref
-                # "GroupingField": ,
-                "ItemAuthor": i["creator"],
-                # TODO: ItemCitation is the RefID (consider if this is still useful)
-                # "ItemCitation": ,
-                "ItemDate": i["dates"],
-                "ItemInfo1": i["title"],
-                # TODO: should this be restrictions or restrictions_text?
-                "ItemInfo2": i["restrictions_text"],
-                "ItemInfo3": i["ref"],
-                # TODO: ItemInfo4 is description of materials to copy (duplication requests only)
-                # "ItemInfo4": ,
-                # TODO: ItemIssue is Subcontainer type2/indicator2 info
-                # "ItemIssue": ,
-                "ItemNumber": i["barcode"],
-                "ItemSubtitle": i["aggregation"],
-                "ItemTitle": i["collection_name"],
-                "ItemVolume": i["preferred_container"],
-                "Location": i["preferred_location"]
+            request_prefix = i["uri"].split("/")[-1]
+            parsed["Request"].append(request_prefix)
+            parsed.update({
+                "CallNumber_{}".format(request_prefix): i["resource_id"],
+                "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
+                "ItemAuthor_{}".format(request_prefix): i["creators"],
+                "ItemCitation_{}".format(request_prefix): i["uri"],
+                "ItemDate_{}".format(request_prefix): i["dates"],
+                "ItemInfo1_{}".format(request_prefix): i["title"],
+                "ItemInfo2_{}".format(request_prefix): i["restrictions_text"],
+                "ItemInfo3_{}".format(request_prefix): i["uri"],
+                "ItemInfo4_{}".format(request_prefix): description,
+                "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
+                "ItemSubtitle_{}".format(request_prefix): i["parent"],
+                "ItemTitle_{}".format(request_prefix): i["collection_name"],
+                "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],
+                "Location_{}".format(request_prefix): i["preferred_instance"]["location"]
             })
         return parsed

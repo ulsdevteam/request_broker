@@ -37,13 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'process_request',
     'rest_framework',
-    'rest_framework_api_key',
-    'django_nose',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -129,20 +129,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-# Test runner settings
-# TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--cover-erase',
-    '--with-coverage',
-    '--cover-package=process_request,request_broker',
-    '--verbosity=1'
-]
+# CORS settings
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Permissions settings
-API_KEY_CUSTOM_HEADER = "HTTP_X_REQUEST_BROKER_KEY"
+ALLOWED_IPS = os.environ.get("DJANGO_ALLOWED_IPS").split(" ")
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework_api_key.permissions.HasAPIKey",
+        "process_request.auth.AllowedListPermission",
     ]
 }
 
@@ -161,8 +155,5 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", default=True)
 EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", default=False)
 EMAIL_DEFAULT_FROM = os.environ.get("DEFAULT_FROM_EMAIL", "alerts@example.org")
 
-EXPORT_FIELDS = ["creator", "collection_name", "aggregation", "dates",
-                 "resource_id", "container", "title", "restrictions", "ref"]
-
-AEON_API_KEY = os.environ.get("AEON_API_KEY", "123556abcdefg")
-AEON_BASEURL = os.environ.get("AEON_BASEURL", "http://example.com/aeon")
+EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id",
+                 "containers", "title", "restrictions_text", "uri"]

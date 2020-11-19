@@ -21,18 +21,18 @@ services:
     environment:
       - DEBUG=1
       - SECRET_KEY=obop2gifqn6wncaha^dt!w3an-%vkj_&1a@(w-2ci0))^o%#f4
-      - DJANGO_ALLOWED_HOSTS=request-broker-web localhost
+      - DJANGO_ALLOWED_HOSTS=request-broker-web localhost 192.168.1.5
+      - DJANGO_ALLOWED_IPS=127.0.0.1 192.168.1 172.
       - SQL_ENGINE=django.db.backends.postgresql
       - SQL_DATABASE=postgres
       - SQL_USER=postgres
       - SQL_PASSWORD=postgres
       - SQL_HOST=request-broker-db
       - SQL_PORT=5432
-      - AS_BASEURL=http://sandbox.archivesspace.org:8089/
+      - AS_BASEURL=http://sandbox.archivesspace:8089/
       - AS_USERNAME=admin
       - AS_PASSWORD=admin
       - AS_REPO_ID=2
-      - CORS_ORIGIN_WHITELIST=http://localhost:3000
 
 volumes:
   request_broker_dbvolume:

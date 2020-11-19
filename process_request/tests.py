@@ -11,19 +11,17 @@ from django.test import TestCase
 from django.urls import reverse
 from request_broker import settings
 from rest_framework.test import APIRequestFactory
-from rest_framework_api_key.models import APIKey
 
-from .clients import AeonAPIClient
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_preferred_format,
-                      get_resource_creator, get_rights_info, get_rights_status,
-                      get_rights_text, prepare_values)
+                      get_resource_creators, get_rights_info,
+                      get_rights_status, get_rights_text, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
 from .views import (DeliverDuplicationRequestView,
                     DeliverReadingRoomRequestView, DownloadCSVView, MailerView,
-                    ParseRequestView, ProcessEmailRequestView)
+                    ParseRequestView)
 
 aspace_vcr = vcr.VCR(
     serializer='json',
@@ -55,9 +53,9 @@ class TestHelpers(TestCase):
                              password=settings.ARCHIVESSPACE["password"],
                              repository=settings.ARCHIVESSPACE["repo_id"]).client
 
-    def test_get_resource_creator(self):
+    def test_get_resource_creators(self):
         obj_data = json_from_fixture("object_all.json")
-        self.assertEqual(get_resource_creator(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+        self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
@@ -186,32 +184,33 @@ class TestHelpers(TestCase):
             item = json_from_fixture(fixture)
             self.assertEqual(get_rights_text(item, self.client), status)
 
-    def test_aeon_client(self):
-        baseurl = random_string(20)
-        client = AeonAPIClient(baseurl)
-        self.assertEqual(client.baseurl, baseurl)
-        self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
+    # Test is commented out as the code is currently not used, and this allows us to shed a few configs
+    # def test_aeon_client(self):
+    #     baseurl = random_string(20)
+    #     client = AeonAPIClient(baseurl)
+    #     self.assertEqual(client.baseurl, baseurl)
+    #     self.assertEqual(client.session.headers.get("X-AEON-API-KEY"), settings.AEON_API_KEY)
 
 
 class TestRoutines(TestCase):
 
     @patch("process_request.routines.Processor.get_data")
-    def test_parse_items(self, mock_get_data):
+    def test_parse_item(self, mock_get_data):
         item = json_from_fixture("as_data.json")
         mock_get_data.return_value = item
         for restrictions, text, submit, reason in [
-                ("closed", "foo", False, "Item is restricted: foo"),
+                ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
-                ("conditional", "foobar", True, None)]:
+                ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
             mock_get_data.return_value["restrictions"] = restrictions
             mock_get_data.return_value["restrictions_text"] = text
-            parsed = Processor().parse_items([mock_get_data.return_value])[0]
+            parsed = Processor().parse_item(mock_get_data.return_value["uri"])
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
-            mock_get_data.return_value["preferred_format"] = format
-            parsed = Processor().parse_items([item])[0]
+            mock_get_data.return_value["preferred_instance"]["format"] = format
+            parsed = Processor().parse_item(item["uri"])
             self.assertEqual(parsed["submit"], submit)
 
     @patch("process_request.routines.Processor.get_data")
@@ -222,8 +221,10 @@ class TestRoutines(TestCase):
         self.assertEqual(len(to_process), len(processed))
         self.assertTrue([isinstance(item, dict) for item in processed])
 
-    def test_deliver_email(self):
-        object_list = [json_from_fixture("as_data.json")]
+    @patch("process_request.routines.Processor.get_data")
+    def test_deliver_email(self, mock_get_data):
+        mock_get_data.return_value = json_from_fixture("as_data.json")
+        object_list = [json_from_fixture("as_data.json")["uri"]]
         for to, subject in [
                 ("test@example.com", "Subject"),
                 (["foo@example.com", "bar@example.com"], None)]:
@@ -239,37 +240,33 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 15)
+        self.assertEqual(len(get_as_data), 11)
 
-    @patch("requests.Session.post")
-    def test_send_aeon_requests(self, mock_post):
-        return_str = random_string(10)
-        mock_post.return_value.status_code = 200
-        mock_post.return_value.json.return_value = return_str
-        items = json_from_fixture("as_data.json")
-        data = {"scheduled_date": date.today().isoformat(), "items": [items]}
-        delivered = AeonRequester().send_request("readingroom", **data)
-        self.assertEqual(delivered, return_str)
+    @patch("process_request.routines.Processor.get_data")
+    def test_send_aeon_requests(self, mock_get_data):
+        mock_get_data.return_value = json_from_fixture("as_data.json")
+
+        data = {"scheduled_date": date.today().isoformat(), "items": random_list()}
+        delivered = AeonRequester().get_request_data("readingroom", **data)
+        self.assertTrue(isinstance(delivered, dict))
 
         data["format"] = "jpeg"
-        delivered = AeonRequester().send_request("duplication", **data)
-        self.assertEqual(delivered, return_str)
+        delivered = AeonRequester().get_request_data("duplication", **data)
+        self.assertTrue(isinstance(delivered, dict))
 
         request_type = "foo"
         with self.assertRaises(Exception, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
-            AeonRequester().send_request(request_type, **data)
+            AeonRequester().get_request_data(request_type, **data)
 
 
 class TestViews(TestCase):
 
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.apikey = APIKey.objects.create_key(name="test-service")[1]
 
     def assert_handles_routine(self, request_data, view_str, view):
         request = self.factory.post(
             reverse(view_str), request_data, format="json")
-        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = view.as_view()(request)
         self.assertEqual(response.status_code, 200, "Response error: {}".format(response.data))
         self.assertEqual(len(response.data), 1)
@@ -278,7 +275,6 @@ class TestViews(TestCase):
         patched_fn.side_effect = Exception(exception_text)
         request = self.factory.post(
             reverse(view_str), {"items": random_list()}, format="json")
-        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = view.as_view()(request)
         self.assertEqual(
             response.status_code, 500, "Request did not return a 500 response")
@@ -291,7 +287,6 @@ class TestViews(TestCase):
         to_process = random_list()
         request = self.factory.post(
             reverse("download-csv"), {"items": to_process}, format="json")
-        request.META.update({"HTTP_X_REQUEST_BROKER_KEY": self.apikey})
         response = DownloadCSVView.as_view()(request)
         self.assertTrue(isinstance(response, StreamingHttpResponse))
         self.assertEqual(response.get('Content-Type'), "text/csv")
@@ -305,14 +300,6 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_get_data, "foobar", "download-csv", DownloadCSVView)
 
-    @patch("process_request.routines.Processor.process_email_request")
-    def test_process_email_request_view(self, mock_processed):
-        mock_processed.return_value = [json_from_fixture("as_data.json")]
-        self.assert_handles_routine(
-            {"items": random_list()}, "process-email", ProcessEmailRequestView)
-        self.assert_handles_exceptions(
-            mock_processed, "foobar", "process-email", ProcessEmailRequestView)
-
     @patch("process_request.routines.Mailer.send_message")
     def test_send_email_request_view(self, mock_sent):
         mock_sent.return_value = "email sent"
@@ -321,20 +308,20 @@ class TestViews(TestCase):
             "deliver-email",
             MailerView)
         self.assert_handles_exceptions(
-            mock_sent, "foobar", "process-email", MailerView)
+            mock_sent, "foobar", "deliver-email", MailerView)
 
-    @patch("process_request.routines.Processor.parse_items")
+    @patch("process_request.routines.Processor.parse_item")
     def test_parse_request_view(self, mock_parse):
-        parsed = random_list()
+        parsed = {"foo": "bar"}
         mock_parse.return_value = parsed
         self.assert_handles_routine(
-            {"items": parsed}, "parse-request", ParseRequestView)
+            {"item": random_string()}, "parse-request", ParseRequestView)
         self.assert_handles_exceptions(
             mock_parse, "bar", "parse-request", ParseRequestView)
 
-    @patch("process_request.routines.AeonRequester.send_request")
+    @patch("process_request.routines.AeonRequester.get_request_data")
     def test_deliver_readingroomrequest_view(self, mock_send):
-        delivered = random_list()
+        delivered = {"foo": "bar"}
         mock_send.return_value = delivered
         self.assert_handles_routine(
             {"items": delivered, "scheduled_date": date.today().isoformat()},
@@ -342,9 +329,9 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_send, "bar", "deliver-readingroom", DeliverReadingRoomRequestView)
 
-    @patch("process_request.routines.AeonRequester.send_request")
+    @patch("process_request.routines.AeonRequester.get_request_data")
     def test_deliver_duplicationrequest_view(self, mock_send):
-        delivered = random_list()
+        delivered = {"foo": "bar"}
         mock_send.return_value = delivered
         self.assert_handles_routine(
             {"items": delivered, "format": "jpeg"},
