@@ -199,9 +199,9 @@ class TestRoutines(TestCase):
         item = json_from_fixture("as_data.json")
         mock_get_data.return_value = item
         for restrictions, text, submit, reason in [
-                ("closed", "foo", False, "This object is currently unavailable for request. It will not be included in request. Reason: foo"),
+                ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
-                ("conditional", "foobar", True, "Item may be restricted: foobar")]:
+                ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
             mock_get_data.return_value["restrictions"] = restrictions
             mock_get_data.return_value["restrictions_text"] = text
             parsed = Processor().parse_item(mock_get_data.return_value["uri"])
