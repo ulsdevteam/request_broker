@@ -85,12 +85,12 @@ class Processor(object):
         reason = None
         if item["restrictions"] == "closed":
             submit = False
-            reason = "This object is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text"))
+            reason = "This item is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text"))
         elif "digital" in item["preferred_instance"]["format"].lower():
             submit = False
             reason = "This item is already available online. It will not be included in request."
         elif item["restrictions"] == "conditional":
-            reason = "Item may be restricted: {}".format(item.get("restrictions_text"))
+            reason = "This item may be currently unavailable for request. It will be included in request. Reason: {}".format(item.get("restrictions_text"))
         return submit, reason
 
     def parse_item(self, uri):
@@ -98,7 +98,7 @@ class Processor(object):
         `submit` and `submit_reason` attribute to each item.
 
         Args:
-            uri (list): An AS archival object URI.
+            uri (str): An AS archival object URI.
 
         Returns:
             parsed (dict): A dicts containing parsed item information.
