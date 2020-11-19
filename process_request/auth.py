@@ -13,4 +13,5 @@ class AllowedListPermission(BasePermission):
             if remote_addr == valid_ip or remote_addr.startswith(valid_ip):
                 return True
 
+        print("{} not allowed".format(remote_addr))
         return False
