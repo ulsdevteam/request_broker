@@ -151,8 +151,8 @@ EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.example.org")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", default=587)
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "alerts@example.org")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "password")
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", default=True)
-EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", default=False)
+EMAIL_USE_TLS = int(os.environ.get("EMAIL_USE_TLS", default=1))
+EMAIL_USE_SSL = int(os.environ.get("EMAIL_USE_SSL", default=0))
 EMAIL_DEFAULT_FROM = os.environ.get("DEFAULT_FROM_EMAIL", "alerts@example.org")
 
 EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id",
