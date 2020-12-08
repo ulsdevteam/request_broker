@@ -11,7 +11,7 @@ services:
       - POSTGRES_DB=request_broker_dev
   request-broker-web:
     build: .
-    entrypoint: /code/entrypoint.sh
+    command: apachectl -D FOREGROUND
     volumes:
       - .:/code
     ports:
