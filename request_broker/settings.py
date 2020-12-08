@@ -133,14 +133,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # CORS settings
 CORS_ORIGIN_ALLOW_ALL = True
 
-# Permissions settings
-ALLOWED_IPS = os.environ.get("DJANGO_ALLOWED_IPS").split(" ")
-REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "process_request.auth.AllowedListPermission",
-    ]
-}
-
 ARCHIVESSPACE = {
     "baseurl": os.environ.get("AS_BASEURL", "http://sandbox.archivesspace.org:8089/"),
     "username": os.environ.get("AS_USERNAME", "admin"),
