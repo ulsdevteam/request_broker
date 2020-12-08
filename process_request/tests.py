@@ -10,7 +10,7 @@ from django.http import StreamingHttpResponse
 from django.test import TestCase
 from django.urls import reverse
 from request_broker import settings
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, RequestsClient
 
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_preferred_format,
@@ -338,3 +338,8 @@ class TestViews(TestCase):
             "deliver-duplication", DeliverDuplicationRequestView)
         self.assert_handles_exceptions(
             mock_send, "bar", "deliver-duplication", DeliverDuplicationRequestView)
+
+    def test_status_view(self):
+        client = RequestsClient()
+        response = client.get("http://testserver{}".format(reverse("api_health_ping")))
+        assert response.status_code == 200

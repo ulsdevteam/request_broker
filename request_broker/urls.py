@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from process_request.views import (DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, MailerView,
@@ -26,5 +26,6 @@ urlpatterns = [
     path("api/deliver-request/duplication", DeliverDuplicationRequestView.as_view(), name="deliver-duplication"),
     path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
     path("api/process-request/parse", ParseRequestView.as_view(), name="parse-request"),
-    path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv")
+    path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv"),
+    path("status/", include('health_check.api.urls'))
 ]
