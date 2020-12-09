@@ -3,7 +3,7 @@ version: '2.4'
 services:
   request-broker-web:
     image: rockarch/request_broker:latest
-    entrypoint: /code/entrypoint.sh
+    command: apachectl -D FOREGROUND
     ports:
       - "8001:8000"
     env_file:
