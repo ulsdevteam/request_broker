@@ -191,8 +191,8 @@ def get_rights_status(item_json, client):
                 status = "closed"
             elif any([act["restriction"].lower() == "conditional" for act in stmnt.get("acts", [])]):
                 status = "conditional"
-    elif [n for n in item_json.get("notes", []) if n["type"] == "accessrestrict"]:
-        notes = [n for n in item_json["notes"] if n["type"] == "accessrestrict"]
+    elif [n for n in item_json.get("notes", []) if n.get("type") == "accessrestrict"]:
+        notes = [n for n in item_json["notes"] if n.get("type") == "accessrestrict"]
         if any([text_in_note(n, CLOSED_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
             status = "closed"
             if any([text_in_note(n, OPEN_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
@@ -213,9 +213,9 @@ def get_rights_text(item_json, client):
         string: note content of a conditions governing access that indicates a restriction
     """
     text = None
-    if [n for n in item_json.get("notes", []) if (n["type"] == "accessrestrict" and n["publish"])]:
+    if [n for n in item_json.get("notes", []) if (n.get("type") == "accessrestrict" and n["publish"])]:
         text = ", ".join(
-            [", ".join(get_note_text(n, client)) for n in item_json["notes"] if (n["type"] == "accessrestrict" and n["publish"])])
+            [", ".join(get_note_text(n, client)) for n in item_json["notes"] if (n.get("type") == "accessrestrict" and n["publish"])])
     elif item_json.get("rights_statements"):
         string = ""
         for stmnt in item_json["rights_statements"]:
