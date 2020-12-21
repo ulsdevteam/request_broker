@@ -1,7 +1,9 @@
 *.DS_Store
 .archivessnake.yml
 *.pickle
-*/config.py
+*.env*
+.coverage
+
 
 ### Django ###
 *.log
@@ -11,3 +13,4 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media
+static/

@@ -15,13 +15,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from process_request.views import ProcessRequestView
-from rest_framework import routers
-
-router = routers.DefaultRouter()
+from process_request.views import (DeliverDuplicationRequestView,
+                                   DeliverReadingRoomRequestView,
+                                   DownloadCSVView, MailerView,
+                                   ParseRequestView)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include(router.urls)),
-    path('api/process-request/', ProcessRequestView.as_view(), name='process-request')
+    path("admin/", admin.site.urls),
+    path("api/deliver-request/email", MailerView.as_view(), name="deliver-email"),
+    path("api/deliver-request/duplication", DeliverDuplicationRequestView.as_view(), name="deliver-duplication"),
+    path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
+    path("api/process-request/parse", ParseRequestView.as_view(), name="parse-request"),
+    path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv"),
+    path("status/", include('health_check.api.urls'))
 ]

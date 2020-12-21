@@ -1,0 +1,12 @@
+{
+    "type": "box",
+    "indicator": "2",
+    "barcode": "A12345",
+    "container_locations": [
+        {
+            "_resolved": {
+                "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+            }
+        }
+    ]
+}

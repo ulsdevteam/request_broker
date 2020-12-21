@@ -1,0 +1,33 @@
+{
+    "lock_version": 0,
+    "created_by": "admin",
+    "last_modified_by": "admin",
+    "create_time": "2020-07-28T14:16:54Z",
+    "system_mtime": "2020-07-28T14:16:54Z",
+    "user_mtime": "2020-07-28T14:16:54Z",
+    "instance_type": "digital_object",
+    "jsonmodel_type": "instance",
+    "is_representative": false,
+    "digital_object": {
+        "ref": "/repositories/2/digital_objects/3367",
+        "_resolved": {
+            "digital_object_id": "238475",
+            "title": "digital object",
+            "file_versions": [
+                {
+                    "lock_version": 0,
+                    "file_uri": "http://google.com",
+                    "publish": true,
+                    "created_by": "admin",
+                    "last_modified_by": "admin",
+                    "create_time": "2020-07-28T19:44:16Z",
+                    "system_mtime": "2020-07-28T19:44:16Z",
+                    "user_mtime": "2020-07-28T19:44:16Z",
+                    "jsonmodel_type": "file_version",
+                    "is_representative": false,
+                    "identifier": "8475"
+                }
+            ]
+        }
+    }
+}

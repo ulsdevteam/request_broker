@@ -23,56 +23,113 @@
     "external_documents": [],
     "rights_statements": [],
     "linked_agents": [],
-    "ancestors": [
-        {
-            "ref": "/repositories/2/archival_objects/1154299",
-            "level": "series"
-        },
-        {
-            "ref": "/repositories/2/resources/13063",
-            "level": "collection"
-        }
-    ],
+    "ancestors": [],
     "instances": [
         {
             "lock_version": 0,
             "created_by": "admin",
             "last_modified_by": "admin",
-            "create_time": "2020-04-14T15:36:25Z",
-            "system_mtime": "2020-04-14T15:36:25Z",
-            "user_mtime": "2020-04-14T15:36:25Z",
+            "create_time": "2020-07-28T14:16:54Z",
+            "system_mtime": "2020-07-28T14:16:54Z",
+            "user_mtime": "2020-07-28T14:16:54Z",
             "instance_type": "digital_object",
             "jsonmodel_type": "instance",
             "is_representative": false,
             "digital_object": {
-                "ref": "/repositories/2/digital_objects/3348"
+                "ref": "/repositories/2/digital_objects/3367",
+                "_resolved": {
+                    "digital_object_id": "238475",
+                    "title": "digital object",
+                    "file_versions": [
+                        {
+                            "lock_version": 0,
+                            "file_uri": "http://google.com",
+                            "publish": true,
+                            "created_by": "admin",
+                            "last_modified_by": "admin",
+                            "create_time": "2020-07-28T19:44:16Z",
+                            "system_mtime": "2020-07-28T19:44:16Z",
+                            "user_mtime": "2020-07-28T19:44:16Z",
+                            "jsonmodel_type": "file_version",
+                            "is_representative": false,
+                            "identifier": "8475"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "lock_version": 0,
+            "created_by": "admin",
+            "last_modified_by": "admin",
+            "create_time": "2020-07-28T14:16:54Z",
+            "system_mtime": "2020-07-28T14:16:54Z",
+            "user_mtime": "2020-07-28T14:16:54Z",
+            "instance_type": "digital_object",
+            "jsonmodel_type": "instance",
+            "is_representative": false,
+            "digital_object": {
+                "ref": "/repositories/2/digital_objects/3368",
+                "_resolved": {
+                    "digital_object_id": "238476",
+                    "title": "digital object 2",
+                    "file_versions": [
+                        {
+                            "lock_version": 0,
+                            "file_uri": "http://google2.com",
+                            "publish": true,
+                            "created_by": "admin",
+                            "last_modified_by": "admin",
+                            "create_time": "2020-07-28T19:44:16Z",
+                            "system_mtime": "2020-07-28T19:44:16Z",
+                            "user_mtime": "2020-07-28T19:44:16Z",
+                            "jsonmodel_type": "file_version",
+                            "is_representative": false,
+                            "identifier": "8475"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "lock_version": 0,
+            "created_by": "admin",
+            "last_modified_by": "admin",
+            "create_time": "2020-07-28T14:16:54Z",
+            "system_mtime": "2020-07-28T14:16:54Z",
+            "user_mtime": "2020-07-28T14:16:54Z",
+            "instance_type": "mixed materials",
+            "jsonmodel_type": "instance",
+            "is_representative": false,
+            "sub_container": {
+                "lock_version": 0,
+                "created_by": "admin",
+                "last_modified_by": "admin",
+                "create_time": "2020-07-28T14:16:54Z",
+                "system_mtime": "2020-07-28T14:16:54Z",
+                "user_mtime": "2020-07-28T14:16:54Z",
+                "jsonmodel_type": "sub_container",
+                "top_container": {
+                    "ref": "/repositories/2/top_containers/191161",
+                    "_resolved": {
+                        "type": "box",
+                        "indicator": "2",
+                        "barcode": "A12345",
+                        "container_locations": [
+                            {
+                                "_resolved": {
+                                    "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         }
     ],
-    "notes": [
-        {
-            "jsonmodel_type": "note_multipart",
-            "persistent_id": "0322d44b863ca218398f207f55a074cc",
-            "type": "bioghist",
-            "subnotes": [
-                {
-                    "jsonmodel_type": "note_text",
-                    "content": "change",
-                    "publish": true
-                }
-            ],
-            "publish": true
-        }
-    ],
+    "notes": [],
     "uri": "/repositories/2/archival_objects/1154293",
     "repository": {
         "ref": "/repositories/2"
-    },
-    "resource": {
-        "ref": "/repositories/2/resources/13063"
-    },
-    "parent": {
-        "ref": "/repositories/2/archival_objects/1154299"
-    },
-    "has_unpublished_ancestor": false
+    }
 }

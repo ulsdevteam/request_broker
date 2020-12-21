@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
-import request_broker.config as CF
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,12 +20,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'obop2gifqn6wncaha^dt!w3an-%vkj_&1a@(w-2ci0))^o%#f4'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = int(os.environ.get("DEBUG", default=True))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
 
 # Application definition
@@ -39,10 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
+    'health_check',
     'process_request',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,8 +78,17 @@ WSGI_APPLICATION = 'request_broker.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = CF.DATABASES
 
+DATABASES = {
+    "default": {
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": os.environ.get("SQL_USER", "user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
+        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "PORT": os.environ.get("SQL_PORT", "5432"),
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -97,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'process_request.MachineUser'
+AUTH_USER_MODEL = 'process_request.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -117,5 +128,25 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-ARCHIVESSPACE = CF.ARCHIVESSPACE
+# CORS settings
+CORS_ORIGIN_ALLOW_ALL = True
+
+ARCHIVESSPACE = {
+    "baseurl": os.environ.get("AS_BASEURL", "http://sandbox.archivesspace.org:8089/"),
+    "username": os.environ.get("AS_USERNAME", "admin"),
+    "password": os.environ.get("AS_PASSWORD", "admin"),
+    "repo_id": int(os.environ.get("AS_REPO_ID", default=2)),
+}
+
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.example.org")
+EMAIL_PORT = os.environ.get("EMAIL_PORT", default=587)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "alerts@example.org")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "password")
+EMAIL_USE_TLS = int(os.environ.get("EMAIL_USE_TLS", default=1))
+EMAIL_USE_SSL = int(os.environ.get("EMAIL_USE_SSL", default=0))
+EMAIL_DEFAULT_FROM = os.environ.get("DEFAULT_FROM_EMAIL", "alerts@example.org")
+
+EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id",
+                 "containers", "title", "restrictions_text", "uri"]
