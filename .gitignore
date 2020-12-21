@@ -1,7 +1,7 @@
 *.DS_Store
 .archivessnake.yml
 *.pickle
-*.env.dev
+*.env*
 .coverage
 
 
