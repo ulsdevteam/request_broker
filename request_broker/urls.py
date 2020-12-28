@@ -27,5 +27,5 @@ urlpatterns = [
     path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
     path("api/process-request/parse", ParseRequestView.as_view(), name="parse-request"),
     path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv"),
-    path("status/", include('health_check.api.urls'))
+    path("api/status/", include('health_check.api.urls'))
 ]
