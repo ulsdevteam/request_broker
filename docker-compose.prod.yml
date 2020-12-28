@@ -2,7 +2,7 @@ version: '2.4'
 
 services:
   request-broker-web:
-    image: rockarch/request_broker:0.1
+    image: rockarch/request_broker:0.2
     command: apachectl -D FOREGROUND
     ports:
       - "8001:8000"
