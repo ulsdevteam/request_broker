@@ -148,5 +148,4 @@ EMAIL_USE_TLS = int(os.environ.get("EMAIL_USE_TLS", default=1))
 EMAIL_USE_SSL = int(os.environ.get("EMAIL_USE_SSL", default=0))
 EMAIL_DEFAULT_FROM = os.environ.get("DEFAULT_FROM_EMAIL", "alerts@example.org")
 
-EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id",
-                 "containers", "title", "restrictions_text", "uri"]
+EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "title"]
