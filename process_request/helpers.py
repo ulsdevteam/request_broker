@@ -1,5 +1,6 @@
 import re
 
+import shortuuid
 from asnake.utils import get_date_display, get_note_text, text_in_note
 from ordered_set import OrderedSet
 
@@ -309,6 +310,19 @@ def get_size(instances):
         except Exception as e:
             raise Exception("Error parsing instances") from e
     return extents
+
+
+def get_url(obj_json, host, client):
+    """Returns a full URL for an object."""
+    uuid = shortuuid.uuid(name=obj_json["uri"])
+    return "{}/collections/{}".format(host, uuid) if has_children(obj_json, client) else "{}/objects/{}".format(host, uuid)
+
+
+def has_children(obj_json, client):
+    """Checks whether an archival object has children using the tree/node endpoint."""
+    resource_uri = obj_json['resource']['ref']
+    tree_node = client.get('{}/tree/node?node_uri={}'.format(resource_uri, obj_json['uri'])).json()
+    return True if tree_node['child_count'] > 0 else False
 
 
 def indicator_to_integer(indicator):

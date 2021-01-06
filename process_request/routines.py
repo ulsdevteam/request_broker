@@ -4,7 +4,7 @@ from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates,
                       get_preferred_format, get_resource_creators,
-                      get_rights_info, get_size)
+                      get_rights_info, get_size, get_url)
 
 
 class Processor(object):
@@ -46,7 +46,7 @@ class Processor(object):
                 "dates": get_dates(item_json, aspace.client),
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
-                "uri": item_json.get("uri"),
+                "dimes_url": get_url(item_json, settings.DIMES_PREFIX, aspace.client),
                 "containers": get_container_indicators(item_json),
                 "size": get_size(item_json["instances"]),
                 "preferred_instance": {
@@ -59,20 +59,6 @@ class Processor(object):
             }
         else:
             raise Exception(obj.json()["error"])
-
-    def process_email_request(self, object_list):
-        """Processes email requests.
-
-        Args:
-            object_list (list): A list of AS archival object URIs.
-
-        Returns:
-            data (list): A list of dicts of objects.
-        """
-        processed = []
-        for item in object_list:
-            processed.append(self.get_data(item))
-        return processed
 
     def is_submittable(self, item):
         """Determines if a request item is submittable.

@@ -214,14 +214,6 @@ class TestRoutines(TestCase):
             self.assertEqual(parsed["submit"], submit)
 
     @patch("process_request.routines.Processor.get_data")
-    def test_process_email_request(self, mock_get_data):
-        mock_get_data.return_value = json_from_fixture("as_data.json")
-        to_process = random_list()
-        processed = Processor().process_email_request(to_process)
-        self.assertEqual(len(to_process), len(processed))
-        self.assertTrue([isinstance(item, dict) for item in processed])
-
-    @patch("process_request.routines.Processor.get_data")
     def test_deliver_email(self, mock_get_data):
         mock_get_data.return_value = json_from_fixture("as_data.json")
         object_list = [json_from_fixture("as_data.json")["uri"]]

@@ -32,6 +32,7 @@ services:
       - AS_USERNAME=admin
       - AS_PASSWORD=admin
       - AS_REPO_ID=2
+      - DIMES_PREFIX=https://dimes-beta.rockarch.org
 
 volumes:
   request_broker_dbvolume:
