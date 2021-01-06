@@ -1,5 +1,6 @@
 import re
 
+import inflect
 import shortuuid
 from asnake.utils import get_date_display, get_note_text, text_in_note
 from ordered_set import OrderedSet
@@ -309,7 +310,9 @@ def get_size(instances):
             extents = append_to_list(extents, extent_type.strip(), extent_number)
         except Exception as e:
             raise Exception("Error parsing instances") from e
-    return extents
+    return ", ".join(
+        ["{} {}".format(
+            e["number"], inflect.engine().plural(e["extent_type"], e["number"])) for e in extents])
 
 
 def get_url(obj_json, host, client):
