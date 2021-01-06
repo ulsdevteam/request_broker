@@ -1,3 +1,5 @@
+import re
+
 from asnake.utils import get_date_display, get_note_text, text_in_note
 from ordered_set import OrderedSet
 
@@ -261,3 +263,65 @@ def get_dates(archival_object, client):
             if a.get("_resolved").get("dates"):
                 dates = [get_date_display(d, client) for d in a.get("_resolved").get("dates")]
     return ", ".join(dates)
+
+
+def get_size(instances):
+    """Attempts to parse extents from instances.
+
+    Initially, child subcontainers are parsed to determine
+    the extent number and extent type. If a child subcontainer does not
+    exist, the parent container is parsed.
+    """
+
+    def append_to_list(extents, extent_type, extent_number):
+        """Merges or appends extent objects to an extent list.
+
+        Only operates over instances with a sub_container (i.e. skips
+        digital object instances).
+
+        Args:
+            extents (list): a list of extents to update.
+            extent_type (str): the extent type to add.
+            extent_number (int): the extent number to add
+        """
+        matching_extents = [e for e in extents if e["extent_type"] == extent_type]
+        if matching_extents:
+            matching_extents[0]["number"] += extent_number
+        else:
+            extents.append({"extent_type": extent_type, "number": extent_number})
+        return extents
+
+    extents = []
+    for instance in [i for i in instances if i.get("sub_container")]:
+        try:
+            sub_container_parseable = all(i_type in instance.get("sub_container", {}) for i_type in ["indicator_2", "type_2"])
+            if sub_container_parseable:
+                number_list = [i.strip() for i in instance["sub_container"]["indicator_2"].split("-")]
+                range = sorted(map(indicator_to_integer, number_list))
+                extent_type = instance["sub_container"]["type_2"]
+                extent_number = range[-1] - range[0] + 1 if len(range) > 1 else 1
+            else:
+                instance_type = instance["instance_type"].lower()
+                sub_container_type = instance["sub_container"]["top_container"]["_resolved"].get("type", "").lower()
+                extent_type = "{} {}".format(instance_type, sub_container_type) if sub_container_type != "box" else sub_container_type
+                extent_number = 1
+            extents = append_to_list(extents, extent_type.strip(), extent_number)
+        except Exception as e:
+            raise Exception("Error parsing instances") from e
+    return extents
+
+
+def indicator_to_integer(indicator):
+    """Converts an instance indicator to an integer.
+
+    An indicator can be an integer (23) a combination of integers and letters (23b)
+    or just a letter (B).
+    """
+    try:
+        integer = int(indicator)
+    except ValueError:
+        parsed = re.sub("[^0-9]", "", indicator)
+        if len(parsed):
+            return indicator_to_integer(parsed)
+        integer = ord(indicator.lower()) - 97
+    return integer

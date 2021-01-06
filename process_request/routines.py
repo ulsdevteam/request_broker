@@ -4,7 +4,7 @@ from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates,
                       get_preferred_format, get_resource_creators,
-                      get_rights_info)
+                      get_rights_info, get_size)
 
 
 class Processor(object):
@@ -26,8 +26,11 @@ class Processor(object):
                         username=settings.ARCHIVESSPACE["username"],
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
-        obj = aspace.client.get(uri, params={"resolve": ["resource::linked_agents", "ancestors",
-                                                         "top_container", "top_container::container_locations", "instances::digital_object"]})
+        obj = aspace.client.get(
+            uri, params={"resolve": [
+                "resource::linked_agents", "ancestors",
+                "top_container", "top_container::container_locations",
+                "instances::digital_object", "instances::top_container"]})
         if obj.status_code == 200:
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
@@ -45,6 +48,7 @@ class Processor(object):
                 "title": item_json.get("display_string"),
                 "uri": item_json.get("uri"),
                 "containers": get_container_indicators(item_json),
+                "size": get_size(item_json["instances"]),
                 "preferred_instance": {
                     "format": format,
                     "container": container,
