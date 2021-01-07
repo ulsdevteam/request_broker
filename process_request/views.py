@@ -77,7 +77,7 @@ class DownloadCSVView(APIView):
 
     def iter_items(self, items, pseudo_buffer):
         """Returns an iterable containing the spreadsheet rows."""
-        fieldnames = settings.EXPORT_FIELDS
+        fieldnames = [key for key, _ in settings.EXPORT_FIELDS]
         writer = csv.DictWriter(pseudo_buffer, fieldnames=fieldnames, extrasaction="ignore")
         yield writer.writerow(dict((fn, fn) for fn in writer.fieldnames))
         for row in items:
