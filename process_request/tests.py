@@ -15,7 +15,8 @@ from rest_framework.test import APIRequestFactory, RequestsClient
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_preferred_format,
                       get_resource_creators, get_rights_info,
-                      get_rights_status, get_rights_text, prepare_values)
+                      get_rights_status, get_rights_text, get_size,
+                      prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -59,7 +60,7 @@ class TestHelpers(TestCase):
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
-        self.assertEqual(get_dates(obj_data, self.client), "1991")
+        self.assertEqual(get_dates(obj_data, self.client), None)
 
         obj_data = json_from_fixture("object_no_expression.json")
         self.assertEqual(get_dates(obj_data, self.client), "1991-1992")
@@ -184,6 +185,14 @@ class TestHelpers(TestCase):
             item = json_from_fixture(fixture)
             self.assertEqual(get_rights_text(item, self.client), status)
 
+    def test_get_size(self):
+        for fixture, size in [
+                ("instances_singular.json", "1 box"),
+                ("instances_multiple.json", "2 boxes"),
+                ("instances_plural.json", "3 folders")]:
+            instance = json_from_fixture(fixture)
+            self.assertEqual(get_size(instance), size)
+
     # Test is commented out as the code is currently not used, and this allows us to shed a few configs
     # def test_aeon_client(self):
     #     baseurl = random_string(20)
@@ -214,14 +223,6 @@ class TestRoutines(TestCase):
             self.assertEqual(parsed["submit"], submit)
 
     @patch("process_request.routines.Processor.get_data")
-    def test_process_email_request(self, mock_get_data):
-        mock_get_data.return_value = json_from_fixture("as_data.json")
-        to_process = random_list()
-        processed = Processor().process_email_request(to_process)
-        self.assertEqual(len(to_process), len(processed))
-        self.assertTrue([isinstance(item, dict) for item in processed])
-
-    @patch("process_request.routines.Processor.get_data")
     def test_deliver_email(self, mock_get_data):
         mock_get_data.return_value = json_from_fixture("as_data.json")
         object_list = [json_from_fixture("as_data.json")["uri"]]
@@ -240,7 +241,7 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 11)
+        self.assertEqual(len(get_as_data), 12)
 
     @patch("process_request.routines.Processor.get_data")
     def test_send_aeon_requests(self, mock_get_data):
