@@ -46,6 +46,7 @@ class Processor(object):
                 "dates": get_dates(item_json, aspace.client),
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
+                "uri": item_json["uri"],
                 "dimes_url": get_url(item_json, settings.DIMES_PREFIX, aspace.client),
                 "containers": get_container_indicators(item_json),
                 "size": get_size(item_json["instances"]),
@@ -130,9 +131,7 @@ class Mailer(object):
         return "email sent to {}".format(", ".join(recipient_list))
 
     def format_items(self, object_list):
-        """Converts dicts into strings and appends them to message body.
-
-        Location and barcode are not appended to the message.
+        """Appends select keys to the message body unless their value is None.
 
         Args:
             object_list (list): list of requested objects.
@@ -142,10 +141,10 @@ class Mailer(object):
         """
         message = ""
         for obj in object_list:
-            for k, v in obj.items():
-                if k in settings.EXPORT_FIELDS:
-                    message += "{}: {}\n".format(k, v)
-            message += "\n"
+            for key, label in settings.EXPORT_FIELDS:
+                if obj[key]:
+                    concat_str = "{}: {}\n".format(label, obj[key]) if label else obj[key]
+                    message += "{}\n".format(concat_str)
         return message
 
 

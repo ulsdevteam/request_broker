@@ -241,7 +241,7 @@ class TestRoutines(TestCase):
     def test_get_data(self):
         get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638")
         self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 12)
+        self.assertEqual(len(get_as_data), 13)
 
     @patch("process_request.routines.Processor.get_data")
     def test_send_aeon_requests(self, mock_get_data):
