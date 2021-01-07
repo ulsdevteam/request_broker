@@ -60,7 +60,7 @@ class TestHelpers(TestCase):
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
-        self.assertEqual(get_dates(obj_data, self.client), "1991")
+        self.assertEqual(get_dates(obj_data, self.client), None)
 
         obj_data = json_from_fixture("object_no_expression.json")
         self.assertEqual(get_dates(obj_data, self.client), "1991-1992")

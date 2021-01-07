@@ -19,7 +19,21 @@
     "subjects": [],
     "linked_events": [],
     "extents": [],
-    "dates": [],
+    "dates": [
+      {
+          "lock_version": 0,
+          "begin": "1991",
+          "end": "1992",
+          "created_by": "k.martin",
+          "last_modified_by": "k.martin",
+          "create_time": "2020-02-03T13:35:31Z",
+          "system_mtime": "2020-02-03T13:35:31Z",
+          "user_mtime": "2020-02-03T13:35:31Z",
+          "date_type": "single",
+          "label": "creation",
+          "jsonmodel_type": "date"
+      }
+    ],
     "external_documents": [],
     "rights_statements": [],
     "linked_agents": [],
