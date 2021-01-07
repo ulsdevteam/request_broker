@@ -248,23 +248,16 @@ def get_resource_creators(resource):
 
 
 def get_dates(archival_object, client):
-    """Gets the date expressions of an archival object or the date expressions of the
-    object's closest ancestor with date information.
+    """Gets human-readable dates of an archival object.
 
         Args:
-            archival_object (dict): json for an archival object (with resolved ancestors)
+            archival_object (dict): json for an archival object
 
         Returns:
-            string: all dates associated with an archival object or its closest ancestor, separated by a comma
+            string: all dates associated with an archival object, separated by a comma
     """
-    dates = []
-    if archival_object.get("dates"):
-        dates = [get_date_display(d, client) for d in archival_object.get("dates")]
-    else:
-        for a in archival_object.get("ancestors"):
-            if a.get("_resolved").get("dates"):
-                dates = [get_date_display(d, client) for d in a.get("_resolved").get("dates")]
-    return ", ".join(dates)
+    dates = [get_date_display(d, client) for d in archival_object.get("dates", [])]
+    return ", ".join(dates) if len(dates) else None
 
 
 def get_size(instances):
