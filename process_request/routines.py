@@ -144,7 +144,8 @@ class Mailer(object):
             for key, label in settings.EXPORT_FIELDS:
                 if obj[key]:
                     concat_str = "{}: {}\n".format(label, obj[key]) if label else obj[key]
-                    message += "{}\n".format(concat_str)
+                    message += concat_str
+            message += "\n"
         return message
 
 
