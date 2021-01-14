@@ -148,5 +148,12 @@ EMAIL_USE_TLS = int(os.environ.get("EMAIL_USE_TLS", default=1))
 EMAIL_USE_SSL = int(os.environ.get("EMAIL_USE_SSL", default=0))
 EMAIL_DEFAULT_FROM = os.environ.get("DEFAULT_FROM_EMAIL", "alerts@example.org")
 
-EXPORT_FIELDS = ["creators", "collection_name", "parent", "dates", "resource_id",
-                 "containers", "title", "restrictions_text", "uri"]
+DIMES_PREFIX = os.environ.get("DIMES_PREFIX", "https://dimes.rockarch.org")
+EXPORT_FIELDS = [
+    ("title", None),
+    ("dimes_url", "URL"),
+    ("creators", "Creator/s"),
+    ("dates", "Dates"),
+    ("size", "Size"),
+    ("collection_name", "Collection Name"),
+    ("parent", "Parent Collection Name")]

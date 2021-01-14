@@ -1,0 +1,37 @@
+[{
+    "lock_version": 0,
+    "created_by": "admin",
+    "last_modified_by": "admin",
+    "create_time": "2020-07-28T14:16:54Z",
+    "system_mtime": "2020-07-28T14:16:54Z",
+    "user_mtime": "2020-07-28T14:16:54Z",
+    "instance_type": "mixed materials",
+    "jsonmodel_type": "instance",
+    "is_representative": false,
+    "sub_container": {
+        "lock_version": 0,
+        "created_by": "admin",
+        "last_modified_by": "admin",
+        "create_time": "2020-07-28T14:16:54Z",
+        "system_mtime": "2020-07-28T14:16:54Z",
+        "user_mtime": "2020-07-28T14:16:54Z",
+        "jsonmodel_type": "sub_container",
+        "type": "box",
+        "indicator": "2",
+        "type_2": "folder",
+        "indicator_2": "60-62",
+        "top_container": {
+            "ref": "/repositories/2/top_containers/191161",
+            "_resolved": {
+                "barcode": "A12345",
+                "container_locations": [
+                    {
+                        "_resolved": {
+                            "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}]
