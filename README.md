@@ -42,18 +42,6 @@ Or, if you want to remove all data
 |POST|/api/process-request/email| |200|Processes data in preparation for sending an email|
 |POST|/api/download-csv/| |200|Downloads a CSV file of items|
 
-### Authorization
-
-This application uses the [Django REST Framework API Key](https://florimondmanca.github.io/djangorestframework-api-key/) library to limit which external applications are able to use its endpoints. All requests must include a `X-Request-Broker-Key` header key with the value of a valid API Key.
-
-API Keys can be be generated in the Django shell:
-```
->>> from rest_framework_api_key.models import APIKey
->>> api_key, key = APIKey.objects.create_key(name="remote-service")
-```
-
-For further details on usage, look at Request Broker's tests or [Django REST Framework API Key documentation](https://florimondmanca.github.io/djangorestframework-api-key/).
-
 ## Requirements
 
 Using this repo requires having [Docker](https://store.docker.com/search?type=edition&offering=community) installed.
