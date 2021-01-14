@@ -30,7 +30,7 @@ class Processor(object):
             uri, params={"resolve": [
                 "resource::linked_agents", "ancestors",
                 "top_container", "top_container::container_locations",
-                "instances::digital_object", "instances::top_container"]})
+                "instances::digital_object"]})
         if obj.status_code == 200:
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
