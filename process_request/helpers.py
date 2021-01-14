@@ -56,9 +56,16 @@ def get_locations(top_container_info):
      Returns:
          string: all locations associated with the top container, separated by a comma.
     """
+
+    def make_short_location(loc_data):
+        return ".".join([
+            loc_data["room"].strip().replace("Vault ", ""),
+            loc_data["coordinate_1_indicator"].strip(),
+            loc_data["coordinate_2_indicator"].strip()])
+
     locations = None
     if top_container_info.get("container_locations"):
-        locations = ",".join([c.get("_resolved").get("title") for c in top_container_info.get("container_locations")])
+        locations = ",".join([make_short_location(c["_resolved"]) for c in top_container_info.get("container_locations")])
     return locations
 
 
