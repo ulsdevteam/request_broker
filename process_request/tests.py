@@ -100,7 +100,7 @@ class TestHelpers(TestCase):
 
     def test_get_locations(self):
         obj_data = json_from_fixture("locations.json")
-        expected_location = "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+        expected_location = "106.66.7"
         self.assertEqual(get_locations(obj_data), expected_location)
 
     def test_get_instance_data(self):
@@ -111,7 +111,7 @@ class TestHelpers(TestCase):
 
         obj_data = json_from_fixture("mixed_materials_instance.json")
         expected_values = ("mixed materials", "Box 2",
-                           "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
+                           "106.66.7",
                            "A12345", "/repositories/2/top_containers/191161")
         self.assertEqual(get_instance_data([obj_data]), expected_values)
 
@@ -125,14 +125,14 @@ class TestHelpers(TestCase):
         obj_data = json_from_fixture("object_microform.json")
         expected_data = ("microform",
                          "Reel 1, Reel 2",
-                         "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                         "106.66.7, 106.66.8",
                          "A12345, A123456", "/repositories/2/top_containers/191157, /repositories/2/top_containers/191158")
         self.assertEqual(get_preferred_format(obj_data), expected_data)
 
         obj_data = json_from_fixture("object_mixed.json")
         expected_data = ("mixed materials",
                          "Box 1, Box 2",
-                         "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7], Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                         "106.66.7, 106.66.8",
                          "A12345, A123456", "/repositories/2/top_containers/191157, /repositories/2/top_containers/191158")
         self.assertEqual(get_preferred_format(obj_data), expected_data)
 
