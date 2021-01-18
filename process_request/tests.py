@@ -171,6 +171,7 @@ class TestHelpers(TestCase):
                 ("object_restricted_note_open.json", "open"),
                 ("object_restricted_note_long_open.json", "open"),
                 ("object_restricted_note_longer_open.json", "open"),
+                ("object_restricted_note_scholarly_open.json", "open"),
                 ("object_restricted_rights_statement.json", "closed"),
                 ("object_restricted_rights_statement_conditional.json", "conditional")]:
             item = json_from_fixture(fixture)
