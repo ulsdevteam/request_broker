@@ -1,0 +1,13 @@
+{
+  "notes": [{
+    "jsonmodel_type": "note_multipart",
+    "persistent_id": "0322d44b863ca218398f207f55a074cc",
+    "type": "accessrestrict",
+    "subnotes": [{
+      "jsonmodel_type": "note_text",
+      "content": "Open for research. Brittle or damaged items are available at the discretion of RAC. Researchers interested in accessing digital media (floppy disks, CDs, DVDs, etc.) or audiovisual material (audio cassettes, VHS, etc.) in this collection must use an access surrogate. The original items may not be accessed because of preservation concerns. To request an access surrogate be made, or if you are unsure if there is an access surrogate, please contact an archivist.",
+      "publish": true
+    }],
+    "publish": true
+  }]
+}
