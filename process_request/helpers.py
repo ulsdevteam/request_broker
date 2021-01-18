@@ -59,9 +59,9 @@ def get_locations(top_container_info):
 
     def make_short_location(loc_data):
         return ".".join([
-            loc_data["room"].strip().replace("Vault ", ""),
-            loc_data["coordinate_1_indicator"].strip(),
-            loc_data["coordinate_2_indicator"].strip()])
+            loc_data.get("room", "").strip().replace("Vault ", ""),
+            loc_data.get("coordinate_1_indicator", "").strip(),
+            loc_data.get("coordinate_2_indicator", "").strip()])
 
     locations = None
     if top_container_info.get("container_locations"):
