@@ -13,11 +13,12 @@ class Processor(object):
     delivery formats.
     """
 
-    def get_data(self, uri):
+    def get_data(self, uri, baseurl):
         """Gets data about an archival object from ArchivesSpace.
 
         Args:
-            uris (str): An ArchivesSpace URI.
+            uri (str): An ArchivesSpace URI.
+            baseurl (str): base URL for links to objects in DIMES
 
         Returns:
             obj (dict): A JSON representation of an ArchivesSpace Archival Object.
@@ -47,7 +48,7 @@ class Processor(object):
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
                 "uri": item_json["uri"],
-                "dimes_url": get_url(item_json, settings.DIMES_PREFIX, aspace.client),
+                "dimes_url": get_url(item_json, baseurl, aspace.client),
                 "containers": get_container_indicators(item_json),
                 "size": get_size(item_json["instances"]),
                 "preferred_instance": {
@@ -84,17 +85,18 @@ class Processor(object):
             reason = "This item may be currently unavailable for request. It will be included in request. Reason: {}".format(item.get("restrictions_text"))
         return submit, reason
 
-    def parse_item(self, uri):
+    def parse_item(self, uri, baseurl):
         """Parses requested items to determine which are submittable. Adds a
         `submit` and `submit_reason` attribute to each item.
 
         Args:
             uri (str): An AS archival object URI.
+            baseurl (str): base URL for links to objects in DIMES
 
         Returns:
             parsed (dict): A dicts containing parsed item information.
         """
-        data = self.get_data(uri)
+        data = self.get_data(uri, baseurl)
         submit, reason = self.is_submittable(data)
         return {"uri": uri, "submit": submit, "submit_reason": reason}
 
@@ -102,7 +104,7 @@ class Processor(object):
 class Mailer(object):
     """Email delivery class."""
 
-    def send_message(self, email, object_list, subject=None, message=""):
+    def send_message(self, email, object_list, subject, message, baseurl):
         """Sends an email with request data to an email address or list of
         addresses.
 
@@ -111,6 +113,7 @@ class Mailer(object):
             object_list (list): list of URIs for requested objects.
             subject (str): string to attach to the subject of the email.
             message (str): message to prepend to the email body.
+            baseurl (str): base URL to use for links to objects in DIMES.
 
         Returns:
             str: a string message that the emails were sent.
@@ -119,7 +122,7 @@ class Mailer(object):
         recipient_list = email if isinstance(email, list) else [email]
         subject = subject if subject else "My List from DIMES"
         processor = Processor()
-        fetched = [processor.get_data(item) for item in object_list]
+        fetched = [processor.get_data(item, baseurl) for item in object_list]
         message += self.format_items(fetched)
         # TODO: decide if we want to send html messages
         send_mail(
@@ -174,7 +177,7 @@ class AeonRequester(object):
             "SubmitButton": "Submit Request",
         }
 
-    def get_request_data(self, request_type, **kwargs):
+    def get_request_data(self, request_type, baseurl, **kwargs):
         """Delivers request to Aeon.
 
         Args:
@@ -188,7 +191,7 @@ class AeonRequester(object):
             ValueError: if request_type is not readingroom or duplicate.
         """
         processor = Processor()
-        fetched = [processor.get_data(item) for item in kwargs.get("items")]
+        fetched = [processor.get_data(item, baseurl) for item in kwargs.get("items")]
         if request_type == "readingroom":
             data = self.prepare_reading_room_request(fetched, kwargs)
         elif request_type == "duplication":
