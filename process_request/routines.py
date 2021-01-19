@@ -143,7 +143,7 @@ class Mailer(object):
         for obj in object_list:
             for key, label in settings.EXPORT_FIELDS:
                 if obj[key]:
-                    concat_str = "{}: {}\n".format(label, obj[key]) if label else obj[key]
+                    concat_str = "{}: {} \n".format(label, obj[key]) if label else "{} \n".format(obj[key])
                     message += concat_str
             message += "\n"
         return message
