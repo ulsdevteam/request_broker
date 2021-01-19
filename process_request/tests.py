@@ -216,13 +216,13 @@ class TestRoutines(TestCase):
                 ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
             mock_get_data.return_value["restrictions"] = restrictions
             mock_get_data.return_value["restrictions_text"] = text
-            parsed = Processor().parse_item(mock_get_data.return_value["uri"])
+            parsed = Processor().parse_item(mock_get_data.return_value["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value["preferred_instance"]["format"] = format
-            parsed = Processor().parse_item(item["uri"])
+            parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
 
     @patch("process_request.routines.Processor.get_data")
@@ -233,7 +233,7 @@ class TestRoutines(TestCase):
                 ("test@example.com", "Subject"),
                 (["foo@example.com", "bar@example.com"], None)]:
             expected_to = to if isinstance(to, list) else [to]
-            emailed = Mailer().send_message(to, object_list, subject)
+            emailed = Mailer().send_message(to, object_list, subject, "", "https://dimes.rockarch.org")
             self.assertEqual(emailed, "email sent to {}".format(", ".join(expected_to)))
             self.assertTrue(isinstance(mail.outbox[0].to, list))
             self.assertIsNot(mail.outbox[0].subject, None)
@@ -242,7 +242,8 @@ class TestRoutines(TestCase):
 
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_get_data(self):
-        get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638")
+        get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638", "https://dimes.rockarch.org")
+        print(get_as_data)
         self.assertTrue(isinstance(get_as_data, dict))
         self.assertEqual(len(get_as_data), 13)
 
@@ -251,11 +252,11 @@ class TestRoutines(TestCase):
         mock_get_data.return_value = json_from_fixture("as_data.json")
 
         data = {"scheduled_date": date.today().isoformat(), "items": random_list()}
-        delivered = AeonRequester().get_request_data("readingroom", **data)
+        delivered = AeonRequester().get_request_data("readingroom", "https://dimes.rockarch.org", **data)
         self.assertTrue(isinstance(delivered, dict))
 
         data["format"] = "jpeg"
-        delivered = AeonRequester().get_request_data("duplication", **data)
+        delivered = AeonRequester().get_request_data("duplication", "https://dimes.rockarch.org", **data)
         self.assertTrue(isinstance(delivered, dict))
 
         request_type = "foo"
