@@ -152,7 +152,7 @@ DIMES_PREFIX = os.environ.get("DIMES_PREFIX", "https://dimes.rockarch.org")
 EXPORT_FIELDS = [
     ("title", None),
     ("dimes_url", "URL"),
-    ("creators", "Creator/s"),
+    ("creators", "Creator(s)"),
     ("dates", "Dates"),
     ("size", "Size"),
     ("collection_name", "Collection Name"),
