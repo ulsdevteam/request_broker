@@ -15,7 +15,6 @@
             "sub_container": {
                 "jsonmodel_type": "sub_container",
                 "top_container": {
-                    "ref": "/repositories/2/top_containers/191157",
                     "_resolved": {
                         "barcode": "A12345",
                         "indicator": "1",
@@ -31,7 +30,8 @@
                                     "coordinate_2_indicator": "7"
                                 }
                             }
-                        ]
+                        ],
+                        "uri": "/repositories/2/top_containers/191157"
                     }
                 }
             }
@@ -41,7 +41,6 @@
             "sub_container": {
                 "jsonmodel_type": "sub_container",
                 "top_container": {
-                    "ref": "/repositories/2/top_containers/191158",
                     "_resolved": {
                         "barcode": "A123456",
                         "indicator": "2",
@@ -57,7 +56,8 @@
                                     "coordinate_2_indicator": "8"
                                 }
                             }
-                        ]
+                        ],
+                        "uri": "/repositories/2/top_containers/191158"
                     }
                 }
             }

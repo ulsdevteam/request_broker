@@ -36,7 +36,7 @@ class Processor(object):
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             parent = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
-            format, container, location, barcode, container_uri = get_preferred_format(item_json)
+            format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
             restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
             return {
                 "creators": get_resource_creators(item_collection),
@@ -54,6 +54,7 @@ class Processor(object):
                 "preferred_instance": {
                     "format": format,
                     "container": container,
+                    "subcontainer": subcontainer,
                     "location": location,
                     "barcode": barcode,
                     "uri": container_uri,
@@ -267,6 +268,7 @@ class AeonRequester(object):
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],
                 "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],
+                "ItemIssue_{}".format(request_prefix): i["preferred_instance"]["subcontainer"],
                 "Location_{}".format(request_prefix): i["preferred_instance"]["location"]
             })
         return parsed
