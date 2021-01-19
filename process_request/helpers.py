@@ -102,24 +102,29 @@ def get_instance_data(instance_list):
     """
     instance_types = []
     containers = []
+    subcontainers = []
     locations = []
     barcodes = []
     refs = []
     for instance in instance_list:
         if instance["instance_type"] == "digital_object":
             instance_types.append("digital_object")
-            containers.append("Digital Object: {}".format(instance.get("digital_object").get("_resolved").get("title")))
-            locations.append(get_file_versions(instance.get("digital_object").get("_resolved")))
-            barcodes.append(instance.get("digital_object").get("_resolved").get("digital_object_id"))
-            refs.append(instance.get("digital_object").get("ref"))
+            resolved = instance.get("digital_object").get("_resolved")
+            containers.append("Digital Object: {}".format(resolved.get("title")))
+            locations.append(get_file_versions(resolved))
+            barcodes.append(resolved.get("digital_object_id"))
+            refs.append(resolved.get("uri"))
         else:
             instance_types.append(instance["instance_type"])
+            sub_container = instance.get("sub_container")
             top_container = instance.get("sub_container").get("top_container").get("_resolved")
             containers.append("{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator")))
             locations.append(get_locations(top_container))
             barcodes.append(top_container.get("barcode"))
-            refs.append(instance.get("sub_container").get("top_container").get("ref"))
-    return prepare_values([instance_types, containers, locations, barcodes, refs])
+            refs.append(top_container["uri"])
+            if all(["type_2" in sub_container, "indicator_2" in sub_container]):
+                subcontainers.append("{} {}".format(sub_container.get("type_2").capitalize(), sub_container.get("indicator_2")))
+    return prepare_values([instance_types, containers, subcontainers, locations, barcodes, refs])
 
 
 def get_preferred_format(item_json):
