@@ -36,7 +36,6 @@
             "jsonmodel_type": "instance",
             "is_representative": false,
             "digital_object": {
-                "ref": "/repositories/2/digital_objects/3367",
                 "_resolved": {
                     "digital_object_id": "238475",
                     "title": "digital object",
@@ -54,7 +53,8 @@
                             "is_representative": false,
                             "identifier": "8475"
                         }
-                    ]
+                    ],
+                    "uri": "/repositories/2/digital_objects/3367"
                 }
             }
         },
@@ -69,7 +69,6 @@
             "jsonmodel_type": "instance",
             "is_representative": false,
             "digital_object": {
-                "ref": "/repositories/2/digital_objects/3368",
                 "_resolved": {
                     "digital_object_id": "238476",
                     "title": "digital object 2",
@@ -87,7 +86,8 @@
                             "is_representative": false,
                             "identifier": "8475"
                         }
-                    ]
+                    ],
+                    "uri": "/repositories/2/digital_objects/3368"
                 }
             }
         },
@@ -110,7 +110,6 @@
                 "user_mtime": "2020-07-28T14:16:54Z",
                 "jsonmodel_type": "sub_container",
                 "top_container": {
-                    "ref": "/repositories/2/top_containers/191161",
                     "_resolved": {
                         "type": "box",
                         "indicator": "2",
@@ -124,7 +123,8 @@
                                     "coordinate_2_indicator": "7"
                                 }
                             }
-                        ]
+                        ],
+                        "uri": "/repositories/2/top_containers/191161"
                     }
                 }
             }
