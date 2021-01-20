@@ -22,6 +22,7 @@ services:
       - DEBUG=1
       - SECRET_KEY=obop2gifqn6wncaha^dt!w3an-%vkj_&1a@(w-2ci0))^o%#f4
       - DJANGO_ALLOWED_HOSTS=request-broker-web localhost 192.168.1.5
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000 http://rac-vch.ad.rockarchive.org
       - SQL_ENGINE=django.db.backends.postgresql
       - SQL_DATABASE=postgres
       - SQL_USER=postgres
