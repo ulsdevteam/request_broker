@@ -6,8 +6,8 @@ from asnake.utils import get_date_display, get_note_text, text_in_note
 from ordered_set import OrderedSet
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
-OPEN_TEXT = "Open for research"
-CLOSED_TEXT = "Restricted"
+OPEN_TEXT = ["Open for research", "Open for scholarly research"]
+CLOSED_TEXT = ["Restricted"]
 
 
 def get_container_indicators(item_json):
@@ -56,9 +56,16 @@ def get_locations(top_container_info):
      Returns:
          string: all locations associated with the top container, separated by a comma.
     """
+
+    def make_short_location(loc_data):
+        return ".".join([
+            loc_data.get("room", "").strip().replace("Vault ", ""),
+            loc_data.get("coordinate_1_indicator", "").strip(),
+            loc_data.get("coordinate_2_indicator", "").strip()])
+
     locations = None
     if top_container_info.get("container_locations"):
-        locations = ",".join([c.get("_resolved").get("title") for c in top_container_info.get("container_locations")])
+        locations = ",".join([make_short_location(c["_resolved"]) for c in top_container_info.get("container_locations")])
     return locations
 
 
@@ -95,24 +102,29 @@ def get_instance_data(instance_list):
     """
     instance_types = []
     containers = []
+    subcontainers = []
     locations = []
     barcodes = []
     refs = []
     for instance in instance_list:
         if instance["instance_type"] == "digital_object":
             instance_types.append("digital_object")
-            containers.append("Digital Object: {}".format(instance.get("digital_object").get("_resolved").get("title")))
-            locations.append(get_file_versions(instance.get("digital_object").get("_resolved")))
-            barcodes.append(instance.get("digital_object").get("_resolved").get("digital_object_id"))
-            refs.append(instance.get("digital_object").get("ref"))
+            resolved = instance.get("digital_object").get("_resolved")
+            containers.append("Digital Object: {}".format(resolved.get("title")))
+            locations.append(get_file_versions(resolved))
+            barcodes.append(resolved.get("digital_object_id"))
+            refs.append(resolved.get("uri"))
         else:
             instance_types.append(instance["instance_type"])
+            sub_container = instance.get("sub_container")
             top_container = instance.get("sub_container").get("top_container").get("_resolved")
             containers.append("{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator")))
             locations.append(get_locations(top_container))
             barcodes.append(top_container.get("barcode"))
-            refs.append(instance.get("sub_container").get("top_container").get("ref"))
-    return prepare_values([instance_types, containers, locations, barcodes, refs])
+            refs.append(top_container["uri"])
+            if all(["type_2" in sub_container, "indicator_2" in sub_container]):
+                subcontainers.append("{} {}".format(sub_container.get("type_2").capitalize(), sub_container.get("indicator_2")))
+    return prepare_values([instance_types, containers, subcontainers, locations, barcodes, refs])
 
 
 def get_preferred_format(item_json):
@@ -197,11 +209,11 @@ def get_rights_status(item_json, client):
                 status = "conditional"
     elif [n for n in item_json.get("notes", []) if n.get("type") == "accessrestrict"]:
         notes = [n for n in item_json["notes"] if n.get("type") == "accessrestrict"]
-        if any([text_in_note(n, CLOSED_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
+        if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in CLOSED_TEXT for n in notes]):
             status = "closed"
-            if any([text_in_note(n, OPEN_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
+            if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in OPEN_TEXT for n in notes]):
                 status = "open"
-        elif any([text_in_note(n, OPEN_TEXT, client, confidence=CONFIDENCE_RATIO) for n in notes]):
+        elif any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in OPEN_TEXT for n in notes]):
             status = "open"
         else:
             status = "conditional"

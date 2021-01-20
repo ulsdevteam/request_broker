@@ -2,11 +2,6 @@
     "ref_id": "421d180c96c333c196091b797617208c",
     "title": "test1",
     "display_string": "test1",
-    "created_by": "k.martin",
-    "last_modified_by": "admin",
-    "create_time": "2019-12-12T15:52:52Z",
-    "system_mtime": "2020-04-14T15:36:25Z",
-    "user_mtime": "2020-04-14T15:36:25Z",
     "level": "subseries",
     "jsonmodel_type": "archival_object",
     "instances": [
@@ -14,8 +9,9 @@
             "instance_type": "mixed materials",
             "sub_container": {
                 "jsonmodel_type": "sub_container",
+                "type_2": "folder",
+                "indicator_2": "22",
                 "top_container": {
-                    "ref": "/repositories/2/top_containers/191157",
                     "_resolved": {
                         "barcode": "A12345",
                         "indicator": "1",
@@ -25,10 +21,14 @@
                         "container_locations": [
                             {
                                 "_resolved": {
-                                    "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]"
+                                    "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
+                                    "room": "Vault 106",
+                                    "coordinate_1_indicator": "66",
+                                    "coordinate_2_indicator": "7"
                                 }
                             }
-                        ]
+                        ],
+                        "uri": "/repositories/2/top_containers/191157"
                     }
                 }
             }
@@ -37,8 +37,9 @@
             "instance_type": "mixed materials",
             "sub_container": {
                 "jsonmodel_type": "sub_container",
+                "type_2": "folder",
+                "indicator_2": "11-22",
                 "top_container": {
-                    "ref": "/repositories/2/top_containers/191158",
                     "_resolved": {
                         "barcode": "A123456",
                         "indicator": "2",
@@ -48,10 +49,14 @@
                         "container_locations": [
                             {
                                 "_resolved": {
-                                    "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]"
+                                    "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  8]",
+                                    "room": "Vault 106",
+                                    "coordinate_1_indicator": "66",
+                                    "coordinate_2_indicator": "8"
                                 }
                             }
-                        ]
+                        ],
+                        "uri": "/repositories/2/top_containers/191158"
                     }
                 }
             }

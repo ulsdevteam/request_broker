@@ -13,11 +13,12 @@ class Processor(object):
     delivery formats.
     """
 
-    def get_data(self, uri):
+    def get_data(self, uri, baseurl):
         """Gets data about an archival object from ArchivesSpace.
 
         Args:
-            uris (str): An ArchivesSpace URI.
+            uri (str): An ArchivesSpace URI.
+            baseurl (str): base URL for links to objects in DIMES
 
         Returns:
             obj (dict): A JSON representation of an ArchivesSpace Archival Object.
@@ -35,7 +36,7 @@ class Processor(object):
             item_json = obj.json()
             item_collection = item_json.get("ancestors")[-1].get("_resolved")
             parent = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
-            format, container, location, barcode, container_uri = get_preferred_format(item_json)
+            format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
             restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
             return {
                 "creators": get_resource_creators(item_collection),
@@ -47,12 +48,13 @@ class Processor(object):
                 "resource_id": item_collection.get("id_0"),
                 "title": item_json.get("display_string"),
                 "uri": item_json["uri"],
-                "dimes_url": get_url(item_json, settings.DIMES_PREFIX, aspace.client),
+                "dimes_url": get_url(item_json, baseurl, aspace.client),
                 "containers": get_container_indicators(item_json),
                 "size": get_size(item_json["instances"]),
                 "preferred_instance": {
                     "format": format,
                     "container": container,
+                    "subcontainer": subcontainer,
                     "location": location,
                     "barcode": barcode,
                     "uri": container_uri,
@@ -84,17 +86,18 @@ class Processor(object):
             reason = "This item may be currently unavailable for request. It will be included in request. Reason: {}".format(item.get("restrictions_text"))
         return submit, reason
 
-    def parse_item(self, uri):
+    def parse_item(self, uri, baseurl):
         """Parses requested items to determine which are submittable. Adds a
         `submit` and `submit_reason` attribute to each item.
 
         Args:
             uri (str): An AS archival object URI.
+            baseurl (str): base URL for links to objects in DIMES
 
         Returns:
             parsed (dict): A dicts containing parsed item information.
         """
-        data = self.get_data(uri)
+        data = self.get_data(uri, baseurl)
         submit, reason = self.is_submittable(data)
         return {"uri": uri, "submit": submit, "submit_reason": reason}
 
@@ -102,7 +105,7 @@ class Processor(object):
 class Mailer(object):
     """Email delivery class."""
 
-    def send_message(self, email, object_list, subject=None, message=""):
+    def send_message(self, email, object_list, subject, message, baseurl):
         """Sends an email with request data to an email address or list of
         addresses.
 
@@ -111,6 +114,7 @@ class Mailer(object):
             object_list (list): list of URIs for requested objects.
             subject (str): string to attach to the subject of the email.
             message (str): message to prepend to the email body.
+            baseurl (str): base URL to use for links to objects in DIMES.
 
         Returns:
             str: a string message that the emails were sent.
@@ -119,7 +123,7 @@ class Mailer(object):
         recipient_list = email if isinstance(email, list) else [email]
         subject = subject if subject else "My List from DIMES"
         processor = Processor()
-        fetched = [processor.get_data(item) for item in object_list]
+        fetched = [processor.get_data(item, baseurl) for item in object_list]
         message += self.format_items(fetched)
         # TODO: decide if we want to send html messages
         send_mail(
@@ -143,8 +147,9 @@ class Mailer(object):
         for obj in object_list:
             for key, label in settings.EXPORT_FIELDS:
                 if obj[key]:
-                    concat_str = "{}: {}\n".format(label, obj[key]) if label else obj[key]
-                    message += "{}\n".format(concat_str)
+                    concat_str = "{}: {} \n".format(label, obj[key]) if label else "{} \n".format(obj[key])
+                    message += concat_str
+            message += "\n"
         return message
 
 
@@ -167,11 +172,13 @@ class AeonRequester(object):
             "GroupingOption_CallNumber": "FirstValue",
             "GroupingOption_ItemInfo3": "FirstValue",
             "GroupingOption_ItemCitation": "FirstValue",
+            "GroupingOption_ItemNumber": "FirstValue",
+            "GroupingOption_Location": "FirstValue",
             "UserReview": "No",
             "SubmitButton": "Submit Request",
         }
 
-    def get_request_data(self, request_type, **kwargs):
+    def get_request_data(self, request_type, baseurl, **kwargs):
         """Delivers request to Aeon.
 
         Args:
@@ -185,7 +192,7 @@ class AeonRequester(object):
             ValueError: if request_type is not readingroom or duplicate.
         """
         processor = Processor()
-        fetched = [processor.get_data(item) for item in kwargs.get("items")]
+        fetched = [processor.get_data(item, baseurl) for item in kwargs.get("items")]
         if request_type == "readingroom":
             data = self.prepare_reading_room_request(fetched, kwargs)
         elif request_type == "duplication":
@@ -254,13 +261,14 @@ class AeonRequester(object):
                 "ItemCitation_{}".format(request_prefix): i["uri"],
                 "ItemDate_{}".format(request_prefix): i["dates"],
                 "ItemInfo1_{}".format(request_prefix): i["title"],
-                "ItemInfo2_{}".format(request_prefix): i["restrictions_text"],
+                "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
                 "ItemInfo3_{}".format(request_prefix): i["uri"],
                 "ItemInfo4_{}".format(request_prefix): description,
                 "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],
                 "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],
+                "ItemIssue_{}".format(request_prefix): i["preferred_instance"]["subcontainer"],
                 "Location_{}".format(request_prefix): i["preferred_instance"]["location"]
             })
         return parsed

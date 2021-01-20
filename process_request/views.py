@@ -27,7 +27,8 @@ class ParseRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         uri = request.data.get("item")
-        return Processor().parse_item(uri)
+        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        return Processor().parse_item(uri, baseurl)
 
 
 class MailerView(BaseRequestView):
@@ -36,9 +37,10 @@ class MailerView(BaseRequestView):
     def get_response_data(self, request):
         object_list = request.data.get("items")
         to_address = request.data.get("email")
-        subject = request.data.get("subject")
+        subject = request.data.get("subject", "")
         message = request.data.get("message")
-        emailed = Mailer().send_message(to_address, object_list, subject, message)
+        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        emailed = Mailer().send_message(to_address, object_list, subject, message, baseurl)
         return {"detail": emailed}
 
 
@@ -47,8 +49,9 @@ class DeliverReadingRoomRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
+        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
         delivered = AeonRequester().get_request_data(
-            "readingroom", **request_data)
+            "readingroom", baseurl, **request_data)
         return delivered
 
 
@@ -57,8 +60,9 @@ class DeliverDuplicationRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
+        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
         delivered = AeonRequester().get_request_data(
-            "duplication", **request_data)
+            "duplication", baseurl, **request_data)
         return delivered
 
 
@@ -87,8 +91,9 @@ class DownloadCSVView(APIView):
         """Streams a large CSV file."""
         try:
             submitted = request.data.get("items")
+            baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
             processor = Processor()
-            fetched = [processor.get_data(item) for item in submitted]
+            fetched = [processor.get_data(item, baseurl) for item in submitted]
             response = StreamingHttpResponse(
                 streaming_content=(self.iter_items(fetched, Echo())),
                 content_type="text/csv",

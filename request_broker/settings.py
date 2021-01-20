@@ -131,7 +131,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # CORS settings
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(" ")
 
 ARCHIVESSPACE = {
     "baseurl": os.environ.get("AS_BASEURL", "http://sandbox.archivesspace.org:8089/"),
@@ -148,11 +148,10 @@ EMAIL_USE_TLS = int(os.environ.get("EMAIL_USE_TLS", default=1))
 EMAIL_USE_SSL = int(os.environ.get("EMAIL_USE_SSL", default=0))
 EMAIL_DEFAULT_FROM = os.environ.get("DEFAULT_FROM_EMAIL", "alerts@example.org")
 
-DIMES_PREFIX = os.environ.get("DIMES_PREFIX", "https://dimes.rockarch.org")
 EXPORT_FIELDS = [
     ("title", None),
     ("dimes_url", "URL"),
-    ("creators", "Creator/s"),
+    ("creators", "Creator(s)"),
     ("dates", "Dates"),
     ("size", "Size"),
     ("collection_name", "Collection Name"),
