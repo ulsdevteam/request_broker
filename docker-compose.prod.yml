@@ -2,9 +2,15 @@ version: '2.4'
 
 services:
   request-broker-web:
-    image: rockarch/request_broker:0.4
+    image: rockarch/request_broker:0.5
     command: apachectl -D FOREGROUND
     ports:
       - "8001:8000"
     env_file:
       - ./.env.prod
+    volumes:
+      - ssl_certs:/var/imported/ssl
+
+volumes:
+  ssl_certs:
+    external: true
