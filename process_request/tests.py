@@ -139,7 +139,7 @@ class TestHelpers(TestCase):
         self.assertEqual(get_preferred_format(obj_data), expected_data)
 
         obj_data = json_from_fixture("object_no_instance.json")
-        expected_data = (None, None, None, None, None)
+        expected_data = (None, None, None, None, None, None)
         self.assertEqual(get_preferred_format(obj_data), expected_data)
 
     def test_prepare_values(self):
@@ -212,6 +212,8 @@ class TestRoutines(TestCase):
     def test_parse_item(self, mock_get_data):
         item = json_from_fixture("as_data.json")
         mock_get_data.return_value = item
+
+        # Ensure objects return correct messages
         for restrictions, text, submit, reason in [
                 ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
@@ -221,11 +223,20 @@ class TestRoutines(TestCase):
             parsed = Processor().parse_item(mock_get_data.return_value["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
+
+        # Ensure objects with attached digital objects return correct message
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value["preferred_instance"]["format"] = format
             parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
+
+        # Ensure objects without instances return correct message
+        mock_get_data.return_value["preferred_instance"] = {"format": None, "container": None,
+                                                            "subcontainer": None, "location": None, "barcode": None, "uri": None}
+        parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
+        self.assertEqual(parsed["submit"], False)
+        self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
 
     @patch("process_request.routines.Processor.get_data")
     def test_deliver_email(self, mock_get_data):

@@ -76,9 +76,9 @@ class Processor(object):
         """
         submit = True
         reason = None
-        if not item.get("instances"):
+        if not any(value for value in item["preferred_instance"].values()):
             submit = False
-            reason = "This item is currently unavailable for request. It will not be included in request. Reason: No container information available."
+            reason = "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available."
         elif item["restrictions"] == "closed":
             submit = False
             reason = "This item is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text"))
