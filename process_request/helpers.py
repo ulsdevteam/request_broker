@@ -142,7 +142,7 @@ def get_preferred_format(item_json):
         preferred (tuple): a tuple containing concatenated information of the
             preferred format retrieved by get_instance_data.
     """
-    preferred = None, None, None, None, None
+    preferred = None, None, None, None, None, None
     if item_json.get("instances"):
         instances = item_json.get("instances")
         if any("digital_object" in obj for obj in instances):
