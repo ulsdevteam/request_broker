@@ -122,7 +122,7 @@ class Mailer(object):
         Returns:
             str: a string message that the emails were sent.
         """
-        message = message + "\n\n" if message else None
+        message = message + "\n\n" if message else ""
         recipient_list = email if isinstance(email, list) else [email]
         subject = subject if subject else "My List from DIMES"
         processor = Processor()
