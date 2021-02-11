@@ -167,7 +167,6 @@ class TestHelpers(TestCase):
 
     def test_get_rights_status(self):
         for fixture, status in [
-                ("object_restricted_boolean.json", "closed"),
                 ("object_restricted_note.json", "closed"),
                 ("object_restricted_note_conditional.json", "conditional"),
                 ("object_restricted_note_open.json", "open"),
