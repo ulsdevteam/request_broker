@@ -186,10 +186,9 @@ def get_rights_info(item_json, client):
 def get_rights_status(item_json, client):
     """Determines restrictions status for an archival object.
 
-    Evaluates an object's `restrictions_apply` boolean field, rights statements
-    and accessrestrict notes (in that order) to determine if restrictions have
-    been explicitly set on the archival object. Returns None if restrictions
-    cannot be parsed from those three sources.
+    Evaluates an object's rights statements and accessrestrict notes (in that order)
+    to determine if restrictions have been explicitly set on the archival object.
+    Returns None if restrictions cannot be parsed from those three sources.
 
     Args:
         item_json (dict): json for an archival object
@@ -199,9 +198,7 @@ def get_rights_status(item_json, client):
         status: One of "closed", "conditional", "open", None
     """
     status = None
-    if item_json.get("restrictions_apply"):
-        status = "closed"
-    elif item_json.get("rights_statements"):
+    if item_json.get("rights_statements"):
         for stmnt in item_json["rights_statements"]:
             if any([act["restriction"].lower() == "disallow" for act in stmnt.get("acts", [])]):
                 status = "closed"
