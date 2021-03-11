@@ -93,7 +93,7 @@ class DownloadCSVView(APIView):
             submitted = request.data.get("items")
             baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
             processor = Processor()
-            fetched = [processor.get_data(item, baseurl) for item in submitted]
+            fetched = processor.get_data(submitted, baseurl)
             response = StreamingHttpResponse(
                 streaming_content=(self.iter_items(fetched, Echo())),
                 content_type="text/csv",
