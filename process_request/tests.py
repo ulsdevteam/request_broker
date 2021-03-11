@@ -210,36 +210,36 @@ class TestRoutines(TestCase):
     @patch("process_request.routines.Processor.get_data")
     def test_parse_item(self, mock_get_data):
         item = json_from_fixture("as_data.json")
-        mock_get_data.return_value = item
+        mock_get_data.return_value = [item]
 
         # Ensure objects return correct messages
         for restrictions, text, submit, reason in [
                 ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
                 ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
-            mock_get_data.return_value["restrictions"] = restrictions
-            mock_get_data.return_value["restrictions_text"] = text
-            parsed = Processor().parse_item(mock_get_data.return_value["uri"], "https://dimes.rockarch.org")
+            mock_get_data.return_value[0]["restrictions"] = restrictions
+            mock_get_data.return_value[0]["restrictions_text"] = text
+            parsed = Processor().parse_item(mock_get_data.return_value[0]["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
 
         # Ensure objects with attached digital objects return correct message
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
-            mock_get_data.return_value["preferred_instance"]["format"] = format
+            mock_get_data.return_value[0]["preferred_instance"]["format"] = format
             parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
 
         # Ensure objects without instances return correct message
-        mock_get_data.return_value["preferred_instance"] = {"format": None, "container": None,
-                                                            "subcontainer": None, "location": None, "barcode": None, "uri": None}
+        mock_get_data.return_value[0]["preferred_instance"] = {"format": None, "container": None,
+                                                               "subcontainer": None, "location": None, "barcode": None, "uri": None}
         parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
         self.assertEqual(parsed["submit"], False)
         self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
 
     @patch("process_request.routines.Processor.get_data")
     def test_deliver_email(self, mock_get_data):
-        mock_get_data.return_value = json_from_fixture("as_data.json")
+        mock_get_data.return_value = [json_from_fixture("as_data.json")]
         object_list = [json_from_fixture("as_data.json")["uri"]]
         for to, subject in [
                 ("test@example.com", "Subject"),
@@ -254,13 +254,13 @@ class TestRoutines(TestCase):
 
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_get_data(self):
-        get_as_data = Processor().get_data("/repositories/2/archival_objects/1134638", "https://dimes.rockarch.org")
-        self.assertTrue(isinstance(get_as_data, dict))
-        self.assertEqual(len(get_as_data), 13)
+        get_as_data = Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
+        self.assertTrue(isinstance(get_as_data, list))
+        self.assertEqual(len(get_as_data), 1)
 
     @patch("process_request.routines.Processor.get_data")
     def test_send_aeon_requests(self, mock_get_data):
-        mock_get_data.return_value = json_from_fixture("as_data.json")
+        mock_get_data.return_value = [json_from_fixture("as_data.json")]
 
         data = {"scheduled_date": date.today().isoformat(), "items": random_list()}
         delivered = AeonRequester().get_request_data("readingroom", "https://dimes.rockarch.org", **data)
@@ -299,8 +299,8 @@ class TestViews(TestCase):
 
     @patch("process_request.routines.Processor.get_data")
     def test_download_csv_view(self, mock_get_data):
-        mock_get_data.return_value = json_from_fixture("as_data.json")
         to_process = random_list()
+        mock_get_data.return_value = [json_from_fixture("as_data.json") for n in range(len(to_process))]
         request = self.factory.post(
             reverse("download-csv"), {"items": to_process}, format="json")
         response = DownloadCSVView.as_view()(request)
