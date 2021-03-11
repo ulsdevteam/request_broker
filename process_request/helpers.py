@@ -344,3 +344,13 @@ def indicator_to_integer(indicator):
             return indicator_to_integer(parsed)
         integer = ord(indicator.lower()) - 97
     return integer
+
+
+def list_chunks(lst, n):
+    """Yield successive n-sized chunks from list.
+    Args:
+        lst (list): list to chunkify
+        n (integer): size of chunk to produce
+    """
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]

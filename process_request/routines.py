@@ -4,7 +4,7 @@ from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates,
                       get_preferred_format, get_resource_creators,
-                      get_rights_info, get_size, get_url)
+                      get_rights_info, get_size, get_url, list_chunks)
 
 
 class Processor(object):
@@ -28,46 +28,46 @@ class Processor(object):
                         username=settings.ARCHIVESSPACE["username"],
                         password=settings.ARCHIVESSPACE["password"],
                         repository=settings.ARCHIVESSPACE["repo_id"])
-        # chunk list
-        # parse IDs from URIs
-        # fetch each chunk using id_set
+        chunked_list = list_chunks([uri.split("/")[-1] for uri in uri_list], 25)
         data = []
-        for uri in uri_list:
-            obj = aspace.client.get(
-                uri, params={"resolve": [
+        for chunk in chunked_list:
+            objects = aspace.client.get("/repositories/{}/archival_objects".format(settings.ARCHIVESSPACE["repo_id"]),
+                                        params={
+                "id_set": chunk,
+                "resolve": [
                     "resource::linked_agents", "ancestors",
                     "top_container", "top_container::container_locations",
                     "instances::digital_object"]})
-            if obj.status_code == 200:
-                item_json = obj.json()
-                item_collection = item_json.get("ancestors")[-1].get("_resolved")
-                parent = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
-                format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
-                restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
-                data.append({
-                    "creators": get_resource_creators(item_collection),
-                    "restrictions": restrictions,
-                    "restrictions_text": restrictions_text,
-                    "collection_name": item_collection.get("title"),
-                    "parent": parent,
-                    "dates": get_dates(item_json, aspace.client),
-                    "resource_id": item_collection.get("id_0"),
-                    "title": item_json.get("display_string"),
-                    "uri": item_json["uri"],
-                    "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
-                    "containers": get_container_indicators(item_json),
-                    "size": get_size(item_json["instances"]),
-                    "preferred_instance": {
-                        "format": format,
-                        "container": container,
-                        "subcontainer": subcontainer,
-                        "location": location,
-                        "barcode": barcode,
-                        "uri": container_uri,
-                    }
-                })
+            if objects.status_code == 200:
+                for item_json in objects.json():
+                    item_collection = item_json.get("ancestors")[-1].get("_resolved")
+                    parent = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
+                    format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
+                    restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
+                    data.append({
+                        "creators": get_resource_creators(item_collection),
+                        "restrictions": restrictions,
+                        "restrictions_text": restrictions_text,
+                        "collection_name": item_collection.get("title"),
+                        "parent": parent,
+                        "dates": get_dates(item_json, aspace.client),
+                        "resource_id": item_collection.get("id_0"),
+                        "title": item_json.get("display_string"),
+                        "uri": item_json["uri"],
+                        "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
+                        "containers": get_container_indicators(item_json),
+                        "size": get_size(item_json["instances"]),
+                        "preferred_instance": {
+                            "format": format,
+                            "container": container,
+                            "subcontainer": subcontainer,
+                            "location": location,
+                            "barcode": barcode,
+                            "uri": container_uri,
+                        }
+                    })
             else:
-                raise Exception(obj.json()["error"])
+                raise Exception(objects.json()["error"])
         return data
 
     def is_submittable(self, item):
