@@ -317,6 +317,18 @@ def get_size(instances):
             e["number"], inflect.engine().plural(e["extent_type"], e["number"])) for e in extents])
 
 
+def get_parent_title(obj_json):
+    """Returns the title for an object's parent component.
+
+    If a component identifier is present, appends that identifier plus the
+    object's level.
+    """
+    title = obj_json.get("title", obj_json.get("display_string")).strip()
+    if obj_json.get("component_id"):
+        title = "{}, {} {}".format(title, obj_json["level"].capitalize(), obj_json["component_id"])
+    return title
+
+
 def get_url(obj_json, host, client):
     """Returns a full URL for an object."""
     uuid = shortuuid.uuid(name=obj_json["uri"])
