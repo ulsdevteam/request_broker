@@ -2,7 +2,7 @@ from asnake.aspace import ASpace
 from django.core.mail import send_mail
 from request_broker import settings
 
-from .helpers import (get_container_indicators, get_dates,
+from .helpers import (get_container_indicators, get_dates, get_parent_title,
                       get_preferred_format, get_resource_creators,
                       get_rights_info, get_size, get_url, list_chunks)
 
@@ -41,7 +41,7 @@ class Processor(object):
             if objects.status_code == 200:
                 for item_json in objects.json():
                     item_collection = item_json.get("ancestors")[-1].get("_resolved")
-                    parent = item_json.get("ancestors")[0].get("_resolved").get("display_string") if len(item_json.get("ancestors")) > 1 else None
+                    parent = get_parent_title(item_json.get("ancestors")[0].get("_resolved")) if len(item_json.get("ancestors")) > 1 else None
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
                     data.append({
