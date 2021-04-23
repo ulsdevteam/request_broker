@@ -16,7 +16,7 @@ from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_parent_title,
                       get_preferred_format, get_resource_creators,
                       get_rights_info, get_rights_status, get_rights_text,
-                      get_size, prepare_values)
+                      get_size, indicator_to_integer, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -197,6 +197,12 @@ class TestHelpers(TestCase):
             instance = json_from_fixture(fixture)
             self.assertEqual(get_size(instance), size)
 
+        instance = json_from_fixture("instances_error.json")
+        error_message = "Error parsing instances"
+        with self.assertRaises(Exception) as e:
+            get_size(instance)
+        self.assertEqual(str(e.exception), error_message)
+
     def test_get_title(self):
         for fixture, expected in [
                 ({"title": "foo"}, "foo"),
@@ -205,6 +211,11 @@ class TestHelpers(TestCase):
                 ({"title": "bas", "level": "series", "component_id": "1"}, "bas, Series 1")]:
             result = get_parent_title(fixture)
             self.assertEqual(result, expected)
+
+    def test_indicator_to_integer(self):
+        for indicator, expected_parsed in [("23ab", 23), ("C", 2)]:
+            parsed = indicator_to_integer(indicator)
+            self.assertEqual(parsed, expected_parsed)
 
     # Test is commented out as the code is currently not used, and this allows us to shed a few configs
     # def test_aeon_client(self):
@@ -267,6 +278,17 @@ class TestRoutines(TestCase):
         self.assertTrue(isinstance(get_as_data, list))
         self.assertEqual(len(get_as_data), 1)
 
+    @aspace_vcr.use_cassette("aspace_request.json")
+    @patch("asnake.client.web_client.ASnakeClient.get")
+    def test_invalid_get_data(self, mock_as_get):
+        error_message = "This is an error!"
+        mock_as_get.return_value.status_code = 404
+        mock_as_get.return_value.text = ''
+        mock_as_get.return_value.json.return_value = {"error": error_message}
+        with self.assertRaises(Exception) as e:
+            Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
+        self.assertEqual(str(e.exception), error_message)
+
     @patch("process_request.routines.Processor.get_data")
     def test_send_aeon_requests(self, mock_get_data):
         mock_get_data.return_value = [json_from_fixture("as_data.json")]
@@ -280,8 +302,8 @@ class TestRoutines(TestCase):
         self.assertTrue(isinstance(delivered, dict))
 
         request_type = "foo"
-        with self.assertRaises(Exception, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
-            AeonRequester().get_request_data(request_type, **data)
+        with self.assertRaises(ValueError, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
+            AeonRequester().get_request_data(request_type, "https://dimes.rockarch.org", **data)
 
 
 class TestViews(TestCase):
