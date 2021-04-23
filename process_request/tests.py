@@ -198,10 +198,8 @@ class TestHelpers(TestCase):
             self.assertEqual(get_size(instance), size)
 
         instance = json_from_fixture("instances_error.json")
-        error_message = "Error parsing instances"
-        with self.assertRaises(Exception) as e:
+        with self.assertRaises(Exception, msg="Error parsing instances"):
             get_size(instance)
-        self.assertEqual(str(e.exception), error_message)
 
     def test_get_title(self):
         for fixture, expected in [
@@ -281,13 +279,12 @@ class TestRoutines(TestCase):
     @aspace_vcr.use_cassette("aspace_request.json")
     @patch("asnake.client.web_client.ASnakeClient.get")
     def test_invalid_get_data(self, mock_as_get):
-        error_message = "This is an error!"
+        error_message = random_string(15)
         mock_as_get.return_value.status_code = 404
         mock_as_get.return_value.text = ''
         mock_as_get.return_value.json.return_value = {"error": error_message}
-        with self.assertRaises(Exception) as e:
+        with self.assertRaises(Exception, msg=error_message):
             Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
-        self.assertEqual(str(e.exception), error_message)
 
     @patch("process_request.routines.Processor.get_data")
     def test_send_aeon_requests(self, mock_get_data):
