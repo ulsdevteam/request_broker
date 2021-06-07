@@ -27,7 +27,7 @@ class ParseRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         uri = request.data.get("item")
-        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:8000")
         return Processor().parse_item(uri, baseurl)
 
 
@@ -39,7 +39,7 @@ class MailerView(BaseRequestView):
         to_address = request.data.get("email")
         subject = request.data.get("subject", "")
         message = request.data.get("message")
-        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:8000")
         emailed = Mailer().send_message(to_address, object_list, subject, message, baseurl)
         return {"detail": emailed}
 
@@ -49,7 +49,7 @@ class DeliverReadingRoomRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:8000")
         delivered = AeonRequester().get_request_data(
             "readingroom", baseurl, **request_data)
         return delivered
@@ -60,7 +60,7 @@ class DeliverDuplicationRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:8000")
         delivered = AeonRequester().get_request_data(
             "duplication", baseurl, **request_data)
         return delivered
@@ -91,7 +91,7 @@ class DownloadCSVView(APIView):
         """Streams a large CSV file."""
         try:
             submitted = request.data.get("items")
-            baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+            baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:8000")
             processor = Processor()
             fetched = processor.get_data(submitted, baseurl)
             response = StreamingHttpResponse(
