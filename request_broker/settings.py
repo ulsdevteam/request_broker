@@ -134,13 +134,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(" ")
 
 ARCHIVESSPACE = {
-    "baseurl": os.environ.get("AS_BASEURL", "http://sandbox.archivesspace.org:8089/"),
+    "baseurl": os.environ.get("AS_BASEURL", "https://pittsbstaff.as.atlas-sys.com:8089/"),
     "username": os.environ.get("AS_USERNAME", "admin"),
     "password": os.environ.get("AS_PASSWORD", "admin"),
     "repo_id": int(os.environ.get("AS_REPO_ID", default=2)),
 }
-
-#AEON_API_KEY = AEON_API_KEY
 
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.example.org")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", default=587)
