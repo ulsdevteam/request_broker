@@ -25,7 +25,10 @@ coverage==5.5
 django==3.2.4
     # via
     #   -r requirements.in
+    #   django-cors-headers
     #   djangorestframework
+django-cors-headers==3.7.0
+    # via -r requirements.in
 djangorestframework==3.12.4
     # via -r requirements.in
 gitdb==4.0.7
