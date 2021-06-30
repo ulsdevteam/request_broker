@@ -9,5 +9,4 @@ ordered-set==4.0.2
 psycopg2-binary==2.8.6
 requests==2.25.1
 shortuuid==1.0.1
-typing-extensions==3.10.0.0
 vcrpy==4.1.1
