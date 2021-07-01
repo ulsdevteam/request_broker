@@ -1,5 +1,4 @@
 ArchivesSnake==0.9.1
-coverage==5.5
 Django==3.2.4
 django-cors-headers==3.7.0
 djangorestframework==3.12.4
