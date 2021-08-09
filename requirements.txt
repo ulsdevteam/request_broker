@@ -14,7 +14,7 @@ boltons==21.0.0
     # via archivessnake
 certifi==2021.5.30
     # via requests
-chardet==4.0.0
+charset-normalizer==2.0.4
     # via requests
 clinner==1.12.3
     # via health-check
@@ -58,7 +58,7 @@ pyyaml==5.4.1
     #   vcrpy
 rapidfuzz==1.4.1
     # via archivessnake
-requests==2.25.1
+requests==2.26.0
     # via
     #   -r requirements.in
     #   archivessnake
