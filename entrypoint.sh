@@ -11,6 +11,10 @@ echo "Connected to PostgreSQL"
 # apply database migrations
 python manage.py migrate
 
+#Start server
+echo "Starting server"
+python manage.py runserver 0.0.0.0:8000
+
 # collect static files
 python manage.py collectstatic --no-input --clear
 
