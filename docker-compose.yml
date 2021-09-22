@@ -6,9 +6,9 @@ services:
     volumes:
       - request_broker_dbvolume:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=request_broker_dev
+      - POSTGRES_USER=postgres  # name of the application database user
+      - POSTGRES_PASSWORD=postgres  # name of the application database user
+      - POSTGRES_DB=request_broker_dev  # name of the application database
   request-broker-web:
     build:
       context: .
