@@ -140,6 +140,8 @@ ARCHIVESSPACE = {
     "repo_id": int(os.environ.get("AS_REPO_ID", default=2)),
 }
 
+HOSTNAME = os.environ.get("DIMES_PREFIX", "http://localhost:3000")
+
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.example.org")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", default=587)
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "alerts@example.org")
