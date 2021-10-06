@@ -3,7 +3,7 @@ import re
 import inflect
 import shortuuid
 from request_broker import settings
-from asnake.utils import get_date_display, get_note_text, text_in_note
+from asnake.utils import get_date_display, get_note_text, text_in_note, resolve_to_uri
 from ordered_set import OrderedSet
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
@@ -392,6 +392,7 @@ def resolve_ref_id(repo_id, ref_id, client):
 
     """
     aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id,ref_id)).json()
-    aspace_uri =  aspace_objs['archival_objects'][0]['ref']
+    aspace_obj = aspace_objs['archival_objects'][0]
+    aspace_uri = resolve_to_uri(aspace_obj)
     resolved = identifier_from_uri(aspace_uri)
     return resolved
