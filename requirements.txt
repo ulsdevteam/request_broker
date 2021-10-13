@@ -6,7 +6,7 @@
 #
 archivessnake==0.9.1
     # via -r requirements.in
-asgiref==3.4.0
+asgiref==3.4.1
     # via django
 attrs==21.2.0
     # via archivessnake
@@ -14,56 +14,75 @@ boltons==21.0.0
     # via archivessnake
 certifi==2021.5.30
     # via requests
-charset-normalizer==2.0.4
+charset-normalizer==2.0.6
     # via requests
 clinner==1.12.3
     # via health-check
 colorlog==3.2.0
-coverage==5.2.1
-Django==2.2.21
-django-cors-headers==3.6.0
-djangorestframework==3.11.2
-gitdb==4.0.5
-GitPython==3.1.7
+    # via clinner
+django==3.2.7
+    # via
+    #   -r requirements.in
+    #   django-cors-headers
+    #   djangorestframework
+django-cors-headers==3.10.0
+    # via -r requirements.in
+djangorestframework==3.12.4
+    # via -r requirements.in
+gitdb==4.0.7
+    # via gitpython
+gitpython==3.1.24
+    # via health-check
 health-check==3.4.1
     # via -r requirements.in
-idna==2.10
+idna==3.2
     # via
     #   requests
     #   yarl
 inflect==5.3.0
     # via -r requirements.in
-more-itertools==8.8.0
+more-itertools==8.10.0
     # via archivessnake
-multidict==5.1.0
+multidict==5.2.0
     # via yarl
 ordered-set==4.0.2
-psycopg2-binary==2.8.5
-pytz==2020.1
-PyYAML==5.4
-rapidfuzz==0.7.3
-requests==2.24.0
+    # via -r requirements.in
+psycopg2-binary==2.9.1
+    # via -r requirements.in
+pytz==2021.3
+    # via django
+pyyaml==5.4.1
+    # via
+    #   archivessnake
+    #   health-check
+    #   vcrpy
+rapidfuzz==1.7.1
+    # via archivessnake
+requests==2.26.0
+    # via
+    #   -r requirements.in
+    #   archivessnake
 shortuuid==1.0.1
     # via -r requirements.in
 six==1.16.0
     # via vcrpy
 smmap==4.0.0
     # via gitdb
-sqlparse==0.4.1
+sqlparse==0.4.2
     # via django
 structlog==21.1.0
     # via archivessnake
-typing-extensions==3.10.0.0
+typing-extensions==3.10.0.2
     # via
     #   asgiref
     #   gitpython
     #   structlog
     #   yarl
-urllib3==1.26.6
+urllib3==1.26.7
     # via requests
 vcrpy==4.1.1
     # via -r requirements.in
-wrapt==1.12.1
+wrapt==1.13.1
     # via vcrpy
-yarl==1.6.3
+yarl==1.7.0
     # via vcrpy
