@@ -4,7 +4,9 @@ An application that accepts requests with lists of ArchivesSpace URIs from users
 
 The request broker is part of [Project Electron](https://github.com/RockefellerArchiveCenter/project_electron), an initiative to build sustainable, open and user-centered infrastructure for the archival management of digital records at the [Rockefeller Archive Center](http://rockarch.org/).
 
-## Setup
+[![Build Status](https://travis-ci.org/RockefellerArchiveCenter/request_broker.svg?branch=base)](https://travis-ci.org/RockefellerArchiveCenter/request_broker)
+
+## Getting Started
 
 Install [git](https://git-scm.com/) and clone the repository
 
@@ -33,7 +35,6 @@ The request broker manages configuration by setting environment variables. These
 
 Deployment using the `docker-compose.prod.yml` or `docker-compose.dev.yml` files requires the presence of an `.env.prod` or `.env.dev` file in the root directory of the application. The environment variables included in those files should match the variables in `docker-compose.yml`, although the values assigned to those variables may change.
 
-
 ## Services
 
 * Request Pre-Processing: Iterates over a list of request URIs, fetches corresponding data from ArchivesSpace, parses the data and marks it as submittable or unsubmittable.
@@ -50,9 +51,9 @@ Deployment using the `docker-compose.prod.yml` or `docker-compose.dev.yml` files
 |POST|/api/process-request/email| |200|Processes data in preparation for sending an email|
 |POST|/api/download-csv/| |200|Downloads a CSV file of items|
 
-## Requirements
+## Development
 
-Using this repo requires having [Docker](https://store.docker.com/search?type=edition&offering=community) installed.
+This repository contains a configuration file for git [pre-commit](https://pre-commit.com/) hooks which help ensure that code is linted before it is checked into version control. It is strongly recommended that you install these hooks locally by installing pre-commit and running `pre-commit install`.
 
 ## License
 
