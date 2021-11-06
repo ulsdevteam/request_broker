@@ -5,14 +5,10 @@ services:
     image: postgres:10.4
     volumes:
       - request_broker_dbvolume:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=postgres  # name of the application database user
-      - POSTGRES_PASSWORD=postgres  # name of the application database user
-      - POSTGRES_DB=request_broker_dev  # name of the application database
   request-broker-web:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
@@ -20,22 +16,6 @@ services:
       - "8000:8000"
     depends_on:
       - request-broker-db
-    environment:
-      - DEBUG=1  # run Django in debug mode, which outputs stack traces to the UI, set to False for production (1 for True, 0 for False)
-      - SECRET_KEY=obop2gifqn6wncaha^dt!w3an-%vkj_&1a@(w-2ci0))^o%#f4  # used by Django to create hashes
-      - DJANGO_ALLOWED_HOSTS=request-broker-web localhost 192.168.1.5  # hosts Django will respond to (separate multiple hosts with a space)
-      - CORS_ALLOWED_ORIGINS=http://localhost:3000 http://rac-vch.ad.rockarchive.org:3001  # hosts to add to the CORS Allowed-Origin header (separate multiple hosts with a space)
-      - SQL_ENGINE=django.db.backends.postgresql  # the database engine used by the application (one of django.db.backends)
-      - SQL_DATABASE=request_broker_dev # name of the application database
-      - SQL_USER=postgres  # name of the application database user
-      - SQL_PASSWORD=postgres  # password for the application database
-      - SQL_HOST=request-broker-db  # host for the application database
-      - SQL_PORT=5432  # port on which the application database can be reached
-      - AS_BASEURL=http://as.rockarch.org:8089/  # base URL for an ArchivesSpace API instance
-      - AS_USERNAME=admin  # username for an ArchivesSpace user (read-only credentials required)
-      - AS_PASSWORD=admin  # password for the ArchivesSpace user
-      - AS_REPO_ID=2  # identifier for an ArchivesSpace repository
-      - DIMES_PREFIX=https://dimes-beta.rockarch.org  # base URL at which DIMES is available
 
 volumes:
   request_broker_dbvolume:
