@@ -1,21 +1,24 @@
 language: python
-sudo: required
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.cache/pre-commit
 services:
   - docker
 env:
   global:
-    - DOCKER_COMPOSE_VERSION: 1.18.0
+    - CONTAINER: request-broker-web
+    - DJANGO_PORT: 8005
 before_install:
-  - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker-compose up -d
-  - sleep 20s
-  - docker-compose exec request-broker-web pip install pre-commit
-  - docker-compose exec request-broker-web pre-commit install
-install: true
+install:
+  - ./wait-for-it.sh $CONTAINER:$DJANGO_PORT -- docker-compose exec $CONTAINER pip install coverage
+  - pip install pre-commit && pre-commit install
 script:
-  - docker-compose exec request-broker-web pre-commit run --all-files --show-diff-on-failure
-  - docker-compose exec request-broker-web python manage.py test
+  - pre-commit run --all-files --show-diff-on-failure
+  - docker-compose exec $CONTAINER coverage run manage.py test
+after_script:
+  - docker-compose exec $CONTAINER coverage report --omit=*/migrations/* -m
+notifications:
+  email: false
