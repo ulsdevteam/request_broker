@@ -1,4 +1,4 @@
-FROM python:3.7-buster
+FROM python:3.6-buster
 
 ENV PYTHONUNBUFFERED 1
 RUN apt-get update \
@@ -11,10 +11,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN a2dissite 000-default
-COPY apache/django.prod.conf /etc/apache2/sites-available/request-broker.conf
+COPY apache/django.dev.conf /etc/apache2/sites-available/request-broker.conf
 RUN a2ensite request-broker.conf
-
-RUN a2enmod ssl headers
 
 WORKDIR /code
 ADD requirements.txt /code/
