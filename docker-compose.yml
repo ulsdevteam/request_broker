@@ -6,10 +6,8 @@ services:
     volumes:
       - request_broker_dbvolume:/var/lib/postgresql/data/
   request-broker-web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: python manage.py runserver 0.0.0.0:8000
+    build: .
+    entrypoint: /code/entrypoint.sh
     volumes:
       - .:/code
     ports:
