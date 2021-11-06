@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+from . import config
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,12 +22,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = config.DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(os.environ.get("DEBUG", default=True))
+DEBUG = config.DJANGO_DEBUG
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = config.DJANGO_ALLOWED_HOSTS
 
 
 # Application definition
@@ -81,12 +83,12 @@ WSGI_APPLICATION = 'request_broker.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
-        "USER": os.environ.get("SQL_USER", "user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
-        "PORT": os.environ.get("SQL_PORT", "5432"),
+        "ENGINE": config.SQL_ENGINE,
+        "NAME": config.SQL_DATABASE,
+        "USER": config.SQL_USER,
+        "PASSWORD": config.SQL_PASSWORD,
+        "HOST": config.SQL_HOST,
+        "PORT": config.SQL_PORT,
     }
 }
 
@@ -130,23 +132,25 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # CORS settings
-CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(" ")
+CORS_ALLOWED_ORIGINS = config.DJANGO_CORS_ALLOWED_ORIGINS
 
 ARCHIVESSPACE = {
-    "baseurl": os.environ.get("AS_BASEURL", "http://sandbox.archivesspace.org:8089/"),
-    "username": os.environ.get("AS_USERNAME", "admin"),
-    "password": os.environ.get("AS_PASSWORD", "admin"),
-    "repo_id": int(os.environ.get("AS_REPO_ID", default=2)),
+    "baseurl": config.AS_BASEURL,
+    "username": config.AS_USERNAME,
+    "password": config.AS_PASSWORD,
+    "repo_id": config.AS_REPO_ID,
 }
 
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.example.org")
-EMAIL_PORT = os.environ.get("EMAIL_PORT", default=587)
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "alerts@example.org")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "password")
-EMAIL_USE_TLS = int(os.environ.get("EMAIL_USE_TLS", default=1))
-EMAIL_USE_SSL = int(os.environ.get("EMAIL_USE_SSL", default=0))
-EMAIL_DEFAULT_FROM = os.environ.get("DEFAULT_FROM_EMAIL", "alerts@example.org")
+EMAIL_HOST = config.EMAIL_HOST
+EMAIL_PORT = config.EMAIL_PORT
+EMAIL_HOST_USER = config.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
+EMAIL_USE_TLS = config.EMAIL_USE_TLS
+EMAIL_USE_SSL = config.EMAIL_USE_SSL
+EMAIL_DEFAULT_FROM = config.DEFAULT_FROM_EMAIL
 
 EXPORT_FIELDS = [
     ("title", None),
