@@ -19,7 +19,6 @@ if [ ! -f $ZIP_DIR/$ZIP_NAME ]; then
     docker-compose.yml \
     Dockerfile \
     entrypoint.sh \
-    *.png \
     wait-for-it.sh
   find . -type d -name __pycache__ -exec rm -r {} \+
 
