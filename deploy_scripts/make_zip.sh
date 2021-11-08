@@ -19,7 +19,7 @@ if [ ! -f $ZIP_DIR/$ZIP_NAME ]; then
     docker-compose.yml \
     Dockerfile \
     entrypoint.sh \
-    pisces-services.png \
+    *.png \
     wait-for-it.sh
   find . -type d -name __pycache__ -exec rm -r {} \+
 
@@ -27,5 +27,5 @@ if [ ! -f $ZIP_DIR/$ZIP_NAME ]; then
   zip -r $ZIP_NAME .
   mkdir -p $ZIP_DIR
   mv $ZIP_NAME $ZIP_DIR/$ZIP_NAME
-  
+
 fi
