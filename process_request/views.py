@@ -120,7 +120,6 @@ class LinkResolverView(APIView):
           host = settings.HOSTNAME
           repo = settings.ARCHIVESSPACE["repo_id"]
           uri = resolve_ref_id(repo, data, aspace.client)
- 	  
           response = redirect("{}/objects/{}".format(host,uri))
           return response
         except Exception as e:
