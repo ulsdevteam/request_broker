@@ -392,7 +392,8 @@ def resolve_ref_id(repo_id, ref_id, client):
 
     """
     aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id,ref_id)).json()
-    aspace_obj = aspace_objs['archival_objects'][0]
-    aspace_uri = resolve_to_uri(aspace_obj)
-    resolved = identifier_from_uri(aspace_uri)
+    aspace_obj = aspace_objs['archival_objects'][0]['ref']
+    #return aspace_obj
+    #aspace_uri = resolve_to_uri(aspace_obj)
+    resolved = identifier_from_uri(aspace_obj)
     return resolved

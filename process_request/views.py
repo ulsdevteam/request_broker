@@ -115,11 +115,12 @@ class LinkResolverView(APIView):
         aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"], username=settings.ARCHIVESSPACE["username"], password=settings.ARCHIVESSPACE["password"], repository=settings.ARCHIVESSPACE["repo_id"])
 
         try:
-          data = request.data.get("ref_id")
+          data = request.GET["ref_id"]
           ref_id = LinkResolverSerializer(data)
           host = settings.HOSTNAME
           repo = settings.ARCHIVESSPACE["repo_id"]
           uri = resolve_ref_id(repo, data, aspace.client)
+ 	  
           response = redirect("{}/objects/{}".format(host,uri))
           return response
         except Exception as e:
