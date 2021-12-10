@@ -37,7 +37,6 @@ deploy:
   bucket: $AWS_BUCKET_NAME
   region: us-east-1
 - provider: codedeploy
-  wait_until_deployed: false
   bucket: $AWS_BUCKET_NAME
   key: $DEPLOY_ZIP_NAME
   bundle_type: zip
