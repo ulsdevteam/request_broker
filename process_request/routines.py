@@ -168,7 +168,7 @@ class AeonRequester(object):
     def __init__(self):
         self.request_defaults = {
             "AeonForm": "EADRequest",
-            "DocumentType": "Default",
+            "DocumentType": "Manuscript",
             "GroupingIdentifier": "GroupingField",
             "GroupingOption_ItemInfo1": "Concatenate",
             "GroupingOption_ItemDate": "Concatenate",
