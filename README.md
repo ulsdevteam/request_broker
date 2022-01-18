@@ -4,7 +4,7 @@ An application that accepts requests with lists of ArchivesSpace URIs from users
 
 The request broker is part of [Project Electron](https://github.com/RockefellerArchiveCenter/project_electron), an initiative to build sustainable, open and user-centered infrastructure for the archival management of digital records at the [Rockefeller Archive Center](http://rockarch.org/).
 
-[![Build Status](https://travis-ci.org/RockefellerArchiveCenter/request_broker.svg?branch=base)](https://travis-ci.org/RockefellerArchiveCenter/request_broker)
+[![Build Status](https://travis-ci.com/RockefellerArchiveCenter/request_broker.svg?branch=base)](https://travis-ci.com/RockefellerArchiveCenter/request_broker)
 
 ## Getting Started
 
