@@ -3,6 +3,10 @@ version: '3'
 services:
   request-broker-db:
     image: postgres:10.4
+    environment:
+      - POSTGRES_USER=postgres  # name of the application database user
+      - POSTGRES_PASSWORD=postgres  # name of the application database user
+      - POSTGRES_DB=request_broker_dev  # name of the application database
     volumes:
       - request_broker_dbvolume:/var/lib/postgresql/data/
   request-broker-web:
