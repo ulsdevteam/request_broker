@@ -383,7 +383,8 @@ class TestViews(TestCase):
         self.assert_handles_exceptions(
             mock_send, "bar", "deliver-duplication", DeliverDuplicationRequestView)
 
+    @aspace_vcr.use_cassette("aspace_request.json")
     def test_status_view(self):
         client = RequestsClient()
-        response = client.get("http://testserver{}".format(reverse("api_health_ping")))
+        response = client.get("http://testserver{}".format(reverse("api_health_ping_all")))
         assert response.status_code == 200
