@@ -134,6 +134,18 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+HEALTH_CHECK_PROVIDERS = {
+    'health': (
+        ('ping', 'health_check.providers.health.ping', None, None),
+        ('ping_all', 'process_request.health_checks.ping_all', None, None),
+        ('databases', 'health_check.providers.django.health.databases', None, None),
+        ('caches', 'health_check.providers.django.health.caches', None, None),
+    ),
+    'aspace': (
+        ('available', 'process_request.health_checks.test_aspace', None, None),
+    )
+}
+
 # CORS settings
 CORS_ALLOWED_ORIGINS = config.DJANGO_CORS_ALLOWED_ORIGINS
 
