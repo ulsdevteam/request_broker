@@ -14,11 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path
+
 from process_request.views import (DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, MailerView,
-                                   ParseRequestView)
+                                   ParseRequestView, PingView)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -27,5 +28,5 @@ urlpatterns = [
     path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
     path("api/process-request/parse", ParseRequestView.as_view(), name="parse-request"),
     path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv"),
-    path("api/status/", include('health_check.api.urls'))
+    path("api/status/", PingView.as_view(), name="ping")
 ]
