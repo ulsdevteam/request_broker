@@ -386,5 +386,5 @@ class TestViews(TestCase):
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_status_view(self):
         client = RequestsClient()
-        response = client.get("http://testserver{}".format(reverse("api_health_ping_all")))
+        response = client.get("http://testserver{}".format(reverse("ping")))
         assert response.status_code == 200
