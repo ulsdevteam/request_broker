@@ -1,10 +1,12 @@
 import csv
 from datetime import datetime
 
+from asnake.aspace import ASpace
 from django.http import StreamingHttpResponse
-from request_broker import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from request_broker import settings
 
 from .routines import AeonRequester, Mailer, Processor
 
@@ -103,3 +105,17 @@ class DownloadCSVView(APIView):
             return response
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
+
+
+class PingView(APIView):
+    """Checks if the application is able to process requests."""
+
+    def get(self, request):
+        try:
+            ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"],
+                   username=settings.ARCHIVESSPACE["username"],
+                   password=settings.ARCHIVESSPACE["password"],
+                   repository=settings.ARCHIVESSPACE["repo_id"])
+            return Response({"pong": True}, status=200)
+        except Exception as e:
+            return Response({"error": str(e), "pong": False}, status=200)

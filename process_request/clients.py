@@ -1,5 +1,6 @@
-from request_broker import settings
 from requests import Session
+
+from request_broker import settings
 
 
 def http_meth_factory(meth):
