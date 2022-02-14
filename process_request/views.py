@@ -3,9 +3,10 @@ from datetime import datetime
 
 from asnake.aspace import ASpace
 from django.http import StreamingHttpResponse
-from request_broker import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from request_broker import settings
 
 from .routines import AeonRequester, Mailer, Processor
 

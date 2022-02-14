@@ -9,8 +9,9 @@ from django.core import mail
 from django.http import StreamingHttpResponse
 from django.test import TestCase
 from django.urls import reverse
-from request_broker import settings
 from rest_framework.test import APIRequestFactory, RequestsClient
+
+from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_parent_title,
