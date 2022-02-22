@@ -1,4 +1,7 @@
 dist: bionic
+addons:
+  apt:
+    update: true
 language: python
 python:
   "3.10"
@@ -14,6 +17,7 @@ env:
     - APPLICATION_NAME: request_broker
     - APPLICATION_PORT: 80
 before_install:
+  - sudo apt-get install apache2-dev
   - cp ${APPLICATION_NAME}/config.py.example ${APPLICATION_NAME}/config.py
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker-compose up -d
