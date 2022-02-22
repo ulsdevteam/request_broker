@@ -4,6 +4,7 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update \
     && apt-get install -y \
       postgresql \
+      apache2 apache2-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code

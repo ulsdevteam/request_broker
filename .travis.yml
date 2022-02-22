@@ -1,4 +1,9 @@
 dist: bionic
+addons:
+  apt:
+    update: true
+    packages:
+      - apache2-dev
 language: python
 python:
   "3.10"
