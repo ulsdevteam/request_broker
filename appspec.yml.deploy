@@ -11,10 +11,8 @@ hooks:
       timeout: 300
     - location: deploy_scripts/run_management_commands_django.sh
       timeout: 300
-    - location: deploy_scripts/create_apache_config.sh
-      timeout: 20
   ApplicationStart:
-    - location: deploy_scripts/restart_apachectl.sh
+    - location: deploy_scripts/restart_httpd.sh
       timeout: 20
   ValidateService:
     - location: deploy_scripts/curl_index.sh
