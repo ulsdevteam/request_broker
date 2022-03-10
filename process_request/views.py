@@ -3,13 +3,15 @@ from datetime import datetime
 
 from asnake.aspace import ASpace
 from django.http import StreamingHttpResponse
+from django.shortcuts import redirect
+from request_broker import settings
+from asnake.aspace import ASpace
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from request_broker import settings
-
+from .helpers import resolve_ref_id
 from .routines import AeonRequester, Mailer, Processor
-
+from .serializers import LinkResolverSerializer
 
 class BaseRequestView(APIView):
     """Base view which handles POST requests returns the appropriate response.
@@ -29,7 +31,7 @@ class ParseRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         uri = request.data.get("item")
-        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
         return Processor().parse_item(uri, baseurl)
 
 
@@ -41,7 +43,7 @@ class MailerView(BaseRequestView):
         to_address = request.data.get("email")
         subject = request.data.get("subject", "")
         message = request.data.get("message")
-        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
         emailed = Mailer().send_message(to_address, object_list, subject, message, baseurl)
         return {"detail": emailed}
 
@@ -51,7 +53,7 @@ class DeliverReadingRoomRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
         delivered = AeonRequester().get_request_data(
             "readingroom", baseurl, **request_data)
         return delivered
@@ -62,7 +64,7 @@ class DeliverDuplicationRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
         delivered = AeonRequester().get_request_data(
             "duplication", baseurl, **request_data)
         return delivered
@@ -93,19 +95,18 @@ class DownloadCSVView(APIView):
         """Streams a large CSV file."""
         try:
             submitted = request.data.get("items")
-            baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
+            baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
             processor = Processor()
             fetched = processor.get_data(submitted, baseurl)
             response = StreamingHttpResponse(
                 streaming_content=(self.iter_items(fetched, Echo())),
                 content_type="text/csv",
-            )
+            ) 
             filename = "dimes-{}.csv".format(datetime.now().isoformat())
             response["Content-Disposition"] = "attachment; filename={}".format(filename)
             return response
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
-
 
 class PingView(APIView):
     """Checks if the application is able to process requests."""
@@ -119,3 +120,22 @@ class PingView(APIView):
             return Response({"pong": True}, status=200)
         except Exception as e:
             return Response({"error": str(e), "pong": False}, status=200)
+
+class LinkResolverView(APIView):
+    """Takes POST from Islandora. Resolves ASpace ID"""
+
+    def get(self,request):
+
+        aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"], username=settings.ARCHIVESSPACE["username"], password=settings.ARCHIVESSPACE["password"], repository=settings.ARCHIVESSPACE["repo_id"])
+
+        try:
+          data = request.GET["ref_id"]
+          ref_id = LinkResolverSerializer(data)
+          host = settings.HOSTNAME
+          repo = settings.ARCHIVESSPACE["repo_id"]
+          uri = resolve_ref_id(repo, data, aspace.client)
+          response = redirect("{}/objects/{}".format(host,uri))
+          return response
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+

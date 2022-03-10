@@ -238,7 +238,7 @@ class TestRoutines(TestCase):
                 ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
             mock_get_data.return_value[0]["restrictions"] = restrictions
             mock_get_data.return_value[0]["restrictions_text"] = text
-            parsed = Processor().parse_item(mock_get_data.return_value[0]["uri"], "https://dimes.rockarch.org")
+            parsed = Processor().parse_item(mock_get_data.return_value[0]["uri"], "http://localhost:8000")
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
 
@@ -246,13 +246,13 @@ class TestRoutines(TestCase):
         for format, submit in [
                 ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value[0]["preferred_instance"]["format"] = format
-            parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
+            parsed = Processor().parse_item(item["uri"], "http://localhost:8000")
             self.assertEqual(parsed["submit"], submit)
 
         # Ensure objects without instances return correct message
         mock_get_data.return_value[0]["preferred_instance"] = {"format": None, "container": None,
                                                                "subcontainer": None, "location": None, "barcode": None, "uri": None}
-        parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
+        parsed = Processor().parse_item(item["uri"], "http://localhost:8000")
         self.assertEqual(parsed["submit"], False)
         self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
 
@@ -264,7 +264,7 @@ class TestRoutines(TestCase):
                 ("test@example.com", "Subject"),
                 (["foo@example.com", "bar@example.com"], None)]:
             expected_to = to if isinstance(to, list) else [to]
-            emailed = Mailer().send_message(to, object_list, subject, "", "https://dimes.rockarch.org")
+            emailed = Mailer().send_message(to, object_list, subject, "", "http://localhost:8000")
             self.assertEqual(emailed, "email sent to {}".format(", ".join(expected_to)))
             self.assertTrue(isinstance(mail.outbox[0].to, list))
             self.assertIsNot(mail.outbox[0].subject, None)
@@ -273,7 +273,7 @@ class TestRoutines(TestCase):
 
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_get_data(self):
-        get_as_data = Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
+        get_as_data = Processor().get_data(["/repositories/2/archival_objects/1134638"], "http://localhost:8000")
         self.assertTrue(isinstance(get_as_data, list))
         self.assertEqual(len(get_as_data), 1)
 
@@ -285,23 +285,23 @@ class TestRoutines(TestCase):
         mock_as_get.return_value.text = ''
         mock_as_get.return_value.json.return_value = {"error": error_message}
         with self.assertRaises(Exception, msg=error_message):
-            Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
+            Processor().get_data(["/repositories/2/archival_objects/1134638"], "http://localhost:8000")
 
     @patch("process_request.routines.Processor.get_data")
     def test_send_aeon_requests(self, mock_get_data):
         mock_get_data.return_value = [json_from_fixture("as_data.json")]
 
         data = {"scheduled_date": date.today().isoformat(), "items": random_list()}
-        delivered = AeonRequester().get_request_data("readingroom", "https://dimes.rockarch.org", **data)
+        delivered = AeonRequester().get_request_data("readingroom", "http://localhost:8000", **data)
         self.assertTrue(isinstance(delivered, dict))
 
         data["format"] = "jpeg"
-        delivered = AeonRequester().get_request_data("duplication", "https://dimes.rockarch.org", **data)
+        delivered = AeonRequester().get_request_data("duplication", "http://localhost:8000", **data)
         self.assertTrue(isinstance(delivered, dict))
 
         request_type = "foo"
         with self.assertRaises(ValueError, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
-            AeonRequester().get_request_data(request_type, "https://dimes.rockarch.org", **data)
+            AeonRequester().get_request_data(request_type, "http://localhost:8000", **data)
 
 
 class TestViews(TestCase):

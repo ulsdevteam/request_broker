@@ -169,7 +169,7 @@ class AeonRequester(object):
     def __init__(self):
         self.request_defaults = {
             "AeonForm": "EADRequest",
-            "DocumentType": "Default",
+            "DocumentType": "Manuscript",
             "GroupingIdentifier": "GroupingField",
             "GroupingOption_ItemInfo1": "Concatenate",
             "GroupingOption_ItemDate": "Concatenate",
@@ -223,10 +223,12 @@ class AeonRequester(object):
             data: Submission data for Aeon.
         """
         reading_room_defaults = {
-            "WebRequestForm": "DefaultRequest",
+            "WebRequestForm": "GenericRequestManuscript",
             "RequestType": "Loan",
             "ScheduledDate": request_data.get("scheduledDate"),
             "SpecialRequest": request_data.get("questions"),
+            "Location": request_data.get("readingRoomID"),
+	    "Site": request_data.get("site"),
         }
         request_data = self.parse_items(items)
         return dict(**self.request_defaults, **reading_room_defaults, **request_data)
@@ -278,7 +280,6 @@ class AeonRequester(object):
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],
                 "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],
-                "ItemIssue_{}".format(request_prefix): i["preferred_instance"]["subcontainer"],
-                "Location_{}".format(request_prefix): i["preferred_instance"]["location"]
+                "ItemIssue_{}".format(request_prefix): i["preferred_instance"]["subcontainer"]
             })
         return parsed

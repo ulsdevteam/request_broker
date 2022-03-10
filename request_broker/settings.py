@@ -110,6 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'process_request.User'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -150,6 +151,10 @@ EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
 EMAIL_USE_TLS = config.EMAIL_USE_TLS
 EMAIL_USE_SSL = config.EMAIL_USE_SSL
 EMAIL_DEFAULT_FROM = config.DEFAULT_FROM_EMAIL
+
+HOSTNAME = config.DIMES_PREFIX
+
+AEON_API_KEY = config.AEON_API_KEY
 
 EXPORT_FIELDS = [
     ("title", None),
