@@ -2,8 +2,7 @@ import re
 
 import inflect
 import shortuuid
-from request_broker import settings
-from asnake.utils import get_date_display, get_note_text, text_in_note, resolve_to_uri
+from asnake.utils import get_date_display, get_note_text, text_in_note
 from ordered_set import OrderedSet
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
@@ -367,31 +366,3 @@ def list_chunks(lst, n):
     """
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
-
-def identifier_from_uri(uri):
-    """Creates a short UUID.
-
-    Uses `shortuuid`, which first creates a v5 UUID using an object's AS URI as
-    a name, and then converts them to base57 using lowercase and uppercase
-    letters and digits, and removing similar-looking characters such as
-    l, 1, I, O and 0.
-
-    This is a one-way process; while it is possible to consistently generate a
-    given UUID given an AS URI, it is not possible to decode the URI from the
-    UUID.
-
-    Helper method copied from https://github.com/ulsdevteam/pisces/blob/base/fetcher/helpers.py#L81
-    """
-    return shortuuid.uuid(name=uri)
-
-def resolve_ref_id(repo_id, ref_id, client):
-    """ Accepts options to find archival objects 
-    using find_by_id method.
-    Generates and returns a DIMES id from
-    an ArchiveSpace URI.
-
-    """
-    aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id,ref_id)).json()
-    aspace_obj = aspace_objs['archival_objects'][0]['ref']
-    resolved = identifier_from_uri(aspace_obj)
-    return resolved

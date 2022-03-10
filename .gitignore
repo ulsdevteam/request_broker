@@ -5,6 +5,7 @@
 .coverage
 *config.py
 
+
 ### Django ###
 *.log
 *.pot
@@ -14,13 +15,3 @@ local_settings.py
 db.sqlite3
 media
 static/
-
-### Docker ###
-docker-compose.*
-
-### Configs ###
-*.conf
-*.production
-*.prod
-.env*
-env/*
