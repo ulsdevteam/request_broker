@@ -5,7 +5,6 @@ from asnake.aspace import ASpace
 from django.http import StreamingHttpResponse
 from django.shortcuts import redirect
 from request_broker import settings
-from asnake.aspace import ASpace
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -113,7 +112,10 @@ class LinkResolverView(APIView):
 
     def get(self,request):
 
-        aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"], username=settings.ARCHIVESSPACE["username"], password=settings.ARCHIVESSPACE["password"], repository=settings.ARCHIVESSPACE["repo_id"])
+        aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"], 
+                        username=settings.ARCHIVESSPACE["username"], 
+                        password=settings.ARCHIVESSPACE["password"], 
+                        repository=settings.ARCHIVESSPACE["repo_id"])
 
         try:
           data = request.GET["ref_id"]
