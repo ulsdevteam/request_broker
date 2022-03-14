@@ -3,40 +3,23 @@ version: '3'
 services:
   request-broker-db:
     image: postgres:10.4
-    volumes:
-      - request_broker_dbvolume:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=postgres  # name of the application database user
       - POSTGRES_PASSWORD=postgres  # name of the application database user
       - POSTGRES_DB=request_broker_dev  # name of the application database
+    volumes:
+      - request_broker_dbvolume:/var/lib/postgresql/data/
   request-broker-web:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    command: python manage.py runserver 0.0.0.0:8000
+    build: .
+    entrypoint: /code/entrypoint.sh
+    environment:
+      - APPLICATION_PORT=${APPLICATION_PORT:-8000}
     volumes:
       - .:/code
     ports:
-      - "8000:8000"
+      - "${APPLICATION_PORT:-8000}:${APPLICATION_PORT:-8000}"
     depends_on:
       - request-broker-db
-    environment:
-      - DEBUG=1
-      - SECRET_KEY=f15f28c4457b5f0e474f58b8dfa815acd1a622dae2dc9ef7
-      - DJANGO_ALLOWED_HOSTS=request-broker-web localhost
-      - CORS_ALLOWED_ORIGINS=http://localhost:3000
-      - SQL_ENGINE=django.db.backends.postgresql
-      - SQL_DATABASE=postgres
-      - SQL_USER=postgres
-      - SQL_PASSWORD=postgres
-      - SQL_HOST=request-broker-db
-      - SQL_PORT=5432
-      - AS_BASEURL=https://pittapi.as.atlas-sys.com
-      - AS_USERNAME=sysdevapi
-      - AS_PASSWORD=uF5jH5kH5kL6
-      - AS_REPO_ID=10
-      - DIMES_PREFIX=http://localhost:3000
-      - AEON_API_KEY=ef6d670d-63a2-45a6-ac10-2c379f2e93a5
 
 volumes:
   request_broker_dbvolume:

@@ -2,20 +2,15 @@
 
 echo "Waiting for PostgreSQL..."
 
-while ! nc -z $SQL_HOST $SQL_PORT; do
-  sleep 0.1
-done
+# Create config.py if it doesn't exist
+if [ ! -f request_broker/config.py ]; then
+    echo "Creating config file"
+    cp request_broker/config.py.example request_broker/config.py
+fi
 
-echo "Connected to PostgreSQL"
-
-# apply database migrations
+./wait-for-it.sh db:5432 -- echo "Apply database migrations"
 python manage.py migrate
 
 #Start server
 echo "Starting server"
-python manage.py runserver 0.0.0.0:8000
-
-# collect static files
-python manage.py collectstatic --no-input --clear
-
-exec "$@"
+python manage.py runserver 0.0.0.0:${APPLICATION_PORT}
