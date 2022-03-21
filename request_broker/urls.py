@@ -18,9 +18,8 @@ from django.urls import path
 
 from process_request.views import (DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
-                                   DownloadCSVView, MailerView,
-                                   ParseRequestView, LinkResolverView,
-                                   PingView)
+                                   DownloadCSVView, LinkResolverView,
+                                   MailerView, ParseRequestView, PingView)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
