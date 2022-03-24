@@ -189,14 +189,16 @@ class AeonRequester(object):
         }
 
     def get_request_data(self, request_type, baseurl, **kwargs):
-        """Delivers request to Aeon.
+        """Gets object data from ArchivesSpace and formats it for reading rooom
+        or duplication requests in Aeon.
 
         Args:
             request_type (str): string indicating whether the request is for the
             readingroom or duplication.
+            baseurl (str): Base url for an ArchivesSpace instance.
 
         Returns:
-            dict: Request data.
+            dict: Request data formatted for Aeon.
 
         Raise:
             ValueError: if request_type is not readingroom or duplicate.
