@@ -196,6 +196,9 @@ class AeonRequester(object):
             request_type (str): string indicating whether the request is for the
             readingroom or duplication.
             baseurl (str): Base url for an ArchivesSpace instance.
+            **kwargs (dict): Includes varying Aeon request information depending
+                on the type of request. Also includes the below specified keys.
+                items (list): A list of ArchivesSpace archival object URIs.
 
         Returns:
             dict: Request data formatted for Aeon.
