@@ -1,5 +1,0 @@
-.git
-build
-.dockerignore
-Dockerfile
-env

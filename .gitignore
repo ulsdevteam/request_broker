@@ -3,6 +3,8 @@
 *.pickle
 *.env*
 .coverage
+*config.py
+
 
 ### Django ###
 *.log

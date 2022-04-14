@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime
 
+from asnake.aspace import ASpace
 from django.http import StreamingHttpResponse
 from django.shortcuts import redirect
 from request_broker import settings
@@ -9,6 +10,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .helpers import resolve_ref_id
+
+from request_broker import settings
+
 from .routines import AeonRequester, Mailer, Processor
 from .serializers import LinkResolverSerializer
 
@@ -30,7 +34,7 @@ class ParseRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         uri = request.data.get("item")
-        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
+        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
         return Processor().parse_item(uri, baseurl)
 
 
@@ -42,7 +46,7 @@ class MailerView(BaseRequestView):
         to_address = request.data.get("email")
         subject = request.data.get("subject", "")
         message = request.data.get("message")
-        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
+        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
         emailed = Mailer().send_message(to_address, object_list, subject, message, baseurl)
         return {"detail": emailed}
 
@@ -52,7 +56,7 @@ class DeliverReadingRoomRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
+        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
         delivered = AeonRequester().get_request_data(
             "readingroom", baseurl, **request_data)
         return delivered
@@ -63,7 +67,7 @@ class DeliverDuplicationRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
+        baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
         delivered = AeonRequester().get_request_data(
             "duplication", baseurl, **request_data)
         return delivered
@@ -94,7 +98,7 @@ class DownloadCSVView(APIView):
         """Streams a large CSV file."""
         try:
             submitted = request.data.get("items")
-            baseurl = request.META.get("HTTP_ORIGIN", "http://localhost:3000")
+            baseurl = request.META.get("HTTP_ORIGIN", "https://dimes.rockarch.org")
             processor = Processor()
             fetched = processor.get_data(submitted, baseurl)
             response = StreamingHttpResponse(
@@ -125,3 +129,15 @@ class LinkResolverView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 
+class PingView(APIView):
+    """Checks if the application is able to process requests."""
+
+    def get(self, request):
+        try:
+            ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"],
+                   username=settings.ARCHIVESSPACE["username"],
+                   password=settings.ARCHIVESSPACE["password"],
+                   repository=settings.ARCHIVESSPACE["repo_id"])
+            return Response({"pong": True}, status=200)
+        except Exception as e:
+            return Response({"error": str(e), "pong": False}, status=200)
