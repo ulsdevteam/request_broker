@@ -25,4 +25,4 @@ docker-compose.*
 *.prod
 .env*
 env/*
-*/config.py
+request_broker/config.py
