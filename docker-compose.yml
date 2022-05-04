@@ -12,8 +12,10 @@ services:
   request-broker-web:
     build:
       context: .
-      dockerfile: Dockerfile
-    command: python manage.py runserver 0.0.0.0:8000
+      dockerfile: Dockerfile.prod
+    env_file:
+      - .env.prod
+    #command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
     ports:
