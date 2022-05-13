@@ -85,14 +85,14 @@ class Processor(object):
         submit = True
         reason = None
         if not any(value for value in item["preferred_instance"].values()):
-            submit = False
-            reason = "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available."
+        #    submit = False
+            reason = "This item is currently unavailable for request. It will be included in request. Reason: Required information about the physical container of this item is not available."
         elif item["restrictions"] == "closed":
-            submit = False
-            reason = "This item is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text"))
+        #    submit = False
+            reason = "This item is currently unavailable for request. It will be included in request. Reason: {}".format(item.get("restrictions_text"))
         elif "digital" in item["preferred_instance"]["format"].lower():
-            submit = False
-            reason = "This item is already available online. It will not be included in request."
+        #    submit = False
+            reason = "This item is already available online. It will be included in request."
         elif item["restrictions"] == "conditional":
             reason = "This item may be currently unavailable for request. It will be included in request. Reason: {}".format(item.get("restrictions_text"))
         return submit, reason
