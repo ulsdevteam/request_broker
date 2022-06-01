@@ -29,7 +29,7 @@ idna==3.3
     # via
     #   requests
     #   yarl
-inflect==5.4.0
+inflect==5.6.0
     # via -r requirements.in
 jarowinkler==1.0.1
     # via rapidfuzz
