@@ -246,7 +246,7 @@ class AeonRequester(object):
             data: Submission data for Aeon.
         """
         duplication_defaults = {
-            "WebRequestForm": "PhotoduplicationRequest",
+            "WebRequestForm": "GenericRequestManuscriptPhotodup",
             "RequestType": "Copy",
             "Format": request_data.get("format"),
             "SpecialRequest": request_data.get("questions"),
