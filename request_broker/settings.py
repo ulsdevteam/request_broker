@@ -134,6 +134,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = config.CORS_ALLOWED_ORIGINS
+DIMES_HOSTNAME = config.DIMES_HOSTNAME
 
 ARCHIVESSPACE = {
     "baseurl": config.AS_BASEURL,
@@ -142,7 +143,7 @@ ARCHIVESSPACE = {
     "repo_id": config.AS_REPO_ID,
 }
 
-HOSTNAME = config.DIMES_PREFIX
+RESOLVER_HOSTNAME = config.DIMES_HOSTNAME
 
 EMAIL_HOST = config.EMAIL_HOST
 EMAIL_PORT = config.EMAIL_PORT
