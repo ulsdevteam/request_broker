@@ -1,7 +1,7 @@
 import csv
 from datetime import date
 from os.path import join
-from unittest.mock import patch, ANY
+from unittest.mock import ANY, patch
 
 import vcr
 from asnake.aspace import ASpace
@@ -9,7 +9,7 @@ from django.core import mail
 from django.http import StreamingHttpResponse
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIRequestFactory, RequestsClient
+from rest_framework.test import APIRequestFactory
 
 from request_broker import settings
 
