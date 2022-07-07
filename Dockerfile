@@ -18,7 +18,7 @@ RUN wget https://github.com/GrahamDumpleton/mod_wsgi/archive/refs/tags/4.9.0.tar
     && make clean
 
 ADD ./apache/000-request_broker.conf /etc/apache2/sites-available/000-request_broker.conf
-RUN a2dissite 000-request_broker.conf
+ADD ./apache/wsgi.load /etc/apache2/mods-available/wsgi.load
 RUN a2ensite 000-request_broker.conf
 RUN a2enmod headers
 RUN a2enmod rewrite
@@ -35,5 +35,5 @@ RUN chmod 775 /var/www/html/request-broker/static
 RUN chown :www-data /var/www/html/request-broker
 RUN chown :www-data /var/www/html/request-broker/static
 
-EXPOSE 80 8001
+EXPOSE 8000
 CMD ["apache2ctl", "-D", "FOREGROUND"]
