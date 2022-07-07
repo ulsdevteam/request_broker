@@ -386,11 +386,9 @@ def identifier_from_uri(uri):
 
 
 def resolve_ref_id(repo_id, ref_id, client):
-    """ Accepts options to find archival objects
-    using find_by_id method.
-    Generates and returns a DIMES id from
-    an ArchiveSpace URI.
+    """ Accepts options to find archival objects using find_by_id method.
 
+    Generates and returns a DIMES id from an ArchiveSpace URI.
     """
     aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id, ref_id)).json()
     aspace_obj = aspace_objs['archival_objects'][0]['ref']
