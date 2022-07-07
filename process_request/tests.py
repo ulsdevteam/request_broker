@@ -1,7 +1,7 @@
 import csv
 from datetime import date
 from os.path import join
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 import vcr
 from asnake.aspace import ASpace
@@ -9,7 +9,7 @@ from django.core import mail
 from django.http import StreamingHttpResponse
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIRequestFactory, RequestsClient
+from rest_framework.test import APIRequestFactory
 
 from request_broker import settings
 
@@ -386,6 +386,20 @@ class TestViews(TestCase):
 
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_status_view(self):
-        client = RequestsClient()
-        response = client.get("http://testserver{}".format(reverse("ping")))
-        assert response.status_code == 200
+        response = self.client.get("http://testserver{}".format(reverse("ping")))
+        self.assertEqual(response.status_code, 200)
+
+    @patch("process_request.views.resolve_ref_id")
+    def test_linkresolver_view(self, mock_resolve):
+        with aspace_vcr.use_cassette("aspace_request.json") as cass:
+            mock_uri = "123"
+            mock_refid = "12345abcdef"
+            mock_resolve.return_value = mock_uri
+            response = self.client.get(reverse('resolve-request'), {"ref_id": mock_refid})
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, f"{settings.RESOLVER_HOSTNAME}/objects/{mock_uri}")
+            mock_resolve.assert_called_with(settings.ARCHIVESSPACE["repo_id"], mock_refid, ANY)
+
+            cass.rewind()
+            response = self.client.get(reverse('resolve-request'))
+            self.assertEqual(response.status_code, 500)
