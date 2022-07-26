@@ -270,7 +270,6 @@ class AeonRequester(object):
         for i in items:
             request_prefix = i["uri"].split("/")[-1]
             parsed["Request"].append(request_prefix)
-            # TODO: add restricted_in_container
             parsed.update({
                 "CallNumber_{}".format(request_prefix): i["resource_id"],
                 "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
@@ -281,6 +280,7 @@ class AeonRequester(object):
                 "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
                 "ItemInfo3_{}".format(request_prefix): i["uri"],
                 "ItemInfo4_{}".format(request_prefix): description,
+                "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
                 "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],
