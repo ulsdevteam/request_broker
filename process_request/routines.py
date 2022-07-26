@@ -5,7 +5,8 @@ from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates, get_parent_title,
                       get_preferred_format, get_resource_creators,
-                      get_rights_info, get_size, get_url, list_chunks)
+                      get_restricted_in_container, get_rights_info, get_size,
+                      get_url, list_chunks)
 
 
 class Processor(object):
@@ -49,6 +50,7 @@ class Processor(object):
                         "creators": get_resource_creators(item_collection),
                         "restrictions": restrictions,
                         "restrictions_text": restrictions_text,
+                        "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri) else None,
                         "collection_name": item_collection.get("title"),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
@@ -269,6 +271,7 @@ class AeonRequester(object):
         for i in items:
             request_prefix = i["uri"].split("/")[-1]
             parsed["Request"].append(request_prefix)
+            # TODO: add restricted_in_container
             parsed.update({
                 "CallNumber_{}".format(request_prefix): i["resource_id"],
                 "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
