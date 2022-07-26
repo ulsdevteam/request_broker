@@ -162,3 +162,5 @@ EXPORT_FIELDS = [
     ("size", "Size"),
     ("collection_name", "Collection Name"),
     ("parent", "Parent Collection Name")]
+
+RESTRICTED_IN_CONTAINER = config.RESTRICTED_IN_CONTAINER
