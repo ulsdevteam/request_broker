@@ -1,7 +1,6 @@
 from asnake.aspace import ASpace
+from django.conf import settings
 from django.core.mail import send_mail
-
-from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates, get_parent_title,
                       get_preferred_format, get_resource_creators,

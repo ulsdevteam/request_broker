@@ -5,19 +5,19 @@ from unittest.mock import ANY, patch
 
 import vcr
 from asnake.aspace import ASpace
+from django.conf import settings
 from django.core import mail
 from django.http import StreamingHttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIRequestFactory
-
-from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_parent_title,
                       get_preferred_format, get_resource_creators,
-                      get_rights_info, get_rights_status, get_rights_text,
-                      get_size, indicator_to_integer, prepare_values)
+                      get_restricted_in_container, get_rights_info,
+                      get_rights_status, get_rights_text, get_size,
+                      indicator_to_integer, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -216,6 +216,15 @@ class TestHelpers(TestCase):
             parsed = indicator_to_integer(indicator)
             self.assertEqual(parsed, expected_parsed)
 
+    @patch("asnake.client.web_client.ASnakeClient")
+    def test_get_restricted_in_container(self, mock_client):
+        for fixture, expected in [
+            ("unrestricted_search.json", ""),
+                ("restricted_search.json", "Folder 122A, Folder 117A.1, Folder 118A.1, Folder 121A.1, Folder 123A.1, Folder 119A, Folder 120A.1")]:
+            mock_client.get.return_value.json.return_value = json_from_fixture(fixture)
+            result = get_restricted_in_container("/repositories/2/top_container/1", mock_client)
+            self.assertEqual(result, expected)
+
     # Test is commented out as the code is currently not used, and this allows us to shed a few configs
     # def test_aeon_client(self):
     #     baseurl = random_string(20)
@@ -272,6 +281,7 @@ class TestRoutines(TestCase):
             self.assertNotIn("barcode", mail.outbox[0].body)
 
     @aspace_vcr.use_cassette("aspace_request.json")
+    @override_settings(RESTRICTED_IN_CONTAINER=False)
     def test_get_data(self):
         get_as_data = Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
         self.assertTrue(isinstance(get_as_data, list))

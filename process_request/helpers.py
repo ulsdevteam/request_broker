@@ -188,7 +188,6 @@ def get_restricted_in_container(container_uri, client):
         this_page += 1
         if this_page > items_in_container["last_page"]:
             more = False
-        print(restricted)
     return ", ".join(restricted)
 
 
