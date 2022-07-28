@@ -46,13 +46,14 @@ class Processor(object):
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
                     data.append({
+                        "ead_id": item_collection.get("ead_id"),
                         "creators": get_resource_creators(item_collection),
                         "restrictions": restrictions,
                         "restrictions_text": restrictions_text,
                         "collection_name": item_collection.get("title"),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
-                        "resource_id": item_collection.get("id_0"),
+                        "resource_id": item_collection.get("id_0")+' '+item_collection.get("id_1")+' '+item_collection.get("id_2"),
                         "title": item_json.get("display_string"),
                         "uri": item_json["uri"],
                         "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
@@ -232,7 +233,7 @@ class AeonRequester(object):
             "ScheduledDate": request_data.get("scheduledDate"),
             "SpecialRequest": request_data.get("questions"),
             "Location": request_data.get("readingRoomID"),
-	    "Site": request_data.get("site"),
+            "Site": request_data.get("site"),
         }
         request_data = self.parse_items(items)
         return dict(**self.request_defaults, **reading_room_defaults, **request_data)
@@ -280,6 +281,7 @@ class AeonRequester(object):
                 "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
                 "ItemInfo3_{}".format(request_prefix): i["uri"],
                 "ItemInfo4_{}".format(request_prefix): description,
+                "EADNumber_{}".format(request_prefix): i['ead_id'],
                 "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],
