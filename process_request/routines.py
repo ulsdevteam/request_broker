@@ -87,7 +87,7 @@ class Processor(object):
         reason = None
         if not any(value for value in item["preferred_instance"].values()):
             reason = "This item may not be available for request, but attempt will be made to include it. Reason: Required information about the physical container of this item is not available."
-        elif item.get("restrictions_text").strip() == "No restrictions.":
+        elif  item.get("restrictions_text") and item.get("restrictions_text").strip() == "No restrictions.":
             reason = None
         elif item["restrictions"] == "closed":
             reason = "This item may be restricted; A&SC staff will follow up with you if needed.  Reason: {}".format(item.get("restrictions_text"))
