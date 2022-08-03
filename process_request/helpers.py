@@ -3,6 +3,7 @@ import re
 import inflect
 import shortuuid
 from asnake.utils import get_date_display, get_note_text, text_in_note
+from django.conf import settings
 from ordered_set import OrderedSet
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
@@ -50,6 +51,8 @@ def get_file_versions(digital_object):
 def get_locations(top_container_info):
     """Gets a string representation of a location for an ArchivesSpace top container.
 
+    Adds the building name for offsite locations only.
+
     Args:
         top_container_info (dict): json for a top container (with resolved container locations)
 
@@ -58,10 +61,12 @@ def get_locations(top_container_info):
     """
 
     def make_short_location(loc_data):
-        return ".".join([
-            loc_data.get("room", "").strip().replace("Vault ", ""),
-            loc_data.get("coordinate_1_indicator", "").strip(),
-            loc_data.get("coordinate_2_indicator", "").strip()])
+        location_list = [loc_data.get("room", "").strip().replace("Vault ", ""),
+                         loc_data.get("coordinate_1_indicator", "").strip(),
+                         loc_data.get("coordinate_2_indicator", "").strip()]
+        if loc_data.get("building") in settings.OFFSITE_BUILDINGS:
+            location_list.insert(0, loc_data["building"])
+        return ".".join(location_list)
 
     locations = None
     if top_container_info.get("container_locations"):
