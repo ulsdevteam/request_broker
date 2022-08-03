@@ -20,3 +20,4 @@ EMAIL_USE_TLS = 1  # Use TLS connection for email (1 for True, 0 for False)
 EMAIL_USE_SSL = 0  # Use SSL connection for email (1 for True, 0 for False)
 DEFAULT_FROM_EMAIL = "dimes@example.com"  # user that should be set as the sender
 DIMES_HOSTNAME = "dimes.rockarch.org" # Hostname for DIMES application
+OFFSITE_BUILDINGS = ["Armonk", "Greenrock"]  # Names of offsite buildings, which will be added to locations (list of strings)
