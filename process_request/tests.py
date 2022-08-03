@@ -7,7 +7,7 @@ import vcr
 from asnake.aspace import ASpace
 from django.core import mail
 from django.http import StreamingHttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIRequestFactory
 
@@ -99,10 +99,11 @@ class TestHelpers(TestCase):
         digital_object = {'file_versions': [{'file_uri': uri}]}
         self.assertEqual(get_file_versions(digital_object), uri)
 
+    @override_settings(OFFSITE_BUILDINGS=["Armonk"])
     def test_get_locations(self):
-        obj_data = json_from_fixture("locations.json")
-        expected_location = "106.66.7"
-        self.assertEqual(get_locations(obj_data), expected_location)
+        for fixture, expected in [("locations.json", "106.66.7"), ("locations_offsite.json", "Armonk.1.66.7")]:
+            obj_data = json_from_fixture(fixture)
+            self.assertEqual(get_locations(obj_data), expected)
 
     def test_get_instance_data(self):
         obj_data = json_from_fixture("digital_object_instance.json")
