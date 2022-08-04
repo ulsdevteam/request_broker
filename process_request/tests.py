@@ -257,6 +257,11 @@ class TestRoutines(TestCase):
         self.assertEqual(parsed["submit"], False)
         self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
 
+        mock_get_data.return_value = []
+        parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
+        self.assertEqual(parsed["submit"], False)
+        self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")
+
     @patch("process_request.routines.Processor.get_data")
     def test_deliver_email(self, mock_get_data):
         mock_get_data.return_value = [json_from_fixture("as_data.json")]
