@@ -1,3 +1,4 @@
+import json
 import re
 
 import inflect
@@ -157,6 +158,42 @@ def get_preferred_format(item_json):
         else:
             preferred = get_instance_data([i for i in instances])
     return preferred
+
+
+def get_restricted_in_container(container_uri, client):
+    """Fetches information about other restricted items in the same container.
+
+    Args:
+        container_uri (string): A URI for an ArchivesSpace Top Container.
+
+    Returns:
+        restricted (string): a comma-separated list of other restricted items in
+            the same container.
+    """
+    restricted = []
+    this_page = 1
+    more = True
+    while more:
+        escaped_url = container_uri.replace('/', '\\/')
+        search_uri = f"search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
+        items_in_container = client.get(search_uri).json()
+        for item in items_in_container["results"]:
+            item_json = json.loads(item["json"])
+            status = get_rights_status(item_json, client)
+            if not status:
+                for ancestor_uri in item["_resolved_ancestors"]:
+                    for ancestor in item["_resolved_ancestors"][ancestor_uri]:
+                        status = get_rights_status(json.loads(ancestor["json"]), client)
+                        if status:
+                            break
+            if status in ["closed", "conditional"]:
+                for instance in item_json["instances"]:
+                    sub_container = instance["sub_container"]
+                    restricted.append(f"{sub_container.get('type_2').capitalize()} {sub_container.get('indicator_2')}")
+        this_page += 1
+        if this_page > items_in_container["last_page"]:
+            more = False
+    return ", ".join(restricted)
 
 
 def get_rights_info(item_json, client):
