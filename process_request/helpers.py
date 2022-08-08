@@ -175,7 +175,7 @@ def get_restricted_in_container(container_uri, client):
     more = True
     while more:
         escaped_url = container_uri.replace('/', '\\/')
-        search_uri = f"search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
+        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
         items_in_container = client.get(search_uri).json()
         for item in items_in_container["results"]:
             item_json = json.loads(item["json"])

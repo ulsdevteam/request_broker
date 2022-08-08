@@ -187,6 +187,7 @@ class AeonRequester(object):
             "GroupingOption_ItemCitation": "FirstValue",
             "GroupingOption_ItemNumber": "FirstValue",
             "GroupingOption_Location": "FirstValue",
+            "GroupingOption_ItemInfo5": "FirstValue",
             "UserReview": "No",
             "SubmitButton": "Submit Request",
         }
