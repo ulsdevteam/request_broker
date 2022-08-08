@@ -1,11 +1,11 @@
 from asnake.aspace import ASpace
+from django.conf import settings
 from django.core.mail import send_mail
-
-from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates, get_parent_title,
                       get_preferred_format, get_resource_creators,
-                      get_rights_info, get_size, get_url, list_chunks)
+                      get_restricted_in_container, get_rights_info, get_size,
+                      get_url, list_chunks)
 
 
 class Processor(object):
@@ -49,6 +49,7 @@ class Processor(object):
                         "creators": get_resource_creators(item_collection),
                         "restrictions": restrictions,
                         "restrictions_text": restrictions_text,
+                        "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else None,
                         "collection_name": item_collection.get("title"),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
@@ -281,6 +282,7 @@ class AeonRequester(object):
                 "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
                 "ItemInfo3_{}".format(request_prefix): i["uri"],
                 "ItemInfo4_{}".format(request_prefix): description,
+                "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
                 "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],
