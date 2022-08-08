@@ -8,7 +8,7 @@ archivessnake==0.9.1
     # via -r requirements.in
 asgiref==3.5.2
     # via django
-attrs==21.4.0
+attrs==22.1.0
     # via archivessnake
 boltons==21.0.0
     # via archivessnake
@@ -29,9 +29,9 @@ idna==3.3
     # via
     #   requests
     #   yarl
-inflect==5.6.0
+inflect==5.6.2
     # via -r requirements.in
-jarowinkler==1.1.0
+jarowinkler==1.2.0
     # via rapidfuzz
 more-itertools==8.13.0
     # via archivessnake
@@ -47,7 +47,7 @@ pyyaml==6.0
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==2.1.2
+rapidfuzz==2.4.2
     # via archivessnake
 requests==2.28.1
     # via
@@ -59,9 +59,9 @@ six==1.16.0
     # via vcrpy
 sqlparse==0.4.2
     # via django
-structlog==21.5.0
+structlog==22.1.0
     # via archivessnake
-urllib3==1.26.9
+urllib3==1.26.11
     # via requests
 vcrpy==4.2.0
     # via -r requirements.in

@@ -109,8 +109,10 @@ class Processor(object):
         Returns:
             parsed (dict): A dicts containing parsed item information.
         """
-        data = self.get_data([uri], baseurl)[0]
-        submit, reason = self.is_submittable(data)
+        data = self.get_data([uri], baseurl)
+        if not len(data):
+            return {"uri": uri, "submit": False, "submit_reason": "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found."}
+        submit, reason = self.is_submittable(data[0])
         return {"uri": uri, "submit": submit, "submit_reason": reason}
 
 

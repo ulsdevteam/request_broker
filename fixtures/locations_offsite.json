@@ -5,9 +5,9 @@
     "container_locations": [
         {
             "_resolved": {
-                "building": "Rockefeller Archive Center",
-                "title": "Rockefeller Archive Center, Blue Level, Vault 106 [Unit:  66, Shelf:  7]",
-                "room": "Vault 106",
+                "building": "Armonk",
+                "title": "Armonk, Vault 1 [Unit:  66, Shelf:  7]",
+                "room": "Vault 1",
                 "coordinate_1_indicator": "66",
                 "coordinate_2_indicator": "7"
             }

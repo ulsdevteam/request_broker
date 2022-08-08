@@ -99,10 +99,11 @@ class TestHelpers(TestCase):
         digital_object = {'file_versions': [{'file_uri': uri}]}
         self.assertEqual(get_file_versions(digital_object), uri)
 
+    @override_settings(OFFSITE_BUILDINGS=["Armonk"])
     def test_get_locations(self):
-        obj_data = json_from_fixture("locations.json")
-        expected_location = "106.66.7"
-        self.assertEqual(get_locations(obj_data), expected_location)
+        for fixture, expected in [("locations.json", "106.66.7"), ("locations_offsite.json", "Armonk.1.66.7")]:
+            obj_data = json_from_fixture(fixture)
+            self.assertEqual(get_locations(obj_data), expected)
 
     def test_get_instance_data(self):
         obj_data = json_from_fixture("digital_object_instance.json")
@@ -264,6 +265,11 @@ class TestRoutines(TestCase):
         parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
         self.assertEqual(parsed["submit"], False)
         self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
+
+        mock_get_data.return_value = []
+        parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
+        self.assertEqual(parsed["submit"], False)
+        self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")
 
     @patch("process_request.routines.Processor.get_data")
     def test_deliver_email(self, mock_get_data):
