@@ -189,7 +189,8 @@ def get_restricted_in_container(container_uri, client):
             if status in ["closed", "conditional"]:
                 for instance in item_json["instances"]:
                     sub_container = instance["sub_container"]
-                    restricted.append(f"{sub_container.get('type_2').capitalize()} {sub_container.get('indicator_2')}")
+                    if all(["type_2" in sub_container, "indicator_2" in sub_container]):
+                        restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
         this_page += 1
         if this_page > items_in_container["last_page"]:
             more = False
