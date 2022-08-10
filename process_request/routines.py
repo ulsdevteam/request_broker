@@ -49,7 +49,7 @@ class Processor(object):
                         "creators": get_resource_creators(item_collection),
                         "restrictions": restrictions,
                         "restrictions_text": restrictions_text,
-                        "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else None,
+                        "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
                         "collection_name": item_collection.get("title"),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
