@@ -56,7 +56,7 @@ class Processor(object):
                         "resource_id": item_collection.get("id_0"),
                         "title": item_json.get("display_string"),
                         "uri": item_json["uri"],
-                        "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
+                        "dimes_url": get_url(item_json, aspace.client, dimes_baseurl),
                         "containers": get_container_indicators(item_json),
                         "size": get_size(item_json["instances"]),
                         "preferred_instance": {

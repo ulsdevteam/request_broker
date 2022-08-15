@@ -372,10 +372,11 @@ def get_parent_title(obj_json):
     return title
 
 
-def get_url(obj_json, host, client):
+def get_url(obj_json, client, host=None):
     """Returns a full URL for an object."""
     uuid = shortuuid.uuid(name=obj_json["uri"])
-    return "{}/collections/{}".format(host, uuid) if has_children(obj_json, client) else "{}/objects/{}".format(host, uuid)
+    path = "collections" if has_children(obj_json, client) else "objects"
+    return "{}/{}/{}".format(host, path, uuid) if host else "/objects/{}".format(uuid)
 
 
 def has_children(obj_json, client):
@@ -431,9 +432,8 @@ def identifier_from_uri(uri):
 def resolve_ref_id(repo_id, ref_id, client):
     """ Accepts options to find archival objects using find_by_id method.
 
-    Generates and returns a DIMES id from an ArchiveSpace URI.
+    Generates and returns a DIMES URI from an ArchiveSpace URI.
     """
-    aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id, ref_id)).json()
-    aspace_obj = aspace_objs['archival_objects'][0]['ref']
-    resolved = identifier_from_uri(aspace_obj)
-    return resolved
+    aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}&resolve[]=archival_objects'.format(repo_id, ref_id)).json()
+    aspace_obj = aspace_objs['archival_objects'][0]['_resolved']
+    return get_url(aspace_obj, client)

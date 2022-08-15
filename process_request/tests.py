@@ -220,7 +220,7 @@ class TestHelpers(TestCase):
     @patch("asnake.client.web_client.ASnakeClient")
     def test_get_restricted_in_container(self, mock_client):
         for fixture, expected in [
-            ("unrestricted_search.json", ""),
+                ("unrestricted_search.json", ""),
                 ("restricted_search.json", "Folder 122A, Folder 117A.1, Folder 118A.1, Folder 121A.1, Folder 123A.1, Folder 119A, Folder 120A.1")]:
             mock_client.get.return_value.json.return_value = json_from_fixture(fixture)
             result = get_restricted_in_container("/repositories/2/top_container/1", mock_client)
@@ -408,12 +408,12 @@ class TestViews(TestCase):
     @patch("process_request.views.resolve_ref_id")
     def test_linkresolver_view(self, mock_resolve):
         with aspace_vcr.use_cassette("aspace_request.json") as cass:
-            mock_uri = "123"
+            mock_uri = "/objects/123"
             mock_refid = "12345abcdef"
             mock_resolve.return_value = mock_uri
             response = self.client.get(reverse('resolve-request'), {"ref_id": mock_refid})
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, f"{settings.RESOLVER_HOSTNAME}/objects/{mock_uri}")
+            self.assertEqual(response.url, f"//{settings.RESOLVER_HOSTNAME}{mock_uri}")
             mock_resolve.assert_called_with(settings.ARCHIVESSPACE["repo_id"], mock_refid, ANY)
 
             cass.rewind()
