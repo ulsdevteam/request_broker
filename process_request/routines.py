@@ -36,7 +36,7 @@ class Processor(object):
                                         params={
                 "id_set": chunk,
                 "resolve": [
-                    "resource::linked_agents", "ancestors",
+                    "ancestors",
                     "top_container", "top_container::container_locations",
                     "instances::digital_object"]})
             if objects.status_code == 200:
@@ -46,7 +46,7 @@ class Processor(object):
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
                     data.append({
-                        "creators": get_resource_creators(item_collection),
+                        "creators": get_resource_creators(item_collection, aspace.client),
                         "restrictions": restrictions,
                         "restrictions_text": restrictions_text,
                         "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
