@@ -55,9 +55,12 @@ class TestHelpers(TestCase):
                              password=settings.ARCHIVESSPACE["password"],
                              repository=settings.ARCHIVESSPACE["repo_id"]).client
 
-    def test_get_resource_creators(self):
+    @patch("asnake.client.web_client.ASnakeClient")
+    def test_get_resource_creators(self, mock_client):
+        mock_client.get.return_value.json.return_value = {"results": [{"title": "Philanthropy Foundation"}]}
         obj_data = json_from_fixture("object_all.json")
-        self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+        self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved"), mock_client), "Philanthropy Foundation")
+        mock_client.get.assert_called_with("/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q=\\/agents\\/corporate_entities\\/123")
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
@@ -288,7 +291,9 @@ class TestRoutines(TestCase):
 
     @aspace_vcr.use_cassette("aspace_request.json")
     @override_settings(RESTRICTED_IN_CONTAINER=False)
-    def test_get_data(self):
+    @patch("process_request.routines.get_resource_creators")
+    def test_get_data(self, mock_creators):
+        mock_creators.return_value = "Philanthropy Foundation"
         get_as_data = Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
         self.assertTrue(isinstance(get_as_data, list))
         self.assertEqual(len(get_as_data), 1)
