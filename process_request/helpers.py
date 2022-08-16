@@ -281,7 +281,7 @@ def get_rights_text(item_json, client):
     return text
 
 
-def get_resource_creators(resource):
+def get_resource_creators(resource, client):
     """Gets all creators of a resource record and concatenate them into a string
     separated by commas.
 
@@ -293,10 +293,12 @@ def get_resource_creators(resource):
     """
     creators = []
     if resource.get("linked_agents"):
-        for linked_agent in resource.get("linked_agents"):
-            if linked_agent.get("role") == "creator":
-                creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
-    return ", ".join(creators)
+        linked_agent_uris = [a["ref"].replace("/", "\\/") for a in resource["linked_agents"] if a["role"] == "creator"]
+        search_uri = f"/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
+        resp = client.get(search_uri)
+        resp.raise_for_status()
+        creators = resp.json()["results"]
+    return ", ".join([a["title"] for a in creators])
 
 
 def get_dates(archival_object, client):
