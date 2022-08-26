@@ -1,3 +1,6 @@
+import re
+import xml.etree.ElementTree as ET
+
 from asnake.aspace import ASpace
 from django.conf import settings
 from django.core.mail import send_mail
@@ -13,6 +16,16 @@ class Processor(object):
     Processes requests by getting json information, checking restrictions, and getting
     delivery formats.
     """
+
+    def strip_tags(self, user_string):
+        """Strips XML and HTML tags from a string."""
+        try:
+            xmldoc = ET.fromstring(f'<xml>{user_string}</xml>')
+            textcontent = ''.join(xmldoc.itertext())
+        except ET.ParseError:
+            tagregxp = re.compile(r'<[/\w][^>]+>')
+            textcontent = tagregxp.sub('', user_string)
+        return textcontent
 
     def get_data(self, uri_list, dimes_baseurl):
         """Gets data about an archival object from ArchivesSpace.
@@ -42,19 +55,19 @@ class Processor(object):
             if objects.status_code == 200:
                 for item_json in objects.json():
                     item_collection = item_json.get("ancestors")[-1].get("_resolved")
-                    parent = get_parent_title(item_json.get("ancestors")[0].get("_resolved")) if len(item_json.get("ancestors")) > 1 else None
+                    parent = self.strip_tags(get_parent_title(item_json.get("ancestors")[0].get("_resolved"))) if len(item_json.get("ancestors")) > 1 else None
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
                     data.append({
                         "creators": get_resource_creators(item_collection, aspace.client),
                         "restrictions": restrictions,
-                        "restrictions_text": restrictions_text,
+                        "restrictions_text": self.strip_tags(restrictions_text),
                         "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
-                        "collection_name": item_collection.get("title"),
+                        "collection_name": self.strip_tags(item_collection.get("title")),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
                         "resource_id": item_collection.get("id_0"),
-                        "title": item_json.get("display_string"),
+                        "title": self.strip_tags(item_json.get("display_string")),
                         "uri": item_json["uri"],
                         "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
                         "containers": get_container_indicators(item_json),
