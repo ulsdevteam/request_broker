@@ -53,7 +53,7 @@ requests==2.27.1
     # via
     #   -r requirements.in
     #   archivessnake
-shortuuid==1.0.8
+shortuuid==1.0.9
     # via -r requirements.in
 six==1.16.0
     # via vcrpy
