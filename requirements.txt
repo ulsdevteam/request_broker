@@ -63,7 +63,7 @@ structlog==21.5.0
     # via archivessnake
 urllib3==1.26.8
     # via requests
-vcrpy==4.1.1
+vcrpy==4.2.0
     # via -r requirements.in
 wrapt==1.14.0
     # via vcrpy
