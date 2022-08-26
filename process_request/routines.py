@@ -1,3 +1,6 @@
+import re
+import xml.etree.ElementTree as ET
+
 from asnake.aspace import ASpace
 from django.core.mail import send_mail
 
@@ -13,6 +16,16 @@ class Processor(object):
     Processes requests by getting json information, checking restrictions, and getting
     delivery formats.
     """
+
+    def strip_tags(self, user_string):
+        """Strips XML and HTML tags from a string."""
+        try:
+            xmldoc = ET.fromstring(f'<xml>{user_string}</xml>')
+            textcontent = ''.join(xmldoc.itertext())
+        except ET.ParseError:
+            tagregxp = re.compile(r'<[/\w][^>]+>')
+            textcontent = tagregxp.sub('', user_string)
+        return textcontent
 
     def get_data(self, uri_list, dimes_baseurl):
         """Gets data about an archival object from ArchivesSpace.
@@ -49,12 +62,12 @@ class Processor(object):
                         "ead_id": item_collection.get("ead_id"),
                         "creators": get_resource_creators(item_collection),
                         "restrictions": restrictions,
-                        "restrictions_text": restrictions_text,
-                        "collection_name": item_collection.get("title"),
+                        "restrictions_text": self.strip_tags(restrictions_text),
+                        "collection_name": self.strip_tags(item_collection.get("title")),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
                         "resource_id": item_collection.get("id_0")+' '+item_collection.get("id_1")+' '+item_collection.get("id_2"),
-                        "title": item_json.get("display_string"),
+                        "title": self.strip_tags(item_json.get("display_string")),
                         "uri": item_json["uri"],
                         "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
                         "containers": get_container_indicators(item_json),
