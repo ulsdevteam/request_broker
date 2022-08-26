@@ -58,6 +58,10 @@ class Processor(object):
                     parent = get_parent_title(item_json.get("ancestors")[0].get("_resolved")) if len(item_json.get("ancestors")) > 1 else None
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
+                    resource_id = item_collection.get("id_0")
+                    for i in ["id_1", "id_2", "id_3"]:
+                        if isinstance(item_collection.get(i), str):
+                            resource_id += '.'+item_collection.get(i)
                     data.append({
                         "ead_id": item_collection.get("ead_id"),
                         "creators": get_resource_creators(item_collection),
@@ -66,7 +70,7 @@ class Processor(object):
                         "collection_name": self.strip_tags(item_collection.get("title")),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
-                        "resource_id": item_collection.get("id_0")+' '+item_collection.get("id_1")+' '+item_collection.get("id_2"),
+                        "resource_id": resource_id,
                         "title": self.strip_tags(item_json.get("display_string")),
                         "uri": item_json["uri"],
                         "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
