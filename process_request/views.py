@@ -7,13 +7,10 @@ from django.shortcuts import redirect
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .helpers import resolve_ref_id
-
 from request_broker import settings
 
 from .helpers import resolve_ref_id
 from .routines import AeonRequester, Mailer, Processor
-from .serializers import LinkResolverSerializer
 
 class BaseRequestView(APIView):
     """Base view which handles POST requests returns the appropriate response.
@@ -110,23 +107,6 @@ class DownloadCSVView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 
-class LinkResolverView(APIView):
-    """Takes POST from Islandora. Resolves ASpace ID"""
-
-    def get(self,request):
-
-        aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"], username=settings.ARCHIVESSPACE["username"], password=settings.ARCHIVESSPACE["password"], repository=settings.ARCHIVESSPACE["repo_id"])
-
-        try:
-          data = request.GET["ref_id"]
-          ref_id = LinkResolverSerializer(data)
-          host = settings.RESOLVER_HOSTNAME
-          repo = settings.ARCHIVESSPACE["repo_id"]
-          uri = resolve_ref_id(repo, data, aspace.client)
-          response = redirect("{}/objects/{}".format(host,uri))
-          return response
-        except Exception as e:
-            return Response({"detail": str(e)}, status=500)
 
 class LinkResolverView(APIView):
     """Takes POST from Islandora. Resolves ASpace ID"""
