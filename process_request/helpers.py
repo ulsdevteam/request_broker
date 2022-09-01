@@ -294,7 +294,7 @@ def get_resource_creators(resource, client):
     creators = []
     if resource.get("linked_agents"):
         linked_agent_uris = [a["ref"].replace("/", "\\/") for a in resource["linked_agents"] if a["role"] == "creator"]
-        search_uri = f"/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
+        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
         resp = client.get(search_uri)
         resp.raise_for_status()
         creators = resp.json()["results"]
