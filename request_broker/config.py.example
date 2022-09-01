@@ -22,3 +22,4 @@ DEFAULT_FROM_EMAIL = "dimes@example.com"  # user that should be set as the sende
 DIMES_HOSTNAME = "dimes.rockarch.org" # Hostname for DIMES application
 RESTRICTED_IN_CONTAINER = False  # Fetch a list of restricted items in the same container as the requested item.
 OFFSITE_BUILDINGS = ["Armonk", "Greenrock"]  # Names of offsite buildings, which will be added to locations (list of strings)
+RESOURCE_ID_SEPARATOR = ':'
