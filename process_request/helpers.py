@@ -412,10 +412,7 @@ def list_chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-<<<<<<< HEAD
-=======
 
->>>>>>> upstream/base
 def identifier_from_uri(uri):
     """Creates a short UUID.
 
@@ -432,16 +429,6 @@ def identifier_from_uri(uri):
     """
     return shortuuid.uuid(name=uri)
 
-<<<<<<< HEAD
-def resolve_ref_id(repo_id, ref_id, client):
-    """ Accepts options to find archival objects 
-    using find_by_id method.
-    Generates and returns a DIMES id from
-    an ArchiveSpace URI.
-
-    """
-    aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id,ref_id)).json()
-=======
 
 def resolve_ref_id(repo_id, ref_id, client):
     """ Accepts options to find archival objects using find_by_id method.
@@ -449,7 +436,6 @@ def resolve_ref_id(repo_id, ref_id, client):
     Generates and returns a DIMES id from an ArchiveSpace URI.
     """
     aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id, ref_id)).json()
->>>>>>> upstream/base
     aspace_obj = aspace_objs['archival_objects'][0]['ref']
     resolved = identifier_from_uri(aspace_obj)
     return resolved
