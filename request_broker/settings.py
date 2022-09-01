@@ -133,7 +133,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = config.CORS_ALLOWED_ORIGINS
+CORS_ALLOWED_ORIGINS = config.DJANGO_CORS_ALLOWED_ORIGINS
 DIMES_HOSTNAME = config.DIMES_HOSTNAME
 
 ARCHIVESSPACE = {
@@ -153,6 +153,8 @@ EMAIL_USE_TLS = config.EMAIL_USE_TLS
 EMAIL_USE_SSL = config.EMAIL_USE_SSL
 EMAIL_DEFAULT_FROM = config.DEFAULT_FROM_EMAIL
 
+RESOLVER_HOSTNAME = config.DIMES_HOSTNAME
+
 EXPORT_FIELDS = [
     ("title", None),
     ("dimes_url", "URL"),
@@ -161,3 +163,6 @@ EXPORT_FIELDS = [
     ("size", "Size"),
     ("collection_name", "Collection Name"),
     ("parent", "Parent Collection Name")]
+
+RESTRICTED_IN_CONTAINER = config.RESTRICTED_IN_CONTAINER
+OFFSITE_BUILDINGS = getattr(config, 'OFFSITE_BUILDINGS', [])

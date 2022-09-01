@@ -2,13 +2,13 @@ import re
 import xml.etree.ElementTree as ET
 
 from asnake.aspace import ASpace
+from django.conf import settings
 from django.core.mail import send_mail
-
-from request_broker import settings
 
 from .helpers import (get_container_indicators, get_dates, get_parent_title,
                       get_preferred_format, get_resource_creators,
-                      get_rights_info, get_size, get_url, list_chunks)
+                      get_restricted_in_container, get_rights_info, get_size,
+                      get_url, list_chunks)
 
 
 class Processor(object):
@@ -49,13 +49,13 @@ class Processor(object):
                                         params={
                 "id_set": chunk,
                 "resolve": [
-                    "resource::linked_agents", "ancestors",
+                    "ancestors",
                     "top_container", "top_container::container_locations",
                     "instances::digital_object"]})
             if objects.status_code == 200:
                 for item_json in objects.json():
                     item_collection = item_json.get("ancestors")[-1].get("_resolved")
-                    parent = get_parent_title(item_json.get("ancestors")[0].get("_resolved")) if len(item_json.get("ancestors")) > 1 else None
+                    parent = self.strip_tags(get_parent_title(item_json.get("ancestors")[0].get("_resolved"))) if len(item_json.get("ancestors")) > 1 else None
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
                     resource_id = item_collection.get("id_0")
@@ -64,9 +64,10 @@ class Processor(object):
                             resource_id += '.'+item_collection.get(i)
                     data.append({
                         "ead_id": item_collection.get("ead_id"),
-                        "creators": get_resource_creators(item_collection),
+                        "creators": get_resource_creators(item_collection, aspace.client),
                         "restrictions": restrictions,
                         "restrictions_text": self.strip_tags(restrictions_text),
+                        "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
                         "collection_name": self.strip_tags(item_collection.get("title")),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
@@ -125,8 +126,10 @@ class Processor(object):
         Returns:
             parsed (dict): A dicts containing parsed item information.
         """
-        data = self.get_data([uri], baseurl)[0]
-        submit, reason = self.is_submittable(data)
+        data = self.get_data([uri], baseurl)
+        if not len(data):
+            return {"uri": uri, "submit": False, "submit_reason": "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found."}
+        submit, reason = self.is_submittable(data[0])
         return {"uri": uri, "submit": submit, "submit_reason": reason}
 
 
@@ -201,6 +204,7 @@ class AeonRequester(object):
             "GroupingOption_ItemCitation": "FirstValue",
             "GroupingOption_ItemNumber": "FirstValue",
             "GroupingOption_Location": "FirstValue",
+            "GroupingOption_ItemInfo5": "FirstValue",
             "UserReview": "No",
             "SubmitButton": "Submit Request",
         }
@@ -298,6 +302,7 @@ class AeonRequester(object):
                 "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
                 "ItemInfo3_{}".format(request_prefix): i["uri"],
                 "ItemInfo4_{}".format(request_prefix): description,
+                "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
                 "EADNumber_{}".format(request_prefix): i['ead_id'],
                 "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
