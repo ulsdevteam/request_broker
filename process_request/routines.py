@@ -5,8 +5,9 @@ from asnake.aspace import ASpace
 from django.conf import settings
 from django.core.mail import send_mail
 
-from .helpers import (get_container_indicators, get_dates, get_formatted_resource_id,
-                      get_parent_title, get_preferred_format, get_resource_creators,
+from .helpers import (get_container_indicators, get_dates,
+                      get_formatted_resource_id, get_parent_title,
+                      get_preferred_format, get_resource_creators,
                       get_restricted_in_container, get_rights_info, get_size,
                       get_url, list_chunks)
 

@@ -3,7 +3,8 @@ import re
 
 import inflect
 import shortuuid
-from asnake.utils import format_resource_id, get_date_display, get_note_text, text_in_note
+from asnake.utils import (format_resource_id, get_date_display, get_note_text,
+                          text_in_note)
 from django.conf import settings
 from ordered_set import OrderedSet
 
