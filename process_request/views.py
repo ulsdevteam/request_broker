@@ -12,6 +12,7 @@ from request_broker import settings
 from .helpers import resolve_ref_id
 from .routines import AeonRequester, Mailer, Processor
 
+
 class BaseRequestView(APIView):
     """Base view which handles POST requests returns the appropriate response.
 
@@ -100,7 +101,7 @@ class DownloadCSVView(APIView):
             response = StreamingHttpResponse(
                 streaming_content=(self.iter_items(fetched, Echo())),
                 content_type="text/csv",
-            ) 
+            )
             filename = "dimes-{}.csv".format(datetime.now().isoformat())
             response["Content-Disposition"] = "attachment; filename={}".format(filename)
             return response
