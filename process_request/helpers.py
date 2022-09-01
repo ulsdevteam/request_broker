@@ -3,7 +3,8 @@ import re
 
 import inflect
 import shortuuid
-from asnake.utils import get_date_display, get_note_text, text_in_note
+from asnake.utils import (format_resource_id, get_date_display, get_note_text,
+                          text_in_note)
 from django.conf import settings
 from ordered_set import OrderedSet
 
@@ -439,3 +440,11 @@ def resolve_ref_id(repo_id, ref_id, client):
     aspace_obj = aspace_objs['archival_objects'][0]['ref']
     resolved = identifier_from_uri(aspace_obj)
     return resolved
+
+
+def get_formatted_resource_id(resource, client):
+    """Gets a formatted resource id from the resource
+
+    Concatenates the resource id parts using the separator from the config
+    """
+    return format_resource_id(resource, client, settings.RESOURCE_ID_SEPARATOR)
