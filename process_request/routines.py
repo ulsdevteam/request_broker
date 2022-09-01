@@ -59,6 +59,7 @@ class Processor(object):
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
                     data.append({
+                        "ead_id": item_collection.get("ead_id"),
                         "creators": get_resource_creators(item_collection, aspace.client),
                         "restrictions": restrictions,
                         "restrictions_text": self.strip_tags(restrictions_text),
@@ -187,6 +188,7 @@ class AeonRequester(object):
             "AeonForm": "EADRequest",
             "DocumentType": "Default",
             "GroupingIdentifier": "GroupingField",
+            "GroupingOption_EADNumber": "FirstValue",
             "GroupingOption_ItemInfo1": "Concatenate",
             "GroupingOption_ItemDate": "Concatenate",
             "GroupingOption_ItemTitle": "FirstValue",
@@ -287,6 +289,7 @@ class AeonRequester(object):
             request_prefix = i["uri"].split("/")[-1]
             parsed["Request"].append(request_prefix)
             parsed.update({
+                "EADNumber_{}".format(request_prefix): i['ead_id'],
                 "CallNumber_{}".format(request_prefix): i["resource_id"],
                 "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
                 "ItemAuthor_{}".format(request_prefix): i["creators"],
