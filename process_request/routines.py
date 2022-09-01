@@ -1,8 +1,12 @@
+import re
+import xml.etree.ElementTree as ET
+
 from asnake.aspace import ASpace
 from django.conf import settings
 from django.core.mail import send_mail
 
-from .helpers import (get_container_indicators, get_dates, get_parent_title,
+from .helpers import (get_container_indicators, get_dates,
+                      get_formatted_resource_id, get_parent_title,
                       get_preferred_format, get_resource_creators,
                       get_restricted_in_container, get_rights_info, get_size,
                       get_url, list_chunks)
@@ -13,6 +17,16 @@ class Processor(object):
     Processes requests by getting json information, checking restrictions, and getting
     delivery formats.
     """
+
+    def strip_tags(self, user_string):
+        """Strips XML and HTML tags from a string."""
+        try:
+            xmldoc = ET.fromstring(f'<xml>{user_string}</xml>')
+            textcontent = ''.join(xmldoc.itertext())
+        except ET.ParseError:
+            tagregxp = re.compile(r'<[/\w][^>]+>')
+            textcontent = tagregxp.sub('', user_string)
+        return textcontent
 
     def get_data(self, uri_list, dimes_baseurl):
         """Gets data about an archival object from ArchivesSpace.
@@ -36,25 +50,27 @@ class Processor(object):
                                         params={
                 "id_set": chunk,
                 "resolve": [
-                    "resource::linked_agents", "ancestors",
+                    "ancestors",
                     "top_container", "top_container::container_locations",
                     "instances::digital_object"]})
             if objects.status_code == 200:
                 for item_json in objects.json():
                     item_collection = item_json.get("ancestors")[-1].get("_resolved")
-                    parent = get_parent_title(item_json.get("ancestors")[0].get("_resolved")) if len(item_json.get("ancestors")) > 1 else None
+                    parent = self.strip_tags(get_parent_title(item_json.get("ancestors")[0].get("_resolved"))) if len(item_json.get("ancestors")) > 1 else None
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
+                    resource_id = get_formatted_resource_id(item_collection, aspace.client)
                     data.append({
-                        "creators": get_resource_creators(item_collection),
+                        "ead_id": item_collection.get("ead_id"),
+                        "creators": get_resource_creators(item_collection, aspace.client),
                         "restrictions": restrictions,
-                        "restrictions_text": restrictions_text,
+                        "restrictions_text": self.strip_tags(restrictions_text),
                         "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
-                        "collection_name": item_collection.get("title"),
+                        "collection_name": self.strip_tags(item_collection.get("title")),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
-                        "resource_id": item_collection.get("id_0"),
-                        "title": item_json.get("display_string"),
+                        "resource_id": resource_id,
+                        "title": self.strip_tags(item_json.get("display_string")),
                         "uri": item_json["uri"],
                         "dimes_url": get_url(item_json, aspace.client, dimes_baseurl),
                         "containers": get_container_indicators(item_json),
@@ -174,6 +190,7 @@ class AeonRequester(object):
             "AeonForm": "EADRequest",
             "DocumentType": "Default",
             "GroupingIdentifier": "GroupingField",
+            "GroupingOption_EADNumber": "FirstValue",
             "GroupingOption_ItemInfo1": "Concatenate",
             "GroupingOption_ItemDate": "Concatenate",
             "GroupingOption_ItemTitle": "FirstValue",
@@ -219,7 +236,7 @@ class AeonRequester(object):
         else:
             raise ValueError(
                 "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
-        return data
+        return {k: v for k, v in data.items() if v}
 
     def prepare_reading_room_request(self, items, request_data):
         """Maps reading room request data to Aeon fields.
@@ -236,7 +253,9 @@ class AeonRequester(object):
             "RequestType": "Loan",
             "ScheduledDate": request_data.get("scheduledDate"),
             "SpecialRequest": request_data.get("questions"),
+            "Site": request_data.get("site"),
         }
+
         request_data = self.parse_items(items)
         return dict(**self.request_defaults, **reading_room_defaults, **request_data)
 
@@ -274,6 +293,7 @@ class AeonRequester(object):
             request_prefix = i["uri"].split("/")[-1]
             parsed["Request"].append(request_prefix)
             parsed.update({
+                "EADNumber_{}".format(request_prefix): i['ead_id'],
                 "CallNumber_{}".format(request_prefix): i["resource_id"],
                 "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
                 "ItemAuthor_{}".format(request_prefix): i["creators"],
