@@ -13,11 +13,11 @@ from django.urls import reverse
 from rest_framework.test import APIRequestFactory
 
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
-                      get_instance_data, get_locations, get_parent_title,
-                      get_preferred_format, get_resource_creators,
-                      get_restricted_in_container, get_rights_info,
-                      get_rights_status, get_rights_text, get_size,
-                      indicator_to_integer, prepare_values)
+                      get_formatted_resource_id, get_instance_data,
+                      get_locations, get_parent_title, get_preferred_format,
+                      get_resource_creators, get_restricted_in_container,
+                      get_rights_info, get_rights_status, get_rights_text,
+                      get_size, indicator_to_integer, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -227,6 +227,16 @@ class TestHelpers(TestCase):
                 ("restricted_search.json", "Folder 122A, Folder 117A.1, Folder 118A.1, Folder 121A.1, Folder 123A.1, Folder 119A, Folder 120A.1")]:
             mock_client.get.return_value.json.return_value = json_from_fixture(fixture)
             result = get_restricted_in_container("/repositories/2/top_container/1", mock_client)
+            self.assertEqual(result, expected)
+
+    @patch("asnake.client.web_client.ASnakeClient")
+    def test_get_formatted_resource_id(self, mock_client):
+        for fixture, expected in [
+                ({"id_0": "FA123"}, "FA123"),
+                ({"id_0": "FA123", "id_1": "001"}, "FA123:001"),
+                ({"id_0": "FA123", "id_1": "001", "id_2": "A"}, "FA123:001:A"),
+                ({"id_0": "FA123", "id_1": "001", "id_2": "A", "id_3": "dev"}, "FA123:001:A:dev")]:
+            result = get_formatted_resource_id(fixture, mock_client)
             self.assertEqual(result, expected)
 
     # Test is commented out as the code is currently not used, and this allows us to shed a few configs
