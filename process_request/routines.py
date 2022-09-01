@@ -250,6 +250,11 @@ class AeonRequester(object):
             "ScheduledDate": request_data.get("scheduledDate"),
             "SpecialRequest": request_data.get("questions"),
         }
+        if request_data.get("readingRoomID"):
+            reading_room_defaults["Location"] = request_data.get("readingRoomID")
+        if request_data.get("site"):
+            reading_room_defaults["Site"] = request_data.get("site")
+
         request_data = self.parse_items(items)
         return dict(**self.request_defaults, **reading_room_defaults, **request_data)
 
