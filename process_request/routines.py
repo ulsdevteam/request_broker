@@ -5,7 +5,8 @@ from asnake.aspace import ASpace
 from django.conf import settings
 from django.core.mail import send_mail
 
-from .helpers import (get_container_indicators, get_dates, get_parent_title,
+from .helpers import (get_container_indicators, get_dates,
+                      get_formatted_resource_id, get_parent_title,
                       get_preferred_format, get_resource_creators,
                       get_restricted_in_container, get_rights_info, get_size,
                       get_url, list_chunks)
@@ -58,7 +59,9 @@ class Processor(object):
                     parent = self.strip_tags(get_parent_title(item_json.get("ancestors")[0].get("_resolved"))) if len(item_json.get("ancestors")) > 1 else None
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
+                    resource_id = get_formatted_resource_id(item_collection, aspace.client)
                     data.append({
+                        "ead_id": item_collection.get("ead_id"),
                         "creators": get_resource_creators(item_collection, aspace.client),
                         "restrictions": restrictions,
                         "restrictions_text": self.strip_tags(restrictions_text),
@@ -66,7 +69,7 @@ class Processor(object):
                         "collection_name": self.strip_tags(item_collection.get("title")),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
-                        "resource_id": item_collection.get("id_0"),
+                        "resource_id": resource_id,
                         "title": self.strip_tags(item_json.get("display_string")),
                         "uri": item_json["uri"],
                         "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
@@ -187,6 +190,7 @@ class AeonRequester(object):
             "AeonForm": "EADRequest",
             "DocumentType": "Default",
             "GroupingIdentifier": "GroupingField",
+            "GroupingOption_EADNumber": "FirstValue",
             "GroupingOption_ItemInfo1": "Concatenate",
             "GroupingOption_ItemDate": "Concatenate",
             "GroupingOption_ItemTitle": "FirstValue",
@@ -232,7 +236,7 @@ class AeonRequester(object):
         else:
             raise ValueError(
                 "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
-        return data
+        return {k: v for k, v in data.items() if v}
 
     def prepare_reading_room_request(self, items, request_data):
         """Maps reading room request data to Aeon fields.
@@ -249,7 +253,9 @@ class AeonRequester(object):
             "RequestType": "Loan",
             "ScheduledDate": request_data.get("scheduledDate"),
             "SpecialRequest": request_data.get("questions"),
+            "Site": request_data.get("site"),
         }
+
         request_data = self.parse_items(items)
         return dict(**self.request_defaults, **reading_room_defaults, **request_data)
 
@@ -287,6 +293,7 @@ class AeonRequester(object):
             request_prefix = i["uri"].split("/")[-1]
             parsed["Request"].append(request_prefix)
             parsed.update({
+                "EADNumber_{}".format(request_prefix): i['ead_id'],
                 "CallNumber_{}".format(request_prefix): i["resource_id"],
                 "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
                 "ItemAuthor_{}".format(request_prefix): i["creators"],
