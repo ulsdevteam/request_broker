@@ -232,7 +232,7 @@ class AeonRequester(object):
         else:
             raise ValueError(
                 "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
-        return data
+        return {k: v for k, v in data.items() if v}
 
     def prepare_reading_room_request(self, items, request_data):
         """Maps reading room request data to Aeon fields.
@@ -249,11 +249,8 @@ class AeonRequester(object):
             "RequestType": "Loan",
             "ScheduledDate": request_data.get("scheduledDate"),
             "SpecialRequest": request_data.get("questions"),
+            "Site": request_data.get("site"),
         }
-        if request_data.get("readingRoomID"):
-            reading_room_defaults["Location"] = request_data.get("readingRoomID")
-        if request_data.get("site"):
-            reading_room_defaults["Site"] = request_data.get("site")
 
         request_data = self.parse_items(items)
         return dict(**self.request_defaults, **reading_room_defaults, **request_data)
