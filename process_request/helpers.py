@@ -3,7 +3,8 @@ import re
 
 import inflect
 import shortuuid
-from asnake.utils import get_date_display, get_note_text, text_in_note
+from asnake.utils import (format_resource_id, get_date_display, get_note_text,
+                          text_in_note)
 from django.conf import settings
 from ordered_set import OrderedSet
 
@@ -294,7 +295,7 @@ def get_resource_creators(resource, client):
     creators = []
     if resource.get("linked_agents"):
         linked_agent_uris = [a["ref"].replace("/", "\\/") for a in resource["linked_agents"] if a["role"] == "creator"]
-        search_uri = f"/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
+        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
         resp = client.get(search_uri)
         resp.raise_for_status()
         creators = resp.json()["results"]
@@ -439,3 +440,11 @@ def resolve_ref_id(repo_id, ref_id, client):
     aspace_obj = aspace_objs['archival_objects'][0]['ref']
     resolved = identifier_from_uri(aspace_obj)
     return resolved
+
+
+def get_formatted_resource_id(resource, client):
+    """Gets a formatted resource id from the resource
+
+    Concatenates the resource id parts using the separator from the config
+    """
+    return format_resource_id(resource, client, settings.RESOURCE_ID_SEPARATOR)
