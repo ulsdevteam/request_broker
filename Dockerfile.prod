@@ -2,7 +2,7 @@ FROM python:3.10
 
 ENV PYTHONUNBUFFERED 1
 ARG REQUEST_BROKER_DNS
-ARG REQUEST_BROKER_PORT
+ARG APPLICATION_PORT
 RUN apt-get update
 RUN apt-get install --yes apache2 apache2-dev 
 RUN apt-get install --yes postgresql
@@ -19,7 +19,7 @@ RUN wget https://github.com/GrahamDumpleton/mod_wsgi/archive/refs/tags/4.9.0.tar
 
 ADD ./apache/000-request_broker.conf /etc/apache2/sites-available/000-request_broker.conf
 RUN sed "s/ENV_REQUEST_BROKER_DNS/${REQUEST_BROKER_DNS}/" -i /etc/apache2/sites-available/000-request_broker.conf
-RUN sed "s/ENV_REQUEST_BROKER_PORT/${REQUEST_BROKER_PORT}/" -i /etc/apache2/sites-available/000-request_broker.conf
+RUN sed "s/ENV_REQUEST_BROKER_PORT/${APPLICATION_PORT}/" -i /etc/apache2/sites-available/000-request_broker.conf
 ADD ./apache/wsgi.load /etc/apache2/mods-available/wsgi.load
 RUN a2ensite 000-request_broker.conf
 RUN a2enmod headers
@@ -31,5 +31,5 @@ WORKDIR /var/www/request-broker
 RUN pip install -r requirements.txt
 RUN ./manage.py collectstatic
 
-EXPOSE 8000
+EXPOSE ${APPLICATION_PORT}
 CMD ["apache2ctl", "-D", "FOREGROUND"]
