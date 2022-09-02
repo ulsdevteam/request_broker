@@ -33,7 +33,7 @@ Or, if you want to remove all data
 
 The request broker manages configuration by setting environment variables. These variables can be seen in `docker-compose.yml`.
 
-Deployment using the `Dockerfile.prod` file is intended to bring up a production image (based on Apache/WSGI) which is ready to be proxied publicly by an apache, nginx, traefik or similar frontend.  `Dockerfile.prod` expects two environment arguments to be available at build time: REQUEST_BROKER_DNS and REQUEST_BROKER_PORT.  Apache will Listen on ${REQUEST_BROKER_PORT} with a ServerName of ${REQUEST_BROKER_DNS}.
+Deployment using the `Dockerfile.prod` file is intended to bring up a production image (based on Apache/WSGI) which is ready to be proxied publicly by an apache, nginx, traefik or similar frontend.  `Dockerfile.prod` expects two environment arguments to be available at build time: `REQUEST_BROKER_DNS` and `REQUEST_BROKER_PORT`.  Apache will Listen on `${REQUEST_BROKER_PORT}` with a ServerName of `${REQUEST_BROKER_DNS}`.
 
 ## Services
 
