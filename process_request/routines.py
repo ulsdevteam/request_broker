@@ -303,11 +303,11 @@ class AeonRequester(object):
                 "ItemInfo3_{}".format(request_prefix): i["uri"],
                 "ItemInfo4_{}".format(request_prefix): description,
                 "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
-                "EADNumber_{}".format(request_prefix): i['ead_id'],
                 "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],
                 "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],
-                "ItemIssue_{}".format(request_prefix): i["preferred_instance"]["subcontainer"]
+                "ItemIssue_{}".format(request_prefix): i["preferred_instance"]["subcontainer"],
+                "Location_{}".format(request_prefix): i["preferred_instance"]["location"]
             })
         return parsed
