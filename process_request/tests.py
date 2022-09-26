@@ -428,7 +428,7 @@ class TestViews(TestCase):
             mock_resolve.return_value = mock_uri
             response = self.client.get(reverse('resolve-request'), {"ref_id": mock_refid})
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, f"//{settings.RESOLVER_HOSTNAME}{mock_uri}")
+            self.assertEqual(response.url, f"{settings.DIMES_BASEURL}{mock_uri}")
             mock_resolve.assert_called_with(settings.ARCHIVESSPACE["repo_id"], mock_refid, ANY)
 
             cass.rewind()
