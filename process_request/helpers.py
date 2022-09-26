@@ -415,23 +415,6 @@ def list_chunks(lst, n):
         yield lst[i:i + n]
 
 
-def identifier_from_uri(uri):
-    """Creates a short UUID.
-
-    Uses `shortuuid`, which first creates a v5 UUID using an object's AS URI as
-    a name, and then converts them to base57 using lowercase and uppercase
-    letters and digits, and removing similar-looking characters such as
-    l, 1, I, O and 0.
-
-    This is a one-way process; while it is possible to consistently generate a
-    given UUID given an AS URI, it is not possible to decode the URI from the
-    UUID.
-
-    Helper method copied from https://github.com/ulsdevteam/pisces/blob/base/fetcher/helpers.py#L81
-    """
-    return shortuuid.uuid(name=uri)
-
-
 def resolve_ref_id(repo_id, ref_id, client):
     """ Accepts options to find archival objects using find_by_id method.
 
