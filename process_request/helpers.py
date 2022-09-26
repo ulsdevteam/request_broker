@@ -376,10 +376,10 @@ def get_parent_title(obj_json):
 
 
 def get_url(obj_json, client, host=None):
-    """Returns a full URL for an object."""
+    """Returns a full or relative URL for an object, depending on if a host is provided."""
     uuid = shortuuid.uuid(name=obj_json["uri"])
     path = "collections" if has_children(obj_json, client) else "objects"
-    return "{}/{}/{}".format(host, path, uuid) if host else "/objects/{}".format(uuid)
+    return f"{host}/{path}/{uuid}" if host else f"/{path}/{uuid}"
 
 
 def has_children(obj_json, client):
