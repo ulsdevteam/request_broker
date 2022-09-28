@@ -32,4 +32,4 @@ RUN pip install -r requirements.txt
 RUN ./manage.py collectstatic
 
 EXPOSE ${APPLICATION_PORT}
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+ENTRYPOINT ["/code/entrypoint.sh", "apache"]

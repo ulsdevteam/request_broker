@@ -13,4 +13,9 @@ python manage.py migrate
 
 #Start server
 echo "Starting server"
-python manage.py runserver 0.0.0.0:${APPLICATION_PORT}
+if [ "$1" == "apache" ]
+then
+    apache2ctl -D FOREGROUND
+else
+    python manage.py runserver 0.0.0.0:${APPLICATION_PORT}
+fi
