@@ -29,7 +29,7 @@ idna==3.3
     # via
     #   requests
     #   yarl
-inflect==5.4.0
+inflect==6.0.2
     # via -r requirements.in
 jarowinkler==1.0.1
     # via rapidfuzz
@@ -41,6 +41,8 @@ ordered-set==4.1.0
     # via -r requirements.in
 psycopg2-binary==2.9.3
     # via -r requirements.in
+pydantic==1.10.2
+    # via inflect
 pytz==2021.3
     # via djangorestframework
 pyyaml==6.0
@@ -61,6 +63,8 @@ sqlparse==0.4.2
     # via django
 structlog==21.5.0
     # via archivessnake
+typing-extensions==4.4.0
+    # via pydantic
 urllib3==1.26.8
     # via requests
 vcrpy==4.1.1
