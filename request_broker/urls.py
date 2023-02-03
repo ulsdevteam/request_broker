@@ -19,7 +19,8 @@ from django.urls import path
 from process_request.views import (DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, LinkResolverView,
-                                   MailerView, ParseRequestView, PingView)
+                                   MailerView, ParseRequestView,
+                                   AeonReadingRoomsView, PingView)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,5 +30,6 @@ urlpatterns = [
     path("api/process-request/parse", ParseRequestView.as_view(), name="parse-request"),
     path("api/process-request/resolve", LinkResolverView.as_view(), name="resolve-request"),
     path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv"),
+    path("api/reading-rooms/", AeonReadingRoomsView.as_view(), name="get-readingrooms"),
     path("api/status/", PingView.as_view(), name="ping")
 ]

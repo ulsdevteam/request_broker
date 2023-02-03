@@ -23,3 +23,5 @@ DIMES_BASEURL = "https://dimes.rockarch.org" # Base URL for DIMES application
 RESTRICTED_IN_CONTAINER = False  # Fetch a list of restricted items in the same container as the requested item.
 OFFSITE_BUILDINGS = ["Armonk", "Greenrock"]  # Names of offsite buildings, which will be added to locations (list of strings)
 RESOURCE_ID_SEPARATOR = ':'
+AEON_BASEURL = "https://servername/aeon/api/" # base URL for an Aeon API instance
+AEON_APIKEY = "00000000-0000-0000-0000-000000000000" # API key for the Aeon API

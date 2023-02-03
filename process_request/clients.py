@@ -1,8 +1,5 @@
 from requests import Session
 
-from request_broker import settings
-
-
 def http_meth_factory(meth):
     """Utility method for producing HTTP proxy methods.
 
@@ -27,10 +24,12 @@ class ProxyMethods(type):
 
 class AeonAPIClient(metaclass=ProxyMethods):
 
-    def __init__(self, baseurl):
+    def __init__(self, baseurl, apikey):
         self.baseurl = baseurl
         self.session = Session()
         self.session.headers.update(
             {"Accept": "application/json",
-             "User-Agent": "AeonAPIClient/0.1",
-             "X-AEON-API-KEY": settings.AEON_API_KEY})
+             "X-AEON-API-KEY": apikey})
+
+    def get_reading_rooms(self):
+        return self.get("ReadingRooms").json()
