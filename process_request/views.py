@@ -11,6 +11,7 @@ from request_broker import settings
 
 from .helpers import resolve_ref_id
 from .routines import AeonRequester, Mailer, Processor
+from .clients import AeonAPIClient
 
 
 class BaseRequestView(APIView):
@@ -129,6 +130,15 @@ class LinkResolverView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 
+class AeonReadingRoomsView(APIView):
+    """Returns reading room information from Aeon"""
+
+    def get(self, request):
+        try:
+            aeon = AeonAPIClient(baseurl=settings.AEON["baseurl"], apikey=settings.AEON["apikey"])
+            return aeon.get_reading_rooms()
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
 
 class PingView(APIView):
     """Checks if the application is able to process requests."""
