@@ -14,9 +14,9 @@ boltons==21.0.0
     # via archivessnake
 certifi==2022.12.7
     # via requests
-charset-normalizer==2.1.1
+charset-normalizer==3.0.1
     # via requests
-django==4.0.8
+django==4.0.9
     # via
     #   -r requirements.in
     #   django-cors-headers
@@ -42,7 +42,7 @@ ordered-set==4.1.0
     # via -r requirements.in
 psycopg2-binary==2.9.5
     # via -r requirements.in
-pytz==2022.7
+pytz==2022.7.1
     # via djangorestframework
 pyyaml==6.0
     # via
@@ -50,7 +50,7 @@ pyyaml==6.0
     #   vcrpy
 rapidfuzz==2.13.7
     # via archivessnake
-requests==2.28.1
+requests==2.28.2
     # via
     #   -r requirements.in
     #   archivessnake
@@ -62,7 +62,7 @@ sqlparse==0.4.3
     # via django
 structlog==22.3.0
     # via archivessnake
-urllib3==1.26.13
+urllib3==1.26.14
     # via requests
 vcrpy==4.2.1
     # via -r requirements.in
