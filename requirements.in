@@ -1,5 +1,5 @@
 ArchivesSnake~=0.9
-Django~=4.0.7
+Django~=4.0.9
 django-cors-headers~=3.12
 django-csp~=3.7
 djangorestframework~=3.13
