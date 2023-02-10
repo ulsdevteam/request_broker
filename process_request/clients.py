@@ -33,3 +33,6 @@ class AeonAPIClient(metaclass=ProxyMethods):
 
     def get_reading_rooms(self):
         return self.get("ReadingRooms").json()
+
+    def get_closures(self, reading_room_id):
+        return self.get("/".join(["ReadingRooms", reading_room_id, "Closures"])).json()

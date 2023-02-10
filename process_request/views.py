@@ -136,7 +136,10 @@ class AeonReadingRoomsView(APIView):
     def get(self, request):
         try:
             aeon = AeonAPIClient(baseurl=settings.AEON["baseurl"], apikey=settings.AEON["apikey"])
-            return Response(aeon.get_reading_rooms(), status=200)
+            reading_rooms = aeon.get_reading_rooms()
+            for reading_room in reading_rooms:
+                reading_room.closures = aeon.get_closures(reading_room.id)
+            return Response(reading_rooms, status=200)
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 
