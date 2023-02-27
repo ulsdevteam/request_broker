@@ -174,4 +174,5 @@ RESOURCE_ID_SEPARATOR = config.RESOURCE_ID_SEPARATOR
 AEON = {
     "baseurl": config.AEON_BASEURL,
     "apikey": config.AEON_APIKEY,
+    "cache_duration": config.AEON_CACHE_DURATION,
 }
