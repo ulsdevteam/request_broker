@@ -1,9 +1,12 @@
+import json
 import re
 
 import inflect
 import shortuuid
 from request_broker import settings
-from asnake.utils import get_date_display, get_note_text, text_in_note, resolve_to_uri
+from asnake.utils import (format_resource_id, get_date_display, get_note_text,
+                          text_in_note, resolve_to_uri)
+from django.conf import settings
 from ordered_set import OrderedSet
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
@@ -51,6 +54,8 @@ def get_file_versions(digital_object):
 def get_locations(top_container_info):
     """Gets a string representation of a location for an ArchivesSpace top container.
 
+    Adds the building name for offsite locations only.
+
     Args:
         top_container_info (dict): json for a top container (with resolved container locations)
 
@@ -59,10 +64,12 @@ def get_locations(top_container_info):
     """
 
     def make_short_location(loc_data):
-        return ".".join([
-            loc_data.get("room", "").strip().replace("Vault ", ""),
-            loc_data.get("coordinate_1_indicator", "").strip(),
-            loc_data.get("coordinate_2_indicator", "").strip()])
+        location_list = [loc_data.get("room", "").strip().replace("Vault ", ""),
+                         loc_data.get("coordinate_1_indicator", "").strip(),
+                         loc_data.get("coordinate_2_indicator", "").strip()]
+        if loc_data.get("building") in settings.OFFSITE_BUILDINGS:
+            location_list.insert(0, loc_data["building"])
+        return ".".join(location_list)
 
     locations = None
     if top_container_info.get("container_locations"):
@@ -155,6 +162,43 @@ def get_preferred_format(item_json):
     return preferred
 
 
+def get_restricted_in_container(container_uri, client):
+    """Fetches information about other restricted items in the same container.
+
+    Args:
+        container_uri (string): A URI for an ArchivesSpace Top Container.
+
+    Returns:
+        restricted (string): a comma-separated list of other restricted items in
+            the same container.
+    """
+    restricted = []
+    this_page = 1
+    more = True
+    while more:
+        escaped_url = container_uri.replace('/', '\\/')
+        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
+        items_in_container = client.get(search_uri).json()
+        for item in items_in_container["results"]:
+            item_json = json.loads(item["json"])
+            status = get_rights_status(item_json, client)
+            if not status:
+                for ancestor_uri in item["_resolved_ancestors"]:
+                    for ancestor in item["_resolved_ancestors"][ancestor_uri]:
+                        status = get_rights_status(json.loads(ancestor["json"]), client)
+                        if status:
+                            break
+            if status in ["closed", "conditional"]:
+                for instance in item_json["instances"]:
+                    sub_container = instance["sub_container"]
+                    if all(["type_2" in sub_container, "indicator_2" in sub_container]):
+                        restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
+        this_page += 1
+        if this_page > items_in_container["last_page"]:
+            more = False
+    return ", ".join(restricted)
+
+
 def get_rights_info(item_json, client):
     """Gets rights status and text for an archival object.
 
@@ -239,7 +283,7 @@ def get_rights_text(item_json, client):
     return text
 
 
-def get_resource_creators(resource):
+def get_resource_creators(resource, client):
     """Gets all creators of a resource record and concatenate them into a string
     separated by commas.
 
@@ -251,10 +295,12 @@ def get_resource_creators(resource):
     """
     creators = []
     if resource.get("linked_agents"):
-        for linked_agent in resource.get("linked_agents"):
-            if linked_agent.get("role") == "creator":
-                creators.append(linked_agent.get("_resolved").get('display_name').get('sort_name'))
-    return ", ".join(creators)
+        linked_agent_uris = [a["ref"].replace("/", "\\/") for a in resource["linked_agents"] if a["role"] == "creator"]
+        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
+        resp = client.get(search_uri)
+        resp.raise_for_status()
+        creators = resp.json()["results"]
+    return ", ".join([a["title"] for a in creators])
 
 
 def get_dates(archival_object, client):
@@ -330,10 +376,11 @@ def get_parent_title(obj_json):
     return title
 
 
-def get_url(obj_json, host, client):
-    """Returns a full URL for an object."""
+def get_url(obj_json, client, host=None):
+    """Returns a full or relative URL for an object, depending on if a host is provided."""
     uuid = shortuuid.uuid(name=obj_json["uri"])
-    return "{}/collections/{}".format(host, uuid) if has_children(obj_json, client) else "{}/objects/{}".format(host, uuid)
+    path = "collections" if has_children(obj_json, client) else "objects"
+    return f"{host}/{path}/{uuid}" if host else f"/{path}/{uuid}"
 
 
 def has_children(obj_json, client):
@@ -395,3 +442,10 @@ def resolve_ref_id(repo_id, ref_id, client):
     aspace_obj = aspace_objs['archival_objects'][0]['ref']
     resolved = identifier_from_uri(aspace_obj)
     return resolved
+
+def get_formatted_resource_id(resource, client):
+    """Gets a formatted resource id from the resource
+
+    Concatenates the resource id parts using the separator from the config
+    """
+    return format_resource_id(resource, client, settings.RESOURCE_ID_SEPARATOR)

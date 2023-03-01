@@ -16,13 +16,6 @@ db.sqlite3
 media
 static/
 
-### Docker ###
-docker-compose.*
-
 ### Configs ###
-*.conf
-*.production
-*.prod
 .env*
 env/*
-request_broker/config.py

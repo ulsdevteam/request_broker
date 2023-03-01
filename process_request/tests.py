@@ -1,21 +1,21 @@
 import csv
 from datetime import date
 from os.path import join
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 import vcr
 from asnake.aspace import ASpace
+from django.conf import settings
 from django.core import mail
 from django.http import StreamingHttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
-from rest_framework.test import APIRequestFactory, RequestsClient
-
-from request_broker import settings
+from rest_framework.test import APIRequestFactory
 
 from .helpers import (get_container_indicators, get_dates, get_file_versions,
-                      get_instance_data, get_locations, get_parent_title,
-                      get_preferred_format, get_resource_creators,
+                      get_formatted_resource_id, get_instance_data,
+                      get_locations, get_parent_title, get_preferred_format,
+                      get_resource_creators, get_restricted_in_container,
                       get_rights_info, get_rights_status, get_rights_text,
                       get_size, indicator_to_integer, prepare_values)
 from .models import User
@@ -55,9 +55,12 @@ class TestHelpers(TestCase):
                              password=settings.ARCHIVESSPACE["password"],
                              repository=settings.ARCHIVESSPACE["repo_id"]).client
 
-    def test_get_resource_creators(self):
+    @patch("asnake.client.web_client.ASnakeClient")
+    def test_get_resource_creators(self, mock_client):
+        mock_client.get.return_value.json.return_value = {"results": [{"title": "Philanthropy Foundation"}]}
         obj_data = json_from_fixture("object_all.json")
-        self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved")), "Philanthropy Foundation")
+        self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved"), mock_client), "Philanthropy Foundation")
+        mock_client.get.assert_called_with("/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q=\\/agents\\/corporate_entities\\/123")
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
@@ -99,10 +102,11 @@ class TestHelpers(TestCase):
         digital_object = {'file_versions': [{'file_uri': uri}]}
         self.assertEqual(get_file_versions(digital_object), uri)
 
+    @override_settings(OFFSITE_BUILDINGS=["Armonk"])
     def test_get_locations(self):
-        obj_data = json_from_fixture("locations.json")
-        expected_location = "106.66.7"
-        self.assertEqual(get_locations(obj_data), expected_location)
+        for fixture, expected in [("locations.json", "106.66.7"), ("locations_offsite.json", "Armonk.1.66.7")]:
+            obj_data = json_from_fixture(fixture)
+            self.assertEqual(get_locations(obj_data), expected)
 
     def test_get_instance_data(self):
         obj_data = json_from_fixture("digital_object_instance.json")
@@ -216,6 +220,25 @@ class TestHelpers(TestCase):
             parsed = indicator_to_integer(indicator)
             self.assertEqual(parsed, expected_parsed)
 
+    @patch("asnake.client.web_client.ASnakeClient")
+    def test_get_restricted_in_container(self, mock_client):
+        for fixture, expected in [
+                ("unrestricted_search.json", ""),
+                ("restricted_search.json", "Folder 122A, Folder 117A.1, Folder 118A.1, Folder 121A.1, Folder 123A.1, Folder 119A, Folder 120A.1")]:
+            mock_client.get.return_value.json.return_value = json_from_fixture(fixture)
+            result = get_restricted_in_container("/repositories/2/top_container/1", mock_client)
+            self.assertEqual(result, expected)
+
+    @patch("asnake.client.web_client.ASnakeClient")
+    def test_get_formatted_resource_id(self, mock_client):
+        for fixture, expected in [
+                ({"id_0": "FA123"}, "FA123"),
+                ({"id_0": "FA123", "id_1": "001"}, "FA123:001"),
+                ({"id_0": "FA123", "id_1": "001", "id_2": "A"}, "FA123:001:A"),
+                ({"id_0": "FA123", "id_1": "001", "id_2": "A", "id_3": "dev"}, "FA123:001:A:dev")]:
+            result = get_formatted_resource_id(fixture, mock_client)
+            self.assertEqual(result, expected)
+
     # Test is commented out as the code is currently not used, and this allows us to shed a few configs
     # def test_aeon_client(self):
     #     baseurl = random_string(20)
@@ -256,6 +279,11 @@ class TestRoutines(TestCase):
         self.assertEqual(parsed["submit"], False)
         self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
 
+        mock_get_data.return_value = []
+        parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
+        self.assertEqual(parsed["submit"], False)
+        self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")
+
     @patch("process_request.routines.Processor.get_data")
     def test_deliver_email(self, mock_get_data):
         mock_get_data.return_value = [json_from_fixture("as_data.json")]
@@ -272,7 +300,10 @@ class TestRoutines(TestCase):
             self.assertNotIn("barcode", mail.outbox[0].body)
 
     @aspace_vcr.use_cassette("aspace_request.json")
-    def test_get_data(self):
+    @override_settings(RESTRICTED_IN_CONTAINER=False)
+    @patch("process_request.routines.get_resource_creators")
+    def test_get_data(self, mock_creators):
+        mock_creators.return_value = "Philanthropy Foundation"
         get_as_data = Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
         self.assertTrue(isinstance(get_as_data, list))
         self.assertEqual(len(get_as_data), 1)
@@ -386,6 +417,20 @@ class TestViews(TestCase):
 
     @aspace_vcr.use_cassette("aspace_request.json")
     def test_status_view(self):
-        client = RequestsClient()
-        response = client.get("http://testserver{}".format(reverse("ping")))
-        assert response.status_code == 200
+        response = self.client.get("http://testserver{}".format(reverse("ping")))
+        self.assertEqual(response.status_code, 200)
+
+    @patch("process_request.views.resolve_ref_id")
+    def test_linkresolver_view(self, mock_resolve):
+        with aspace_vcr.use_cassette("aspace_request.json") as cass:
+            mock_uri = "/objects/123"
+            mock_refid = "12345abcdef"
+            mock_resolve.return_value = mock_uri
+            response = self.client.get(reverse('resolve-request'), {"ref_id": mock_refid})
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, f"{settings.DIMES_BASEURL}{mock_uri}")
+            mock_resolve.assert_called_with(settings.ARCHIVESSPACE["repo_id"], mock_refid, ANY)
+
+            cass.rewind()
+            response = self.client.get(reverse('resolve-request'))
+            self.assertEqual(response.status_code, 500)

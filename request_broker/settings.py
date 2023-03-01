@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'request_broker.urls'
@@ -133,8 +134,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = config.CORS_ALLOWED_ORIGINS
-DIMES_HOSTNAME = config.DIMES_HOSTNAME
+CORS_ALLOWED_ORIGINS = config.DJANGO_CORS_ALLOWED_ORIGINS
+DIMES_BASEURL = config.DIMES_BASEURL
+
+# Content Security Policy
+CSP_IMG_SRC = ("'self'")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
 
 ARCHIVESSPACE = {
     "baseurl": config.AS_BASEURL,
@@ -161,3 +167,7 @@ EXPORT_FIELDS = [
     ("size", "Size"),
     ("collection_name", "Collection Name"),
     ("parent", "Parent Collection Name")]
+
+RESTRICTED_IN_CONTAINER = config.RESTRICTED_IN_CONTAINER
+OFFSITE_BUILDINGS = getattr(config, 'OFFSITE_BUILDINGS', [])
+RESOURCE_ID_SEPARATOR = config.RESOURCE_ID_SEPARATOR

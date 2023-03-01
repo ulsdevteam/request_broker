@@ -2,13 +2,14 @@ import re
 import xml.etree.ElementTree as ET
 
 from asnake.aspace import ASpace
+from django.conf import settings
 from django.core.mail import send_mail
 
-from request_broker import settings
-
-from .helpers import (get_container_indicators, get_dates, get_parent_title,
+from .helpers import (get_container_indicators, get_dates,
+                      get_formatted_resource_id, get_parent_title,
                       get_preferred_format, get_resource_creators,
-                      get_rights_info, get_size, get_url, list_chunks)
+                      get_restricted_in_container, get_rights_info, get_size,
+                      get_url, list_chunks)
 
 
 class Processor(object):
@@ -49,31 +50,29 @@ class Processor(object):
                                         params={
                 "id_set": chunk,
                 "resolve": [
-                    "resource::linked_agents", "ancestors",
+                    "ancestors",
                     "top_container", "top_container::container_locations",
                     "instances::digital_object"]})
             if objects.status_code == 200:
                 for item_json in objects.json():
                     item_collection = item_json.get("ancestors")[-1].get("_resolved")
-                    parent = get_parent_title(item_json.get("ancestors")[0].get("_resolved")) if len(item_json.get("ancestors")) > 1 else None
+                    parent = self.strip_tags(get_parent_title(item_json.get("ancestors")[0].get("_resolved"))) if len(item_json.get("ancestors")) > 1 else None
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
                     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
-                    resource_id = item_collection.get("id_0")
-                    for i in ["id_1", "id_2", "id_3"]:
-                        if isinstance(item_collection.get(i), str):
-                            resource_id += '.'+item_collection.get(i)
+                    resource_id = get_formatted_resource_id(item_collection, aspace.client)
                     data.append({
                         "ead_id": item_collection.get("ead_id"),
-                        "creators": get_resource_creators(item_collection),
+                        "creators": get_resource_creators(item_collection, aspace.client),
                         "restrictions": restrictions,
                         "restrictions_text": self.strip_tags(restrictions_text),
+                        "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
                         "collection_name": self.strip_tags(item_collection.get("title")),
                         "parent": parent,
                         "dates": get_dates(item_json, aspace.client),
                         "resource_id": resource_id,
                         "title": self.strip_tags(item_json.get("display_string")),
                         "uri": item_json["uri"],
-                        "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
+                        "dimes_url": get_url(item_json, aspace.client, dimes_baseurl),
                         "containers": get_container_indicators(item_json),
                         "size": get_size(item_json["instances"]),
                         "preferred_instance": {
@@ -125,8 +124,10 @@ class Processor(object):
         Returns:
             parsed (dict): A dicts containing parsed item information.
         """
-        data = self.get_data([uri], baseurl)[0]
-        submit, reason = self.is_submittable(data)
+        data = self.get_data([uri], baseurl)
+        if not len(data):
+            return {"uri": uri, "submit": False, "submit_reason": "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found."}
+        submit, reason = self.is_submittable(data[0])
         return {"uri": uri, "submit": submit, "submit_reason": reason}
 
 
@@ -188,6 +189,7 @@ class AeonRequester(object):
             "AeonForm": "EADRequest",
             "DocumentType": "Manuscript",
             "GroupingIdentifier": "GroupingField",
+            "GroupingOption_EADNumber": "FirstValue",
             "GroupingOption_ItemInfo1": "Concatenate",
             "GroupingOption_ItemDate": "Concatenate",
             "GroupingOption_ItemTitle": "FirstValue",
@@ -201,6 +203,7 @@ class AeonRequester(object):
             "GroupingOption_ItemCitation": "FirstValue",
             "GroupingOption_ItemNumber": "FirstValue",
             "GroupingOption_Location": "FirstValue",
+            "GroupingOption_ItemInfo5": "FirstValue",
             "UserReview": "No",
             "SubmitButton": "Submit Request",
         }
@@ -232,7 +235,7 @@ class AeonRequester(object):
         else:
             raise ValueError(
                 "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
-        return data
+        return {k: v for k, v in data.items() if v}
 
     def prepare_reading_room_request(self, items, request_data):
         """Maps reading room request data to Aeon fields.
@@ -252,6 +255,7 @@ class AeonRequester(object):
             "Location": request_data.get("readingRoomID"),
             "Site": request_data.get("site"),
         }
+
         request_data = self.parse_items(items)
         return dict(**self.request_defaults, **reading_room_defaults, **request_data)
 
@@ -289,6 +293,7 @@ class AeonRequester(object):
             request_prefix = i["uri"].split("/")[-1]
             parsed["Request"].append(request_prefix)
             parsed.update({
+                "EADNumber_{}".format(request_prefix): i['ead_id'],
                 "CallNumber_{}".format(request_prefix): i["resource_id"],
                 "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
                 "ItemAuthor_{}".format(request_prefix): i["creators"],
@@ -299,6 +304,7 @@ class AeonRequester(object):
                 "ItemInfo3_{}".format(request_prefix): i["uri"],
                 "ItemInfo4_{}".format(request_prefix): description,
                 "EADNumber_{}".format(request_prefix): i['ead_id'],
+                "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
                 "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],

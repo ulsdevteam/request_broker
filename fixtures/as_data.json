@@ -1,4 +1,5 @@
 {
+    "ead_id": "",
     "creators": "Ford Foundation",
     "collection_name": "Ford Foundation records, General Correspondence",
     "parent": "General Correspondence",
@@ -18,5 +19,6 @@
     "title": "Adler, Mortimer J.",
     "restrictions": "closed",
     "restrictions_text": "Closed until further notice due to personally identifying information.",
+    "restricted_in_container": null,
     "uri": "/repositories/2/archival_objects/986296"
 }
