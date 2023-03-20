@@ -40,7 +40,7 @@ multidict==6.0.4
     # via yarl
 ordered-set==4.1.0
     # via -r requirements.in
-psycopg2==2.9.5
+psycopg2-binary==2.9.5
     # via -r requirements.in
 pytz==2022.7.1
     # via djangorestframework
