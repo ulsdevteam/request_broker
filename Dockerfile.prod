@@ -32,4 +32,6 @@ RUN pip install -r requirements.txt
 RUN ./manage.py collectstatic
 
 EXPOSE ${APPLICATION_PORT}
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+ADD . /code/
+
+ENTRYPOINT ["/code/entrypoint.prod.sh"]
