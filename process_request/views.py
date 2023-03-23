@@ -3,8 +3,9 @@ import json
 from datetime import datetime, timedelta
 
 from asnake.aspace import ASpace
-from django.http import StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import redirect
+from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -139,7 +140,7 @@ class AeonReadingRoomsView(APIView):
         try:
             try:
                 cached_reading_rooms = ReadingRoomCache.objects.get()
-                cache_needs_refresh = cached_reading_rooms.timestamp + timedelta(minutes=settings.AEON["cache_duration"]) < datetime.now()
+                cache_needs_refresh = cached_reading_rooms.timestamp + timedelta(minutes=settings.AEON["cache_duration"]) < timezone.now()
             except ReadingRoomCache.DoesNotExist:
                 cache_needs_refresh = True
             if cache_needs_refresh:
@@ -150,7 +151,7 @@ class AeonReadingRoomsView(APIView):
                 ReadingRoomCache.objects.update_or_create(defaults={'json': json.dumps(reading_rooms)})
                 return Response(reading_rooms, status=200)
             else:
-                return Response(cached_reading_rooms.json, status=200, content_type='application/json')
+                return HttpResponse(cached_reading_rooms.json, content_type='application/json')
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 
