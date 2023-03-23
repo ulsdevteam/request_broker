@@ -1,5 +1,6 @@
 import csv
 import json
+import threading
 from datetime import datetime, timedelta
 
 from asnake.aspace import ASpace
@@ -142,18 +143,20 @@ class AeonReadingRoomsView(APIView):
                 cached_reading_rooms = ReadingRoomCache.objects.get()
                 cache_needs_refresh = cached_reading_rooms.timestamp + timedelta(minutes=settings.AEON["cache_duration"]) < timezone.now()
             except ReadingRoomCache.DoesNotExist:
-                cache_needs_refresh = True
+                cached_reading_rooms = refresh_reading_room_cache()
+                cache_needs_refresh = False
             if cache_needs_refresh:
-                aeon = AeonAPIClient(baseurl=settings.AEON["baseurl"], apikey=settings.AEON["apikey"])
-                reading_rooms = aeon.get_reading_rooms()
-                for reading_room in reading_rooms:
-                    reading_room["closures"] = aeon.get_closures(reading_room["id"])
-                ReadingRoomCache.objects.update_or_create(defaults={'json': json.dumps(reading_rooms)})
-                return Response(reading_rooms, status=200)
-            else:
-                return HttpResponse(cached_reading_rooms.json, content_type='application/json')
+                threading.Thread(target=refresh_reading_room_cache).start()
+            return HttpResponse(cached_reading_rooms.json, content_type='application/json')
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
+
+def refresh_reading_room_cache():
+    aeon = AeonAPIClient(baseurl=settings.AEON["baseurl"], apikey=settings.AEON["apikey"])
+    reading_rooms = aeon.get_reading_rooms()
+    for reading_room in reading_rooms:
+        reading_room["closures"] = aeon.get_closures(reading_room["id"])
+    return ReadingRoomCache.objects.update_or_create(defaults={'json': json.dumps(reading_rooms)})[0]
 
 class PingView(APIView):
     """Checks if the application is able to process requests."""
