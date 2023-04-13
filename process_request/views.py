@@ -12,9 +12,8 @@ from rest_framework.views import APIView
 
 from request_broker import settings
 
-from .helpers import resolve_ref_id
+from .helpers import resolve_ref_id, refresh_reading_room_cache
 from .routines import AeonRequester, Mailer, Processor
-from .clients import AeonAPIClient
 from .models import ReadingRoomCache
 
 
@@ -150,13 +149,6 @@ class AeonReadingRoomsView(APIView):
             return HttpResponse(cached_reading_rooms.json, content_type='application/json')
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
-
-def refresh_reading_room_cache():
-    aeon = AeonAPIClient(baseurl=settings.AEON["baseurl"], apikey=settings.AEON["apikey"])
-    reading_rooms = aeon.get_reading_rooms()
-    for reading_room in reading_rooms:
-        reading_room["closures"] = aeon.get_closures(reading_room["id"])
-    return ReadingRoomCache.objects.update_or_create(defaults={'json': json.dumps(reading_rooms)})[0]
 
 class PingView(APIView):
     """Checks if the application is able to process requests."""
