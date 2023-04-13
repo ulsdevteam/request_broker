@@ -8,6 +8,9 @@ from asnake.utils import (format_resource_id, get_date_display, get_note_text,
 from django.conf import settings
 from ordered_set import OrderedSet
 
+from .clients import AeonAPIClient
+from .models import ReadingRoomCache
+
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = ["Open for research", "Open for scholarly research"]
 CLOSED_TEXT = ["Restricted"]
@@ -448,3 +451,14 @@ def get_formatted_resource_id(resource, client):
     Concatenates the resource id parts using the separator from the config
     """
     return format_resource_id(resource, client, settings.RESOURCE_ID_SEPARATOR)
+
+def refresh_reading_room_cache():
+    """Gets reading room data from the Aeon API and stores it in the database as json
+
+    Returns the newly saved object
+    """
+    aeon = AeonAPIClient(baseurl=settings.AEON["baseurl"], apikey=settings.AEON["apikey"])
+    reading_rooms = aeon.get_reading_rooms()
+    for reading_room in reading_rooms:
+        reading_room["closures"] = aeon.get_closures(reading_room["id"])
+    return ReadingRoomCache.objects.update_or_create(defaults={'json': json.dumps(reading_rooms)})[0]

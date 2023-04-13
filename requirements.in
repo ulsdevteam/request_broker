@@ -1,5 +1,6 @@
 ArchivesSnake~=0.9
 Django~=4.0.7
+django4-cron~=0.5
 django-cors-headers~=3.13
 djangorestframework~=3.13
 inflect~=6.0.0
