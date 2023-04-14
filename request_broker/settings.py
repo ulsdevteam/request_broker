@@ -173,3 +173,7 @@ AEON = {
     "apikey": config.AEON_APIKEY,
     "cache_duration": config.AEON_CACHE_DURATION,
 }
+
+CRON_CLASSES = [
+    "request_broker.cron.RefreshReadingRoomCache"
+]
