@@ -192,7 +192,7 @@ def get_restricted_in_container(container_uri, client):
                             break
             if status in ["closed", "conditional"]:
                 for instance in item_json["instances"]:
-                    sub_container = instance["sub_container"]
+                    sub_container = instance.get("sub_container", [])
                     if all(["type_2" in sub_container, "indicator_2" in sub_container]):
                         restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
         this_page += 1
@@ -378,10 +378,11 @@ def get_parent_title(obj_json):
     return title
 
 
-def get_url(obj_json, host, client):
-    """Returns a full URL for an object."""
+def get_url(obj_json, client, host=None):
+    """Returns a full or relative URL for an object, depending on if a host is provided."""
     uuid = shortuuid.uuid(name=obj_json["uri"])
-    return "{}/collections/{}".format(host, uuid) if has_children(obj_json, client) else "{}/objects/{}".format(host, uuid)
+    path = "collections" if has_children(obj_json, client) else "objects"
+    return f"{host}/{path}/{uuid}" if host else f"/{path}/{uuid}"
 
 
 def has_children(obj_json, client):
@@ -417,32 +418,14 @@ def list_chunks(lst, n):
         yield lst[i:i + n]
 
 
-def identifier_from_uri(uri):
-    """Creates a short UUID.
-
-    Uses `shortuuid`, which first creates a v5 UUID using an object's AS URI as
-    a name, and then converts them to base57 using lowercase and uppercase
-    letters and digits, and removing similar-looking characters such as
-    l, 1, I, O and 0.
-
-    This is a one-way process; while it is possible to consistently generate a
-    given UUID given an AS URI, it is not possible to decode the URI from the
-    UUID.
-
-    Helper method copied from https://github.com/ulsdevteam/pisces/blob/base/fetcher/helpers.py#L81
-    """
-    return shortuuid.uuid(name=uri)
-
-
 def resolve_ref_id(repo_id, ref_id, client):
     """ Accepts options to find archival objects using find_by_id method.
 
-    Generates and returns a DIMES id from an ArchiveSpace URI.
+    Generates and returns a DIMES URI from an ArchiveSpace URI.
     """
-    aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id, ref_id)).json()
-    aspace_obj = aspace_objs['archival_objects'][0]['ref']
-    resolved = identifier_from_uri(aspace_obj)
-    return resolved
+    aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}&resolve[]=archival_objects'.format(repo_id, ref_id)).json()
+    aspace_obj = aspace_objs['archival_objects'][0]['_resolved']
+    return get_url(aspace_obj, client)
 
 
 def get_formatted_resource_id(resource, client):

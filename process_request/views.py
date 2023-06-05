@@ -35,7 +35,7 @@ class ParseRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         uri = request.data.get("item")
-        baseurl = request.META.get("HTTP_ORIGIN", f"https://{settings.DIMES_HOSTNAME}")
+        baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
         return Processor().parse_item(uri, baseurl)
 
 
@@ -47,7 +47,7 @@ class MailerView(BaseRequestView):
         to_address = request.data.get("email")
         subject = request.data.get("subject", "")
         message = request.data.get("message")
-        baseurl = request.META.get("HTTP_ORIGIN", f"https://{settings.DIMES_HOSTNAME}")
+        baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
         emailed = Mailer().send_message(to_address, object_list, subject, message, baseurl)
         return {"detail": emailed}
 
@@ -57,7 +57,7 @@ class DeliverReadingRoomRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        baseurl = request.META.get("HTTP_ORIGIN", f"https://{settings.DIMES_HOSTNAME}")
+        baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
         delivered = AeonRequester().get_request_data(
             "readingroom", baseurl, **request_data)
         return delivered
@@ -68,7 +68,7 @@ class DeliverDuplicationRequestView(BaseRequestView):
 
     def get_response_data(self, request):
         request_data = request.data
-        baseurl = request.META.get("HTTP_ORIGIN", f"https://{settings.DIMES_HOSTNAME}")
+        baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
         delivered = AeonRequester().get_request_data(
             "duplication", baseurl, **request_data)
         return delivered
@@ -99,7 +99,7 @@ class DownloadCSVView(APIView):
         """Streams a large CSV file."""
         try:
             submitted = request.data.get("items")
-            baseurl = request.META.get("HTTP_ORIGIN", f"https://{settings.DIMES_HOSTNAME}")
+            baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
             processor = Processor()
             fetched = processor.get_data(submitted, baseurl)
             response = StreamingHttpResponse(
@@ -125,10 +125,10 @@ class LinkResolverView(APIView):
 
         try:
             data = request.GET["ref_id"]
-            host = settings.RESOLVER_HOSTNAME
+            host = settings.DIMES_BASEURL
             repo = settings.ARCHIVESSPACE["repo_id"]
             uri = resolve_ref_id(repo, data, aspace.client)
-            response = redirect("{}/objects/{}".format(host, uri))
+            response = redirect("{}{}".format(host, uri))
             return response
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
