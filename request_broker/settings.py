@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'request_broker.urls'
@@ -136,7 +137,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = config.DJANGO_CORS_ALLOWED_ORIGINS
-DIMES_HOSTNAME = config.DIMES_HOSTNAME
+DIMES_BASEURL = config.DIMES_BASEURL
+
+# Content Security Policy
+CSP_IMG_SRC = ("'self'")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
 
 ARCHIVESSPACE = {
     "baseurl": config.AS_BASEURL,
@@ -152,8 +158,6 @@ EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
 EMAIL_USE_TLS = config.EMAIL_USE_TLS
 EMAIL_USE_SSL = config.EMAIL_USE_SSL
 EMAIL_DEFAULT_FROM = config.DEFAULT_FROM_EMAIL
-
-RESOLVER_HOSTNAME = config.DIMES_HOSTNAME
 
 EXPORT_FIELDS = [
     ("title", None),
