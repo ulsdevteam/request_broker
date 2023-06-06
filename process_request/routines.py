@@ -107,7 +107,7 @@ class Processor(object):
         elif item["restrictions"] == "closed":
             submit = False
             reason = "This item is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text"))
-        elif "digital" in item["preferred_instance"]["format"].lower():
+        elif item["preferred_instance"]["format"].lower() == "digital_object":
             submit = False
             reason = "This item is already available online. It will not be included in request."
         elif item["restrictions"] == "conditional":

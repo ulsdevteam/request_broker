@@ -267,7 +267,7 @@ class TestRoutines(TestCase):
 
         # Ensure objects with attached digital objects return correct message
         for format, submit in [
-                ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
+                ("Digital", True), ("digital_object", False), ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value[0]["preferred_instance"]["format"] = format
             parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
