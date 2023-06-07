@@ -188,7 +188,7 @@ class AeonRequester(object):
     def __init__(self):
         self.request_defaults = {
             "AeonForm": "EADRequest",
-            "DocumentType": "Manuscript",
+            "DocumentType": "Default",
             "GroupingIdentifier": "GroupingField",
             "GroupingOption_EADNumber": "FirstValue",
             "GroupingOption_ItemInfo1": "Concatenate",
@@ -249,7 +249,7 @@ class AeonRequester(object):
             data: Submission data for Aeon.
         """
         reading_room_defaults = {
-            "WebRequestForm": "GenericRequestManuscript",
+            "WebRequestForm": "DefaultRequest",
             "RequestType": "Loan",
             "ScheduledDate": request_data.get("scheduledDate"),
             "SpecialRequest": request_data.get("questions"),
