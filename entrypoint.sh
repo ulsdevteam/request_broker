@@ -8,7 +8,7 @@ if [ ! -f request_broker/config.py ]; then
     cp request_broker/config.py.example request_broker/config.py
 fi
 
-./wait-for-it.sh db:5432 -- echo "Apply database migrations"
+./wait-for-it.sh db:${SQL_PORT} -- echo "Apply database migrations"
 python manage.py migrate
 
 #Start server
