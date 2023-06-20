@@ -27,12 +27,24 @@ class BaseRequestView(APIView):
 
 
 class ParseRequestView(BaseRequestView):
-    """Parses an item to determine whether or not it is submittable."""
+    """Parses an item to determine whether or not it is submittable.
+
+    NOTE: This view is currently deprecated and will be removed in a future release.
+    """
 
     def get_response_data(self, request):
         uri = request.data.get("item")
         baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
         return Processor().parse_item(uri, baseurl)
+
+
+class ParseMultipleRequestView(BaseRequestView):
+    """Parses multiple items to determine whether or not they are submittable."""
+
+    def get_response_data(self, request):
+        uris = request.data.get("items")
+        baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
+        return Processor().parse_items(uris, baseurl)
 
 
 class MailerView(BaseRequestView):
