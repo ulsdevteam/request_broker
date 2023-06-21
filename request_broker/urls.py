@@ -20,14 +20,14 @@ from process_request.views import (DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, LinkResolverView,
                                    MailerView, ParseBatchRequestView,
-                                   ParseRequestView, PingView)
+                                   ParseItemRequestView, PingView)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/deliver-request/email", MailerView.as_view(), name="deliver-email"),
     path("api/deliver-request/duplication", DeliverDuplicationRequestView.as_view(), name="deliver-duplication"),
     path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
-    path("api/process-request/parse", ParseRequestView.as_view(), name="parse-individual"),
+    path("api/process-request/parse", ParseItemRequestView.as_view(), name="parse-individual"),
     path("api/process-request/parse_multiple", ParseBatchRequestView.as_view(), name="parse-batch"),
     path("api/process-request/resolve", LinkResolverView.as_view(), name="resolve-request"),
     path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv"),

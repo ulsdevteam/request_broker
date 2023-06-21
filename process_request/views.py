@@ -26,7 +26,7 @@ class BaseRequestView(APIView):
             return Response({"detail": str(e)}, status=500)
 
 
-class ParseRequestView(BaseRequestView):
+class ParseItemRequestView(BaseRequestView):
     """Parses an item to determine whether or not it is submittable."""
 
     def get_response_data(self, request):

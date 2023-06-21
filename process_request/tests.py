@@ -23,7 +23,7 @@ from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
 from .views import (DeliverDuplicationRequestView,
                     DeliverReadingRoomRequestView, DownloadCSVView, MailerView,
-                    ParseBatchRequestView, ParseRequestView)
+                    ParseBatchRequestView, ParseItemRequestView)
 
 aspace_vcr = vcr.VCR(
     serializer='json',
@@ -430,9 +430,9 @@ class TestViews(TestCase):
         parsed = {"foo": "bar"}
         mock_parse.return_value = parsed
         self.assert_handles_routine(
-            {"item": random_string()}, "parse-individual", ParseRequestView)
+            {"item": random_string()}, "parse-individual", ParseItemRequestView)
         self.assert_handles_exceptions(
-            mock_parse, "bar", "parse-individual", ParseRequestView)
+            mock_parse, "bar", "parse-individual", ParseItemRequestView)
 
     @patch("process_request.routines.Processor.parse_batch")
     def test_parse_batch_view(self, mock_parse):
