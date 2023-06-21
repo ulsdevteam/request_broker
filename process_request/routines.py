@@ -115,10 +115,8 @@ class Processor(object):
         return submit, reason
 
     def parse_item(self, uri, baseurl):
-        """Parses requested items to determine which are submittable. Adds a
+        """Parses requested item to determine if it is submittable. Adds a
         `submit` and `submit_reason` attribute to each item.
-
-        NOTE: This method is deprecated and will be removed in a future release
 
         Args:
             uri (str): An AS archival object URI.

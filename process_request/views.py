@@ -27,10 +27,7 @@ class BaseRequestView(APIView):
 
 
 class ParseRequestView(BaseRequestView):
-    """Parses an item to determine whether or not it is submittable.
-
-    NOTE: This view is currently deprecated and will be removed in a future release.
-    """
+    """Parses an item to determine whether or not it is submittable."""
 
     def get_response_data(self, request):
         uri = request.data.get("item")
@@ -38,7 +35,7 @@ class ParseRequestView(BaseRequestView):
         return Processor().parse_item(uri, baseurl)
 
 
-class ParseMultipleRequestView(BaseRequestView):
+class ParseBatchRequestView(BaseRequestView):
     """Parses multiple items to determine whether or not they are submittable."""
 
     def get_response_data(self, request):

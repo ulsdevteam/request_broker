@@ -19,7 +19,7 @@ from django.urls import path
 from process_request.views import (DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, LinkResolverView,
-                                   MailerView, ParseMultipleRequestView,
+                                   MailerView, ParseBatchRequestView,
                                    ParseRequestView, PingView)
 
 urlpatterns = [
@@ -27,8 +27,8 @@ urlpatterns = [
     path("api/deliver-request/email", MailerView.as_view(), name="deliver-email"),
     path("api/deliver-request/duplication", DeliverDuplicationRequestView.as_view(), name="deliver-duplication"),
     path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
-    path("api/process-request/parse", ParseRequestView.as_view(), name="parse-request"),
-    path("api/process-request/parse_multiple", ParseMultipleRequestView.as_view(), name="parse-multiple"),
+    path("api/process-request/parse", ParseRequestView.as_view(), name="parse-individual"),
+    path("api/process-request/parse_multiple", ParseBatchRequestView.as_view(), name="parse-batch"),
     path("api/process-request/resolve", LinkResolverView.as_view(), name="resolve-request"),
     path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv"),
     path("api/status/", PingView.as_view(), name="ping")
