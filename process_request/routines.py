@@ -131,7 +131,7 @@ class Processor(object):
         submit, reason = self.is_submittable(data[0])
         return {"uri": uri, "submit": submit, "submit_reason": reason}
 
-    def parse_items(self, uris, baseurl):
+    def parse_batch(self, uris, baseurl):
         """Parses requested items to determine which are submittable. Adds a
         `submit` and `submit_reason` attribute to each item.
 

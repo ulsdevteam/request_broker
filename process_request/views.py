@@ -41,7 +41,7 @@ class ParseBatchRequestView(BaseRequestView):
     def get_response_data(self, request):
         uris = request.data.get("items")
         baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
-        return Processor().parse_items(uris, baseurl)
+        return Processor().parse_batch(uris, baseurl)
 
 
 class MailerView(BaseRequestView):
