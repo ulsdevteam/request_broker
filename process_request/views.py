@@ -26,13 +26,22 @@ class BaseRequestView(APIView):
             return Response({"detail": str(e)}, status=500)
 
 
-class ParseRequestView(BaseRequestView):
+class ParseItemRequestView(BaseRequestView):
     """Parses an item to determine whether or not it is submittable."""
 
     def get_response_data(self, request):
         uri = request.data.get("item")
         baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
         return Processor().parse_item(uri, baseurl)
+
+
+class ParseBatchRequestView(BaseRequestView):
+    """Parses multiple items to determine whether or not they are submittable."""
+
+    def get_response_data(self, request):
+        uris = request.data.get("items")
+        baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
+        return Processor().parse_batch(uris, baseurl)
 
 
 class MailerView(BaseRequestView):
