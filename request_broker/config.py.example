@@ -23,3 +23,4 @@ DIMES_BASEURL = "https://dimes.rockarch.org" # Base URL for DIMES application
 RESTRICTED_IN_CONTAINER = False  # Fetch a list of restricted items in the same container as the requested item.
 OFFSITE_BUILDINGS = ["Armonk", "Greenrock"]  # Names of offsite buildings, which will be added to locations (list of strings)
 RESOURCE_ID_SEPARATOR = ':'
+USE_LOCATION_TITLE = False  # Use the title field from a top container location
