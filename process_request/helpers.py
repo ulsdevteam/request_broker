@@ -70,18 +70,16 @@ def get_locations(top_container_info):
         if loc_data.get("building") in settings.OFFSITE_BUILDINGS:
             location_list.insert(0, loc_data["building"])
         return ".".join(location_list)
-    
+
     def use_full_location(loc_data):
         location_list = loc_data.get("title", "").strip()
         return location_list
 
     locations = None
-    if settings.USE_LOCATION_TITLE == True:
-        if top_container_info.get("container_locations"):
-            locations = ",".join([use_full_location(c["_resolved"]) for c in top_container_info.get("container_locations")])
+    if getattr(settings, 'USE_LOCATION_TITLE', False):
+        locations = ",".join([use_full_location(c["_resolved"]) for c in top_container_info.get("container_locations", [])])
     else:
-        if top_container_info.get("container_locations"):
-            locations = ",".join([make_short_location(c["_resolved"]) for c in top_container_info.get("container_locations")])
+        locations = ",".join([make_short_location(c["_resolved"]) for c in top_container_info.get("container_locations", [])])
     return locations
 
 
