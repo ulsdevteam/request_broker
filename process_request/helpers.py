@@ -76,11 +76,9 @@ def get_locations(top_container_info):
 
     locations = None
     if getattr(settings, 'USE_LOCATION_TITLE', False):
-        if top_container_info.get("container_locations"):
-            locations = ",".join([use_full_location(c["_resolved"]) for c in top_container_info.get("container_locations")])
+        locations = ",".join([use_full_location(c["_resolved"]) for c in top_container_info.get("container_locations", [])])
     else:
-        if top_container_info.get("container_locations"):
-            locations = ",".join([make_short_location(c["_resolved"]) for c in top_container_info.get("container_locations")])
+        locations = ",".join([make_short_location(c["_resolved"]) for c in top_container_info.get("container_locations", [])])
     return locations
 
 
