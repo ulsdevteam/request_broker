@@ -306,6 +306,7 @@ class AeonRequester(object):
                 "EADNumber_{}".format(request_prefix): i['ead_id'],
                 "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
                 "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
+                "Location_{}".format(request_prefix): i["preferred_instance"]["location"],
                 "ItemSubtitle_{}".format(request_prefix): i["parent"],
                 "ItemTitle_{}".format(request_prefix): i["collection_name"],
                 "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],

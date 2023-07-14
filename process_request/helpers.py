@@ -444,10 +444,9 @@ def resolve_ref_id(repo_id, ref_id, client):
     an ArchiveSpace URI.
 
     """
-    aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}'.format(repo_id,ref_id)).json()
-    aspace_obj = aspace_objs['archival_objects'][0]['ref']
-    resolved = identifier_from_uri(aspace_obj)
-    return resolved
+    aspace_objs = client.get('/repositories/{}/find_by_id/archival_objects?ref_id[]={}&resolve[]=archival_objects'.format(repo_id,ref_id)).json()
+    aspace_obj = aspace_objs['archival_objects'][0]['_resolved']
+    return get_url(aspace_obj, client)
 
 def get_formatted_resource_id(resource, client):
     """Gets a formatted resource id from the resource
