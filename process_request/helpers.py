@@ -1,6 +1,8 @@
 import json
 import re
 
+from django.utils.translation import gettext as _
+
 import inflect
 import shortuuid
 from asnake.utils import (format_resource_id, get_date_display, get_note_text,
@@ -31,7 +33,7 @@ def get_container_indicators(item_json):
     if item_json.get("instances"):
         for i in item_json.get("instances"):
             if i.get("instance_type") == "digital_object":
-                indicators.append("Digital Object: {}".format(i.get("digital_object").get("_resolved").get("title")))
+                indicators.append(_("Digital Object: {}").format(i.get("digital_object").get("_resolved").get("title")))
             else:
                 top_container = i.get("sub_container").get("top_container").get("_resolved")
                 indicators.append("{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator")))
@@ -126,7 +128,7 @@ def get_instance_data(instance_list):
         if instance["instance_type"] == "digital_object":
             instance_types.append("digital_object")
             resolved = instance.get("digital_object").get("_resolved")
-            containers.append("Digital Object: {}".format(resolved.get("title")))
+            containers.append(_("Digital Object: {}").format(resolved.get("title")))
             locations.append(get_file_versions(resolved))
             barcodes.append(resolved.get("digital_object_id"))
             refs.append(resolved.get("uri"))
@@ -366,7 +368,7 @@ def get_size(instances):
                 extent_number = 1
             extents = append_to_list(extents, extent_type.strip(), extent_number)
         except Exception as e:
-            raise Exception("Error parsing instances") from e
+            raise Exception(_("Error parsing instances")) from e
     return ", ".join(
         ["{} {}".format(
             e["number"], inflect.engine().plural(e["extent_type"], e["number"])) for e in extents])

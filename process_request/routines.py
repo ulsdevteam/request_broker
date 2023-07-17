@@ -1,5 +1,8 @@
 import re
+import json
 import xml.etree.ElementTree as ET
+
+from django.utils.translation import gettext as _
 
 from asnake.aspace import ASpace
 from django.conf import settings
@@ -103,15 +106,15 @@ class Processor(object):
         reason = None
         if not any(value for value in item["preferred_instance"].values()):
             submit = False
-            reason = "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available."
+            reason = _("This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
         elif item["restrictions"] == "closed":
             submit = False
-            reason = "This item is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text"))
+            reason = _("This item is currently unavailable for request. It will not be included in request. Reason: {}".format(item.get("restrictions_text")))
         elif item["preferred_instance"]["format"].lower() == "digital_object":
             submit = False
-            reason = "This item is already available online. It will not be included in request."
+            reason = _("This item is already available online. It will not be included in request.")
         elif item["restrictions"] == "conditional":
-            reason = "This item may be currently unavailable for request. It will be included in request. Reason: {}".format(item.get("restrictions_text"))
+            reason = _("This item may be currently unavailable for request. It will be included in request. Reason: {}").format(item.get("restrictions_text"))
         return submit, reason
 
     def parse_item(self, uri, baseurl):
@@ -127,7 +130,7 @@ class Processor(object):
         """
         data = self.get_data([uri], baseurl)
         if not len(data):
-            return {"uri": uri, "submit": False, "submit_reason": "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found."}
+            return {"uri": uri, "submit": False, "submit_reason": _("This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")}
         submit, reason = self.is_submittable(data[0])
         return {"uri": uri, "submit": submit, "submit_reason": reason}
 
@@ -149,7 +152,7 @@ class Processor(object):
             parsed.append({"uri": item["uri"], "submit": submit, "submit_reason": reason})
         missing_uris = [m for m in uris if m not in [p["uri"] for p in parsed]]
         for uri in missing_uris:
-            parsed.append({"uri": uri, "submit": False, "submit_reason": "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found."})
+            parsed.append({"uri": uri, "submit": False, "submit_reason": _("This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")})
         return parsed
 
 
@@ -172,7 +175,7 @@ class Mailer(object):
         """
         message = message + "\n\n" if message else ""
         recipient_list = email if isinstance(email, list) else [email]
-        subject = subject if subject else "My List from DIMES"
+        subject = subject if subject else _("My List from DIMES")
         processor = Processor()
         fetched = processor.get_data(object_list, baseurl)
         message += self.format_items(fetched)
@@ -182,7 +185,7 @@ class Mailer(object):
             settings.EMAIL_DEFAULT_FROM,
             recipient_list,
             fail_silently=False)
-        return "email sent to {}".format(", ".join(recipient_list))
+        return _("email sent to {}").format(", ".join(recipient_list))
 
     def format_items(self, object_list):
         """Appends select keys to the message body unless their value is None.
@@ -227,7 +230,7 @@ class AeonRequester(object):
             "GroupingOption_Location": "FirstValue",
             "GroupingOption_ItemInfo5": "FirstValue",
             "UserReview": "No",
-            "SubmitButton": "Submit Request",
+            "SubmitButton": _("Submit Request"),
         }
 
     def get_request_data(self, request_type, baseurl, **kwargs):
@@ -256,7 +259,7 @@ class AeonRequester(object):
             data = self.prepare_duplication_request(fetched, kwargs)
         else:
             raise ValueError(
-                "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
+                _("Unknown request type '{}', expected either 'readingroom' or 'duplication'").format(request_type))
         return {k: v for k, v in data.items() if v}
 
     def prepare_reading_room_request(self, items, request_data):
