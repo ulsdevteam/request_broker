@@ -145,7 +145,7 @@ class Processor(object):
         parsed = []
         data = self.get_data(uris, baseurl)
         for item in data:
-            submit, reason = self.is_submittable(data[0])
+            submit, reason = self.is_submittable(item)
             parsed.append({"uri": item["uri"], "submit": submit, "submit_reason": reason})
         missing_uris = [m for m in uris if m not in [p["uri"] for p in parsed]]
         for uri in missing_uris:
