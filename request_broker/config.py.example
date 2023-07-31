@@ -26,3 +26,4 @@ RESOURCE_ID_SEPARATOR = ':'
 AEON_BASEURL = "https://servername/aeon/api/" # base URL for an Aeon API instance
 AEON_APIKEY = "00000000-0000-0000-0000-000000000000" # API key for the Aeon API
 AEON_CACHE_DURATION = 7200 # cache duration in minutes
+USE_LOCATION_TITLE = False  # Use the title field from a top container location

@@ -115,7 +115,7 @@ class Processor(object):
         return submit, reason
 
     def parse_item(self, uri, baseurl):
-        """Parses requested items to determine which are submittable. Adds a
+        """Parses requested item to determine if it is submittable. Adds a
         `submit` and `submit_reason` attribute to each item.
 
         Args:
@@ -130,6 +130,27 @@ class Processor(object):
             return {"uri": uri, "submit": False, "submit_reason": "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found."}
         submit, reason = self.is_submittable(data[0])
         return {"uri": uri, "submit": submit, "submit_reason": reason}
+
+    def parse_batch(self, uris, baseurl):
+        """Parses requested items to determine which are submittable. Adds a
+        `submit` and `submit_reason` attribute to each item.
+
+        Args:
+            uris (str): A list of AS archival object URIs.
+            baseurl (str): base URL for links to objects in DIMES
+
+        Returns:
+            parsed (list): A list of dicts containing parsed item information.
+        """
+        parsed = []
+        data = self.get_data(uris, baseurl)
+        for item in data:
+            submit, reason = self.is_submittable(item)
+            parsed.append({"uri": item["uri"], "submit": submit, "submit_reason": reason})
+        missing_uris = [m for m in uris if m not in [p["uri"] for p in parsed]]
+        for uri in missing_uris:
+            parsed.append({"uri": uri, "submit": False, "submit_reason": "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found."})
+        return parsed
 
 
 class Mailer(object):
