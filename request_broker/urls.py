@@ -16,12 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from process_request.views import (DeliverDuplicationRequestView,
+from process_request.views import (AeonReadingRoomsView,
+                                   DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, LinkResolverView,
-                                   MailerView, ParseRequestView,
-                                   ParseItemRequestView, AeonReadingRoomsView, PingView)
-
+                                   MailerView, ParseBatchRequestView,
+                                   ParseItemRequestView, PingView)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
