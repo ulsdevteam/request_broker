@@ -174,9 +174,9 @@ USE_LOCATION_TITLE = config.USE_LOCATION_TITLE
 RESOURCE_ID_SEPARATOR = config.RESOURCE_ID_SEPARATOR
 
 AEON = {
-    "baseurl": config.AEON_BASEURL,
-    "apikey": config.AEON_APIKEY,
-    "cache_duration": config.AEON_CACHE_DURATION,
+    "baseurl": getattr(config, 'AEON_BASEURL', ''),
+    "apikey": getattr(config, 'AEON_APIKEY', ''),
+    "cache_duration": getattr(config, 'AEON_CACHE_DURATION', 7200),
 }
 
 CRON_CLASSES = [
