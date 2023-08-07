@@ -441,6 +441,7 @@ def get_formatted_resource_id(resource, client):
     """
     return format_resource_id(resource, client, settings.RESOURCE_ID_SEPARATOR)
 
+
 def refresh_reading_room_cache():
     """Gets reading room data from the Aeon API and stores it in the database as json
 

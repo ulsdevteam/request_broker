@@ -1,5 +1,4 @@
 import csv
-import json
 import threading
 from datetime import datetime, timedelta
 
@@ -12,9 +11,9 @@ from rest_framework.views import APIView
 
 from request_broker import settings
 
-from .helpers import resolve_ref_id, refresh_reading_room_cache
-from .routines import AeonRequester, Mailer, Processor
+from .helpers import refresh_reading_room_cache, resolve_ref_id
 from .models import ReadingRoomCache
+from .routines import AeonRequester, Mailer, Processor
 
 
 class BaseRequestView(APIView):
@@ -142,6 +141,7 @@ class LinkResolverView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 
+
 class AeonReadingRoomsView(APIView):
     """Returns reading room information from Aeon"""
 
@@ -158,6 +158,7 @@ class AeonReadingRoomsView(APIView):
             return HttpResponse(cached_reading_rooms.json, content_type='application/json')
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
+
 
 class PingView(APIView):
     """Checks if the application is able to process requests."""

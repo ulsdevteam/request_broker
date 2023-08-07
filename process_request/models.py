@@ -27,7 +27,7 @@ class User(AbstractUser):
         """
         return '{} <{}>'.format(self.full_name, self.email)
 
+
 class ReadingRoomCache(models.Model):
     timestamp = models.DateTimeField(auto_now=True)
     json = models.TextField()
-    

@@ -1,5 +1,6 @@
 from requests import Session
 
+
 def http_meth_factory(meth):
     """Utility method for producing HTTP proxy methods.
 
