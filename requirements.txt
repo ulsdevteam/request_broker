@@ -19,16 +19,18 @@ charset-normalizer==3.1.0
 django==4.2.2
     # via
     #   -r requirements.in
+    #   django-common-helpers
     #   django-cors-headers
     #   django-csp
+    #   django4-cron
     #   djangorestframework
 django-common-helpers==0.9.2
     # via django4-cron
-django4-cron==0.5.1
-    # via -r requirements.in
 django-cors-headers==3.14.0
     # via -r requirements.in
 django-csp==3.7
+    # via -r requirements.in
+django4-cron==0.5.1
     # via -r requirements.in
 djangorestframework==3.14.0
     # via -r requirements.in
@@ -36,7 +38,7 @@ idna==3.4
     # via
     #   requests
     #   yarl
-inflect==5.6.2
+inflect==6.0.5
     # via -r requirements.in
 more-itertools==9.1.0
     # via archivessnake
@@ -46,6 +48,8 @@ ordered-set==4.1.0
     # via -r requirements.in
 psycopg2==2.9.6
     # via -r requirements.in
+pydantic==1.10.12
+    # via inflect
 pytz==2023.3
     # via djangorestframework
 pyyaml==6.0
@@ -67,10 +71,12 @@ sqlparse==0.4.4
 structlog==23.1.0
     # via archivessnake
 typing-extensions==4.7.0
-    # via asgiref
+    # via
+    #   asgiref
+    #   pydantic
 urllib3==2.0.3
     # via requests
-vcrpy==4.4.0
+vcrpy==4.2.1
     # via -r requirements.in
 wrapt==1.15.0
     # via vcrpy
