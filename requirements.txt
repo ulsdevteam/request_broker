@@ -64,8 +64,6 @@ requests==2.31.0
     #   archivessnake
 shortuuid==1.0.11
     # via -r requirements.in
-six==1.16.0
-    # via vcrpy
 sqlparse==0.4.4
     # via django
 structlog==23.1.0
@@ -76,7 +74,7 @@ typing-extensions==4.7.1
     #   pydantic
 urllib3==2.0.4
     # via requests
-vcrpy==4.2.1
+vcrpy==5.1.0
     # via -r requirements.in
 wrapt==1.15.0
     # via vcrpy
