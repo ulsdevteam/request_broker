@@ -16,7 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from process_request.views import (DeliverDuplicationRequestView,
+from process_request.views import (AeonReadingRoomsView,
+                                   DeliverDuplicationRequestView,
                                    DeliverReadingRoomRequestView,
                                    DownloadCSVView, LinkResolverView,
                                    MailerView, ParseBatchRequestView,
@@ -31,5 +32,6 @@ urlpatterns = [
     path("api/process-request/parse-batch", ParseBatchRequestView.as_view(), name="parse-batch"),
     path("api/process-request/resolve", LinkResolverView.as_view(), name="resolve-request"),
     path("api/download-csv/", DownloadCSVView.as_view(), name="download-csv"),
+    path("api/reading-rooms/", AeonReadingRoomsView.as_view(), name="get-readingrooms"),
     path("api/status/", PingView.as_view(), name="ping")
 ]

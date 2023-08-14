@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
@@ -25,3 +26,8 @@ class User(AbstractUser):
         Returns the full name and email of a user.
         """
         return '{} <{}>'.format(self.full_name, self.email)
+
+
+class ReadingRoomCache(models.Model):
+    timestamp = models.DateTimeField(auto_now=True)
+    json = models.TextField()
