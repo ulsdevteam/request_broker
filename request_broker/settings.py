@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_cron',
     'corsheaders',
     'process_request',
     'rest_framework',
@@ -171,3 +172,13 @@ RESTRICTED_IN_CONTAINER = config.RESTRICTED_IN_CONTAINER
 OFFSITE_BUILDINGS = getattr(config, 'OFFSITE_BUILDINGS', [])
 USE_LOCATION_TITLE = config.USE_LOCATION_TITLE
 RESOURCE_ID_SEPARATOR = config.RESOURCE_ID_SEPARATOR
+
+AEON = {
+    "baseurl": getattr(config, 'AEON_BASEURL', ''),
+    "apikey": getattr(config, 'AEON_APIKEY', ''),
+    "cache_duration": getattr(config, 'AEON_CACHE_DURATION', 7200),
+}
+
+CRON_CLASSES = [
+    "request_broker.cron.RefreshReadingRoomCache"
+]
