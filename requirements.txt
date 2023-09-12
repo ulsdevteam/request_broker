@@ -16,7 +16,7 @@ certifi==2023.7.22
     # via requests
 charset-normalizer==3.2.0
     # via requests
-django==4.2.3
+django==4.2.4
     # via
     #   -r requirements.in
     #   django-common-helpers
@@ -40,13 +40,13 @@ idna==3.4
     #   yarl
 inflect==6.0.5
     # via -r requirements.in
-more-itertools==10.0.0
+more-itertools==10.1.0
     # via archivessnake
 multidict==6.0.4
     # via yarl
 ordered-set==4.1.0
     # via -r requirements.in
-psycopg2==2.9.6
+psycopg2==2.9.7
     # via -r requirements.in
 pydantic==1.10.12
     # via inflect
@@ -56,7 +56,7 @@ pyyaml==6.0.1
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==3.1.2
+rapidfuzz==3.2.0
     # via archivessnake
 requests==2.31.0
     # via
