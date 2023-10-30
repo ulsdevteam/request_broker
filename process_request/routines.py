@@ -63,6 +63,7 @@ class Processor(object):
                     data.append({
                         "ead_id": item_collection.get("ead_id"),
                         "creators": get_resource_creators(item_collection, aspace.client),
+                        "ref_id": item_json["ref_id"],
                         "restrictions": restrictions,
                         "restrictions_text": self.strip_tags(restrictions_text),
                         "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
