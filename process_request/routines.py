@@ -318,7 +318,7 @@ class AeonRequester(object):
                 "CallNumber_{}".format(request_prefix): i["resource_id"],
                 "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
                 "ItemAuthor_{}".format(request_prefix): i["creators"],
-                "ItemCitation_{}".format(request_prefix): i["uri"],
+                "ItemCitation_{}".format(request_prefix): i["ref_id"],
                 "ItemDate_{}".format(request_prefix): i["dates"],
                 "ItemInfo1_{}".format(request_prefix): i["title"],
                 "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
