@@ -14,6 +14,8 @@ import os
 
 from . import config
 
+from django.utils.translation import gettext as _
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -118,6 +120,10 @@ AUTH_USER_MODEL = 'process_request.User'
 
 LANGUAGE_CODE = 'en-us'
 
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, "locale")
+]
+
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -161,12 +167,12 @@ EMAIL_DEFAULT_FROM = config.DEFAULT_FROM_EMAIL
 
 EXPORT_FIELDS = [
     ("title", None),
-    ("dimes_url", "URL"),
-    ("creators", "Creator(s)"),
-    ("dates", "Dates"),
-    ("size", "Size"),
-    ("collection_name", "Collection Name"),
-    ("parent", "Parent Collection Name")]
+    ("dimes_url", _("URL")),
+    ("creators", _("Creator(s)")),
+    ("dates", _("Dates")),
+    ("size", _("Size")),
+    ("collection_name", _("Collection Name")),
+    ("parent", _("Parent Collection Name"))]
 
 RESTRICTED_IN_CONTAINER = config.RESTRICTED_IN_CONTAINER
 OFFSITE_BUILDINGS = getattr(config, 'OFFSITE_BUILDINGS', [])
