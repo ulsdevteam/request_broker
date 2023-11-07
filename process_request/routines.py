@@ -1,12 +1,10 @@
 import re
-import json
 import xml.etree.ElementTree as ET
-
-from django.utils.translation import gettext as _
 
 from asnake.aspace import ASpace
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils.translation import gettext as _
 
 from .helpers import (get_container_indicators, get_dates,
                       get_formatted_resource_id, get_parent_title,
@@ -231,7 +229,7 @@ class AeonRequester(object):
             "GroupingOption_Location": "FirstValue",
             "GroupingOption_ItemInfo5": "FirstValue",
             "UserReview": "No",
-            "SubmitButton": _("Submit Request"),
+            "SubmitButton": "Submit Request",
         }
 
     def get_request_data(self, request_type, baseurl, **kwargs):
@@ -260,7 +258,7 @@ class AeonRequester(object):
             data = self.prepare_duplication_request(fetched, kwargs)
         else:
             raise ValueError(
-                _("Unknown request type '{}', expected either 'readingroom' or 'duplication'").format(request_type))
+                "Unknown request type '{}', expected either 'readingroom' or 'duplication'").format(request_type)
         return {k: v for k, v in data.items() if v}
 
     def prepare_reading_room_request(self, items, request_data):

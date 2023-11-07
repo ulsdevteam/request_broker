@@ -1,13 +1,12 @@
 import json
 import re
 
-from django.utils.translation import gettext as _
-
 import inflect
 import shortuuid
 from asnake.utils import (format_resource_id, get_date_display, get_note_text,
                           text_in_note)
 from django.conf import settings
+from django.utils.translation import gettext as _
 from ordered_set import OrderedSet
 
 from .clients import AeonAPIClient
@@ -368,7 +367,7 @@ def get_size(instances):
                 extent_number = 1
             extents = append_to_list(extents, extent_type.strip(), extent_number)
         except Exception as e:
-            raise Exception(_("Error parsing instances")) from e
+            raise Exception("Error parsing instances") from e
     return ", ".join(
         ["{} {}".format(
             e["number"], inflect.engine().plural(e["extent_type"], e["number"])) for e in extents])

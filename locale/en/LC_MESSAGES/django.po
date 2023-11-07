@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-28 16:17-0400\n"
+"POT-Creation-Date: 2023-11-06 18:38-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,81 +18,68 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\process_request\helpers.py:33 .\process_request\helpers.py:128
+#: process_request/helpers.py:36 process_request/helpers.py:131
 msgid "Digital Object: {}"
 msgstr ""
 
-#: .\process_request\helpers.py:368
-msgid "Error parsing instances"
-msgstr ""
-
-#: .\process_request\routines.py:109
+#: process_request/routines.py:110
 msgid ""
 "This item is currently unavailable for request. It will not be included in "
 "request. Reason: Required information about the physical container of this "
 "item is not available."
 msgstr ""
 
-#: .\process_request\routines.py:112
+#: process_request/routines.py:113
 msgid ""
 "This item is currently unavailable for request. It will not be included in "
 "request. Reason: {}"
 msgstr ""
 
-#: .\process_request\routines.py:115
+#: process_request/routines.py:116
 msgid ""
 "This item is already available online. It will not be included in request."
 msgstr ""
 
-#: .\process_request\routines.py:117
+#: process_request/routines.py:118
 msgid ""
 "This item may be currently unavailable for request. It will be included in "
 "request. Reason: {}"
 msgstr ""
 
-#: .\process_request\routines.py:133 .\process_request\routines.py:155
+#: process_request/routines.py:134 process_request/routines.py:156
 msgid ""
 "This item is currently unavailable for request. It will not be included in "
 "request. Reason: This item cannot be found."
 msgstr ""
 
-#: .\process_request\routines.py:178
+#: process_request/routines.py:179
 msgid "My List from DIMES"
 msgstr ""
 
-#: .\process_request\routines.py:188
+#: process_request/routines.py:189
 msgid "email sent to {}"
 msgstr ""
 
-#: .\process_request\routines.py:233
-msgid "Submit Request"
-msgstr ""
-
-#: .\process_request\routines.py:262
-msgid ""
-"Unknown request type '{}', expected either 'readingroom' or 'duplication'"
-msgstr ""
-
-#: .\request_broker\settings.py:170
+#: request_broker/settings.py:170
 msgid "URL"
 msgstr ""
 
-#: .\request_broker\settings.py:171
+#: request_broker/settings.py:171
 msgid "Creator(s)"
 msgstr ""
 
-#: .\request_broker\settings.py:172
+#: request_broker/settings.py:172
 msgid "Dates"
 msgstr ""
 
-#: .\request_broker\settings.py:173
+#: request_broker/settings.py:173
 msgid "Size"
 msgstr ""
 
-#: .\request_broker\settings.py:174
+#: request_broker/settings.py:174
 msgid "Collection Name"
 msgstr ""
 
-#: .\request_broker\settings.py:175
+#: request_broker/settings.py:175
 msgid "Parent Collection Name"
 msgstr ""
