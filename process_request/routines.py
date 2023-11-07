@@ -258,7 +258,7 @@ class AeonRequester(object):
             data = self.prepare_duplication_request(fetched, kwargs)
         else:
             raise ValueError(
-                "Unknown request type '{}', expected either 'readingroom' or 'duplication'").format(request_type)
+                "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
         return {k: v for k, v in data.items() if v}
 
     def prepare_reading_room_request(self, items, request_data):
