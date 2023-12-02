@@ -10,13 +10,13 @@ asgiref==3.7.2
     # via django
 attrs==23.1.0
     # via archivessnake
-boltons==23.1.0
+boltons==23.1.1
     # via archivessnake
-certifi==2023.7.22
+certifi==2023.11.17
     # via requests
-charset-normalizer==3.3.1
+charset-normalizer==3.3.2
     # via requests
-django==4.2.6
+django==4.2.7
     # via
     #   -r requirements.in
     #   django-common-helpers
@@ -34,7 +34,7 @@ django4-cron==0.5.1
     # via -r requirements.in
 djangorestframework==3.14.0
     # via -r requirements.in
-idna==3.4
+idna==3.6
     # via
     #   requests
     #   yarl
@@ -56,7 +56,7 @@ pyyaml==6.0.1
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==3.4.0
+rapidfuzz==3.5.2
     # via archivessnake
 requests==2.31.0
     # via
@@ -72,11 +72,11 @@ typing-extensions==4.8.0
     # via
     #   asgiref
     #   pydantic
-urllib3==2.0.7
+urllib3==2.1.0
     # via requests
 vcrpy==5.1.0
     # via -r requirements.in
-wrapt==1.15.0
+wrapt==1.16.0
     # via vcrpy
-yarl==1.9.2
+yarl==1.9.3
     # via vcrpy
