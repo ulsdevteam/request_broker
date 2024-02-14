@@ -79,9 +79,9 @@ class Processor(object):
                         "size": get_size(item_json["instances"]),
                         "preferred_instance": {
                             "format": format,
-                            "container": container,
-                            "subcontainer": subcontainer,
-                            "location": location,
+                            "container": self.strip_tags(container),
+                            "subcontainer": self.strip_tags(subcontainer),
+                            "location": self.strip_tags(location),
                             "barcode": barcode,
                             "uri": container_uri,
                         }
