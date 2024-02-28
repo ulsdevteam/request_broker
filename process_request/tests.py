@@ -364,10 +364,12 @@ class TestRoutines(TestCase):
         data = {"scheduled_date": date.today().isoformat(), "items": random_list()}
         delivered = AeonRequester().get_request_data("readingroom", "https://dimes.rockarch.org", **data)
         self.assertTrue(isinstance(delivered, dict))
+        self.assertIn("GroupingIdentifier", delivered)
 
         data["format"] = "jpeg"
         delivered = AeonRequester().get_request_data("duplication", "https://dimes.rockarch.org", **data)
         self.assertTrue(isinstance(delivered, dict))
+        self.assertNotIn("GroupingIdentifier", delivered)
 
         request_type = "foo"
         with self.assertRaises(ValueError, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
