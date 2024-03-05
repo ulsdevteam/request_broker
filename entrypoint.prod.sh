@@ -1,6 +1,6 @@
  #!/bin/bash
 
-./wait-for-it.sh db:${SQL_PORT} -- echo "Apply database migrations"
+./wait-for-it.sh $db:${SQL_PORT} -- echo "Apply database migrations"
 python manage.py migrate
 
 # Collect static files
