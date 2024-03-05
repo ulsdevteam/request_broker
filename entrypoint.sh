@@ -16,13 +16,6 @@ fi
 ./wait-for-it.sh $db:$SQL_PORT -- echo "Apply database migrations"
 python manage.py migrate
 
-# Collect static files
-echo "Collecting static files"
-python manage.py collectstatic
-
-chmod 775 /var/www/html/request-broker/static
-chown :www-data /var/www/html/request-broker/static
-
 if [[ $AEON_API_KEY ]]; then
     echo "Starting cron"
     cron
@@ -32,6 +25,13 @@ fi
 echo "Starting server"
 
 if [[ -n $PROD ]]; then
+
+    # Collect static files
+    echo "Collecting static files"
+    python manage.py collectstatic
+
+    chmod 775 /var/www/html/request-broker/static
+    chown :www-data /var/www/html/request-broker/static
     apache2ctl -D FOREGROUND
 else
     python manage.py runserver 0.0.0.0:${APPLICATION_PORT}
