@@ -13,7 +13,6 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path
 
 from process_request.views import (AeonReadingRoomsView,
@@ -24,7 +23,6 @@ from process_request.views import (AeonReadingRoomsView,
                                    ParseItemRequestView, PingView)
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("api/deliver-request/email", MailerView.as_view(), name="deliver-email"),
     path("api/deliver-request/duplication", DeliverDuplicationRequestView.as_view(), name="deliver-duplication"),
     path("api/deliver-request/reading-room", DeliverReadingRoomRequestView.as_view(), name="deliver-readingroom"),
