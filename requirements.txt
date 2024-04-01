@@ -4,13 +4,13 @@
 #
 #    pip-compile
 #
-archivessnake==0.9.1
+archivessnake==0.10.1
     # via -r requirements.in
-asgiref==3.8.0
+asgiref==3.8.1
     # via django
 attrs==23.2.0
     # via archivessnake
-boltons==23.1.1
+boltons==24.0.0
     # via archivessnake
 certifi==2024.2.2
     # via requests
@@ -32,7 +32,7 @@ django-csp==3.8
     # via -r requirements.in
 django4-cron==0.5.1
     # via -r requirements.in
-djangorestframework==3.15.0
+djangorestframework==3.15.1
     # via -r requirements.in
 idna==3.6
     # via
@@ -54,7 +54,7 @@ pyyaml==6.0.1
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==3.6.2
+rapidfuzz==3.7.0
     # via archivessnake
 requests==2.31.0
     # via
