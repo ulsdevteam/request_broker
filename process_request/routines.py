@@ -297,7 +297,7 @@ class AeonRequester(object):
         duplication_defaults = {
             "WebRequestForm": "PhotoduplicationRequest",
             "RequestType": "Copy",
-            "Format": request_data.get("format", "PDF"),
+            "Format": request_data.get("format"),
             "SpecialRequest": request_data.get("questions"),
             "SkipOrderEstimate": "Yes",
         }
