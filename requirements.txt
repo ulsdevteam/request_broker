@@ -34,7 +34,7 @@ django4-cron==0.5.1
     # via -r requirements.in
 djangorestframework==3.15.1
     # via -r requirements.in
-idna==3.6
+idna==3.7
     # via
     #   requests
     #   yarl
@@ -48,13 +48,13 @@ ordered-set==4.1.0
     # via -r requirements.in
 psycopg2==2.9.9
     # via -r requirements.in
-pydantic==1.10.14
+pydantic==1.10.15
     # via inflect
 pyyaml==6.0.1
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==3.7.0
+rapidfuzz==3.8.1
     # via archivessnake
 requests==2.31.0
     # via
@@ -62,11 +62,11 @@ requests==2.31.0
     #   archivessnake
 shortuuid==1.0.13
     # via -r requirements.in
-sqlparse==0.4.4
+sqlparse==0.5.0
     # via django
 structlog==24.1.0
     # via archivessnake
-typing-extensions==4.10.0
+typing-extensions==4.11.0
     # via
     #   asgiref
     #   pydantic
