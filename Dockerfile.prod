@@ -35,8 +35,5 @@ RUN pip install -r requirements.txt
 RUN chmod 775 /var/www/html/request-broker
 RUN chown :www-data /var/www/html/request-broker
 
-RUN django-admin makemessages -a -i env
-RUN django-admin compilemessages -i env
-
 EXPOSE ${APPLICATION_PORT}
 ENTRYPOINT ["./entrypoint.sh"]

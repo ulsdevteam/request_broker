@@ -25,6 +25,8 @@ fi
 echo "Starting server"
 
 if [[ -n $PROD ]]; then
+    django-admin makemessages -a -i env
+    django-admin compilemessages -i env
 
     # Collect static files
     echo "Collecting static files"
