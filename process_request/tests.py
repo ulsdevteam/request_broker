@@ -60,7 +60,7 @@ class TestHelpers(TestCase):
         mock_client.get.return_value.json.return_value = {"results": [{"title": "Philanthropy Foundation"}]}
         obj_data = json_from_fixture("object_all.json")
         self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved"), mock_client), "Philanthropy Foundation")
-        mock_client.get.assert_called_with("/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q=\\/agents\\/corporate_entities\\/123")
+        mock_client.get.assert_called_with('/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q="/agents/corporate_entities/123"')
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")

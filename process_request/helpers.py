@@ -294,7 +294,7 @@ def get_rights_text(item_json, client):
 
 def get_resource_creators(resource, client):
     """Gets all creators of a resource record and concatenate them into a string
-    separated by commas.
+    separated by commas. URIs must be wrapped in double quotes.
 
     Args:
         resource (dict): resource record data.
@@ -304,8 +304,9 @@ def get_resource_creators(resource, client):
     """
     creators = []
     if resource.get("linked_agents"):
-        linked_agent_uris = [a["ref"].replace("/", "\\/") for a in resource["linked_agents"] if a["role"] == "creator"]
-        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
+        linked_agent_uris = [a["ref"] for a in resource["linked_agents"] if a["role"] == "creator"]
+        query_param = f'\"{" OR ".join(linked_agent_uris)}\"'
+        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={query_param}"
         resp = client.get(search_uri)
         resp.raise_for_status()
         creators = resp.json()["results"]
