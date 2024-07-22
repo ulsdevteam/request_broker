@@ -171,11 +171,13 @@ def get_preferred_format(item_json):
     return preferred
 
 
-def get_restricted_in_container(container_uri, client):
+def get_restricted_in_container(container_uris, client):
     """Fetches information about other restricted items in the same container.
 
     Args:
-        container_uri (string): A URI for an ArchivesSpace Top Container.
+        container_uri (string): One or more URI for an ArchivesSpace Top Container.
+                                If multiple URIs are provided they are separated by
+                                a comma and a space.
 
     Returns:
         restricted (string): a comma-separated list of other restricted items in
@@ -185,8 +187,8 @@ def get_restricted_in_container(container_uri, client):
     this_page = 1
     more = True
     while more:
-        escaped_url = container_uri.replace('/', '\\/')
-        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
+        container_string = f'\"{" OR ".join(container_uris.split(", "))}\"'
+        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{container_string}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
         items_in_container = client.get(search_uri).json()
         for item in items_in_container["results"]:
             item_json = json.loads(item["json"])
