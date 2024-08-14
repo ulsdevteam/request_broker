@@ -20,6 +20,8 @@ class Processor(object):
 
     def strip_tags(self, user_string):
         """Strips XML and HTML tags from a string."""
+        if user_string is None:
+            return None
         try:
             xmldoc = ET.fromstring(f'<xml>{user_string}</xml>')
             textcontent = ''.join(xmldoc.itertext())
