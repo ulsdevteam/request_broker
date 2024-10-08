@@ -1,16 +1,18 @@
 import csv
-from datetime import datetime
+import threading
+from datetime import datetime, timedelta
 
 from asnake.aspace import ASpace
-from django.http import StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import redirect
-from request_broker import settings
+from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from request_broker import settings
 
-from .helpers import resolve_ref_id
+from .helpers import refresh_reading_room_cache, resolve_ref_id
+from .models import ReadingRoomCache
 from .routines import AeonRequester, Mailer, Processor
 from .serializers import LinkResolverSerializer
 
@@ -27,13 +29,22 @@ class BaseRequestView(APIView):
             return Response({"detail": str(e)}, status=500)
 
 
-class ParseRequestView(BaseRequestView):
+class ParseItemRequestView(BaseRequestView):
     """Parses an item to determine whether or not it is submittable."""
 
     def get_response_data(self, request):
         uri = request.data.get("item")
         baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
         return Processor().parse_item(uri, baseurl)
+
+
+class ParseBatchRequestView(BaseRequestView):
+    """Parses multiple items to determine whether or not they are submittable."""
+
+    def get_response_data(self, request):
+        uris = request.data.get("items")
+        baseurl = request.META.get("HTTP_ORIGIN", settings.DIMES_BASEURL)
+        return Processor().parse_batch(uris, baseurl)
 
 
 class MailerView(BaseRequestView):
@@ -126,6 +137,24 @@ class LinkResolverView(APIView):
             uri = resolve_ref_id(repo, data, aspace.client)
             response = redirect("{}{}".format(host, uri))
             return response
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+
+
+class AeonReadingRoomsView(APIView):
+    """Returns reading room information from Aeon"""
+
+    def get(self, request):
+        try:
+            try:
+                cached_reading_rooms = ReadingRoomCache.objects.get()
+                cache_needs_refresh = cached_reading_rooms.timestamp + timedelta(minutes=settings.AEON["cache_duration"]) < timezone.now()
+            except ReadingRoomCache.DoesNotExist:
+                cached_reading_rooms = refresh_reading_room_cache()
+                cache_needs_refresh = False
+            if cache_needs_refresh:
+                threading.Thread(target=refresh_reading_room_cache).start()
+            return HttpResponse(cached_reading_rooms.json, content_type='application/json')
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
 

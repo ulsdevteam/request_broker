@@ -7,7 +7,11 @@ from request_broker import settings
 from asnake.utils import (format_resource_id, get_date_display, get_note_text,
                           text_in_note, resolve_to_uri)
 from django.conf import settings
+from django.utils.translation import gettext as _
 from ordered_set import OrderedSet
+
+from .clients import AeonAPIClient
+from .models import ReadingRoomCache
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = ["Open for research", "Open for scholarly research"]
@@ -29,7 +33,7 @@ def get_container_indicators(item_json):
     if item_json.get("instances"):
         for i in item_json.get("instances"):
             if i.get("instance_type") == "digital_object":
-                indicators.append("Digital Object: {}".format(i.get("digital_object").get("_resolved").get("title")))
+                indicators.append(_("Digital Object: {}").format(i.get("digital_object").get("_resolved").get("title")))
             else:
                 top_container = i.get("sub_container").get("top_container").get("_resolved")
                 indicators.append("{} {}".format(top_container.get("type").capitalize(), top_container.get("indicator")))
@@ -124,7 +128,7 @@ def get_instance_data(instance_list):
         if instance["instance_type"] == "digital_object":
             instance_types.append("digital_object")
             resolved = instance.get("digital_object").get("_resolved")
-            containers.append("Digital Object: {}".format(resolved.get("title")))
+            containers.append(_("Digital Object: {}").format(resolved.get("title")))
             locations.append(get_file_versions(resolved))
             barcodes.append(resolved.get("digital_object_id"))
             refs.append(resolved.get("uri"))
@@ -168,11 +172,13 @@ def get_preferred_format(item_json):
     return preferred
 
 
-def get_restricted_in_container(container_uri, client):
+def get_restricted_in_container(container_uris, client):
     """Fetches information about other restricted items in the same container.
 
     Args:
-        container_uri (string): A URI for an ArchivesSpace Top Container.
+        container_uri (string): One or more URI for an ArchivesSpace Top Container.
+                                If multiple URIs are provided they are separated by
+                                a comma and a space.
 
     Returns:
         restricted (string): a comma-separated list of other restricted items in
@@ -182,8 +188,8 @@ def get_restricted_in_container(container_uri, client):
     this_page = 1
     more = True
     while more:
-        escaped_url = container_uri.replace('/', '\\/')
-        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
+        container_string = f'\"{" OR ".join(container_uris.split(", "))}\"'
+        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{container_string}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
         items_in_container = client.get(search_uri).json()
         for item in items_in_container["results"]:
             item_json = json.loads(item["json"])
@@ -196,7 +202,7 @@ def get_restricted_in_container(container_uri, client):
                             break
             if status in ["closed", "conditional"]:
                 for instance in item_json["instances"]:
-                    sub_container = instance["sub_container"]
+                    sub_container = instance.get("sub_container", [])
                     if all(["type_2" in sub_container, "indicator_2" in sub_container]):
                         restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
         this_page += 1
@@ -291,7 +297,7 @@ def get_rights_text(item_json, client):
 
 def get_resource_creators(resource, client):
     """Gets all creators of a resource record and concatenate them into a string
-    separated by commas.
+    separated by commas. URIs must be wrapped in double quotes.
 
     Args:
         resource (dict): resource record data.
@@ -301,8 +307,9 @@ def get_resource_creators(resource, client):
     """
     creators = []
     if resource.get("linked_agents"):
-        linked_agent_uris = [a["ref"].replace("/", "\\/") for a in resource["linked_agents"] if a["role"] == "creator"]
-        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
+        linked_agent_uris = [a["ref"] for a in resource["linked_agents"] if a["role"] == "creator"]
+        query_param = f'\"{" OR ".join(linked_agent_uris)}\"'
+        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={query_param}"
         resp = client.get(search_uri)
         resp.raise_for_status()
         creators = resp.json()["results"]
@@ -454,3 +461,15 @@ def get_formatted_resource_id(resource, client):
     Concatenates the resource id parts using the separator from the config
     """
     return format_resource_id(resource, client, settings.RESOURCE_ID_SEPARATOR)
+
+
+def refresh_reading_room_cache():
+    """Gets reading room data from the Aeon API and stores it in the database as json
+
+    Returns the newly saved object
+    """
+    aeon = AeonAPIClient(baseurl=settings.AEON["baseurl"], apikey=settings.AEON["apikey"])
+    reading_rooms = aeon.get_reading_rooms()
+    for reading_room in reading_rooms:
+        reading_room["closures"] = aeon.get_closures(reading_room["id"])
+    return ReadingRoomCache.objects.update_or_create(defaults={'json': json.dumps(reading_rooms)})[0]

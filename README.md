@@ -4,8 +4,6 @@ An application that accepts requests with lists of ArchivesSpace URIs from users
 
 The request broker is part of [Project Electron](https://github.com/RockefellerArchiveCenter/project_electron), an initiative to build sustainable, open and user-centered infrastructure for the archival management of digital records at the [Rockefeller Archive Center](http://rockarch.org/).
 
-[![Build Status](https://travis-ci.com/RockefellerArchiveCenter/request_broker.svg?branch=base)](https://travis-ci.com/RockefellerArchiveCenter/request_broker)
-
 ## Getting Started
 
 Install [git](https://git-scm.com/) and clone the repository
@@ -33,7 +31,7 @@ Or, if you want to remove all data
 
 The request broker manages configuration by setting environment variables. These variables can be seen in `docker-compose.yml`.
 
-Deployment using the `docker-compose.prod.yml` or `docker-compose.dev.yml` files requires the presence of an `.env.prod` or `.env.dev` file in the root directory of the application. The environment variables included in those files should match the variables in `docker-compose.yml`, although the values assigned to those variables may change.
+Deployment using the `Dockerfile.prod` file is intended to bring up a production image (based on Apache/WSGI) which is ready to be proxied publicly by an apache, nginx, traefik or similar frontend.  `Dockerfile.prod` expects two environment arguments to be available at build time: `REQUEST_BROKER_DNS` and `APPLICATION_PORT`.  Apache will Listen on `${APPLICATION_PORT}` with a ServerName of `${REQUEST_BROKER_DNS}`.
 
 ## Services
 

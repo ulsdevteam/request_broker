@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from asnake.aspace import ASpace
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils.translation import gettext as _
 
 from .helpers import (get_container_indicators, get_dates,
                       get_formatted_resource_id, get_parent_title,
@@ -20,6 +21,8 @@ class Processor(object):
 
     def strip_tags(self, user_string):
         """Strips XML and HTML tags from a string."""
+        if user_string is None:
+            return None
         try:
             xmldoc = ET.fromstring(f'<xml>{user_string}</xml>')
             textcontent = ''.join(xmldoc.itertext())
@@ -63,6 +66,7 @@ class Processor(object):
                     data.append({
                         "ead_id": item_collection.get("ead_id"),
                         "creators": get_resource_creators(item_collection, aspace.client),
+                        "ref_id": item_json["ref_id"],
                         "restrictions": restrictions,
                         "restrictions_text": self.strip_tags(restrictions_text),
                         "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
@@ -102,19 +106,20 @@ class Processor(object):
         submit = True
         reason = None
         if not any(value for value in item["preferred_instance"].values()):
-            reason = "This item may not be available for request, but attempt will be made to include it. Reason: Required information about the physical container of this item is not available."
-        elif  item.get("restrictions_text") and item.get("restrictions_text").strip() == "No restrictions.":
-            reason = None
+            submit = False
+            reason = _("This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
         elif item["restrictions"] == "closed":
-            reason = "This item may be restricted; A&SC staff will follow up with you if needed.  Reason: {}".format(item.get("restrictions_text"))
-        elif "digital" in item["preferred_instance"]["format"].lower():
-            reason = "This item is already available online, but it will be included in request."
+            submit = False
+            reason = _("This item is currently unavailable for request. It will not be included in request. Reason: {}").format(item.get("restrictions_text"))
+        elif item["preferred_instance"]["format"].lower() == "digital_object":
+            submit = False
+            reason = _("This item is already available online. It will not be included in request.")
         elif item["restrictions"] == "conditional":
-            reason = "This item may be restricted; A&SC staff will follow up with you if needed. Reason: {}".format(item.get("restrictions_text"))
+            reason = _("This item may be currently unavailable for request. It will be included in request. Reason: {}").format(item.get("restrictions_text"))
         return submit, reason
 
     def parse_item(self, uri, baseurl):
-        """Parses requested items to determine which are submittable. Adds a
+        """Parses requested item to determine if it is submittable. Adds a
         `submit` and `submit_reason` attribute to each item.
 
         Args:
@@ -126,9 +131,30 @@ class Processor(object):
         """
         data = self.get_data([uri], baseurl)
         if not len(data):
-            return {"uri": uri, "submit": False, "submit_reason": "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found."}
+            return {"uri": uri, "submit": False, "submit_reason": _("This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")}
         submit, reason = self.is_submittable(data[0])
         return {"uri": uri, "submit": submit, "submit_reason": reason}
+
+    def parse_batch(self, uris, baseurl):
+        """Parses requested items to determine which are submittable. Adds a
+        `submit` and `submit_reason` attribute to each item.
+
+        Args:
+            uris (str): A list of AS archival object URIs.
+            baseurl (str): base URL for links to objects in DIMES
+
+        Returns:
+            parsed (list): A list of dicts containing parsed item information.
+        """
+        parsed = []
+        data = self.get_data(uris, baseurl)
+        for item in data:
+            submit, reason = self.is_submittable(item)
+            parsed.append({"uri": item["uri"], "submit": submit, "submit_reason": reason})
+        missing_uris = [m for m in uris if m not in [p["uri"] for p in parsed]]
+        for uri in missing_uris:
+            parsed.append({"uri": uri, "submit": False, "submit_reason": _("This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")})
+        return parsed
 
 
 class Mailer(object):
@@ -150,7 +176,7 @@ class Mailer(object):
         """
         message = message + "\n\n" if message else ""
         recipient_list = email if isinstance(email, list) else [email]
-        subject = subject if subject else "My List from DIMES"
+        subject = subject if subject else _("My List from DIMES")
         processor = Processor()
         fetched = processor.get_data(object_list, baseurl)
         message += self.format_items(fetched)
@@ -160,7 +186,7 @@ class Mailer(object):
             settings.EMAIL_DEFAULT_FROM,
             recipient_list,
             fail_silently=False)
-        return "email sent to {}".format(", ".join(recipient_list))
+        return _("email sent to {}").format(", ".join(recipient_list))
 
     def format_items(self, object_list):
         """Appends select keys to the message body unless their value is None.
@@ -187,23 +213,7 @@ class AeonRequester(object):
     def __init__(self):
         self.request_defaults = {
             "AeonForm": "EADRequest",
-            "DocumentType": "Manuscript",
-            "GroupingIdentifier": "GroupingField",
-            "GroupingOption_EADNumber": "FirstValue",
-            "GroupingOption_ItemInfo1": "Concatenate",
-            "GroupingOption_ItemDate": "Concatenate",
-            "GroupingOption_ItemTitle": "FirstValue",
-            "GroupingOption_ItemAuthor": "FirstValue",
-            "GroupingOption_ItemSubtitle": "FirstValue",
-            "GroupingOption_ItemVolume": "FirstValue",
-            "GroupingOption_ItemIssue": "Concatenate",
-            "GroupingOption_ItemInfo2": "Concatenate",
-            "GroupingOption_CallNumber": "FirstValue",
-            "GroupingOption_ItemInfo3": "FirstValue",
-            "GroupingOption_ItemCitation": "FirstValue",
-            "GroupingOption_ItemNumber": "FirstValue",
-            "GroupingOption_Location": "FirstValue",
-            "GroupingOption_ItemInfo5": "FirstValue",
+            "DocumentType": "Default",
             "UserReview": "No",
             "SubmitButton": "Submit Request",
         }
@@ -248,7 +258,23 @@ class AeonRequester(object):
             data: Submission data for Aeon.
         """
         reading_room_defaults = {
-            "WebRequestForm": "GenericRequestManuscript",
+            "GroupingIdentifier": "GroupingField",
+            "GroupingOption_EADNumber": "FirstValue",
+            "GroupingOption_ItemInfo1": "Concatenate",
+            "GroupingOption_ItemDate": "Concatenate",
+            "GroupingOption_ItemTitle": "FirstValue",
+            "GroupingOption_ItemAuthor": "FirstValue",
+            "GroupingOption_ItemSubtitle": "FirstValue",
+            "GroupingOption_ItemVolume": "FirstValue",
+            "GroupingOption_ItemIssue": "Concatenate",
+            "GroupingOption_ItemInfo2": "Concatenate",
+            "GroupingOption_CallNumber": "FirstValue",
+            "GroupingOption_ItemInfo3": "FirstValue",
+            "GroupingOption_ItemCitation": "FirstValue",
+            "GroupingOption_ItemNumber": "FirstValue",
+            "GroupingOption_Location": "FirstValue",
+            "GroupingOption_ItemInfo5": "FirstValue",
+            "WebRequestForm": "DefaultRequest",
             "RequestType": "Loan",
             "ScheduledDate": request_data.get("scheduledDate"),
             "SpecialRequest": request_data.get("questions"),
@@ -297,7 +323,7 @@ class AeonRequester(object):
                 "CallNumber_{}".format(request_prefix): i["resource_id"],
                 "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
                 "ItemAuthor_{}".format(request_prefix): i["creators"],
-                "ItemCitation_{}".format(request_prefix): i["uri"],
+                "ItemCitation_{}".format(request_prefix): i["ref_id"],
                 "ItemDate_{}".format(request_prefix): i["dates"],
                 "ItemInfo1_{}".format(request_prefix): i["title"],
                 "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],

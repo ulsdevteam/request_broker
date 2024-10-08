@@ -2,7 +2,7 @@ version: '3'
 
 services:
   request-broker-db:
-    image: postgres:10.4
+    image: postgres:14.4
     environment:
       - POSTGRES_USER=postgres  # name of the application database user
       - POSTGRES_PASSWORD=postgres  # name of the application database user
@@ -10,12 +10,10 @@ services:
     volumes:
       - request_broker_dbvolume:/var/lib/postgresql/data/
   request-broker-web:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
-    env_file:
-      - .env.prod
-    #command: python manage.py runserver 0.0.0.0:8000
+    build: .
+    entrypoint: /code/entrypoint.sh
+    environment:
+      - APPLICATION_PORT=${APPLICATION_PORT:-8000}
     volumes:
       - .:/code
     ports:

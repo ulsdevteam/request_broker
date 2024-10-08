@@ -23,7 +23,7 @@ from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
 from .views import (DeliverDuplicationRequestView,
                     DeliverReadingRoomRequestView, DownloadCSVView, MailerView,
-                    ParseRequestView)
+                    ParseBatchRequestView, ParseItemRequestView)
 
 aspace_vcr = vcr.VCR(
     serializer='json',
@@ -60,7 +60,7 @@ class TestHelpers(TestCase):
         mock_client.get.return_value.json.return_value = {"results": [{"title": "Philanthropy Foundation"}]}
         obj_data = json_from_fixture("object_all.json")
         self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved"), mock_client), "Philanthropy Foundation")
-        mock_client.get.assert_called_with("/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q=\\/agents\\/corporate_entities\\/123")
+        mock_client.get.assert_called_with('/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q="/agents/corporate_entities/123"')
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
@@ -267,7 +267,7 @@ class TestRoutines(TestCase):
 
         # Ensure objects with attached digital objects return correct message
         for format, submit in [
-                ("Digital", False), ("Mixed materials", True), ("microfilm", True)]:
+                ("Digital", True), ("digital_object", False), ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value[0]["preferred_instance"]["format"] = format
             parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
@@ -281,6 +281,45 @@ class TestRoutines(TestCase):
 
         mock_get_data.return_value = []
         parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
+        self.assertEqual(parsed["submit"], False)
+        self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")
+
+    @patch("process_request.routines.Processor.get_data")
+    def test_parse_batch(self, mock_get_data):
+        item = json_from_fixture("as_data.json")
+        mock_get_data.return_value = [item]
+
+        # Ensure objects return correct messages
+        for restrictions, text, submit, reason in [
+                ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
+                ("open", "bar", True, None),
+                ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
+            mock_get_data.return_value[0]["restrictions"] = restrictions
+            mock_get_data.return_value[0]["restrictions_text"] = text
+            parsed = Processor().parse_batch([mock_get_data.return_value[0]["uri"]], "https://dimes.rockarch.org")
+            self.assertIsInstance(parsed, list)
+            self.assertEqual(len(parsed), 1)
+            item = parsed[0]
+            self.assertIsInstance(item, dict)
+            self.assertEqual(item["submit"], submit)
+            self.assertEqual(item["submit_reason"], reason)
+
+        # Ensure objects with attached digital objects return correct message
+        for format, submit in [
+                ("Digital", True), ("digital_object", False), ("Mixed materials", True), ("microfilm", True)]:
+            mock_get_data.return_value[0]["preferred_instance"]["format"] = format
+            item = Processor().parse_batch([item["uri"]], "https://dimes.rockarch.org")[0]
+            self.assertEqual(item["submit"], submit)
+
+        # Ensure objects without instances return correct message
+        mock_get_data.return_value[0]["preferred_instance"] = {"format": None, "container": None,
+                                                               "subcontainer": None, "location": None, "barcode": None, "uri": None}
+        item = Processor().parse_batch([item["uri"]], "https://dimes.rockarch.org")[0]
+        self.assertEqual(item["submit"], False)
+        self.assertEqual(item["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: Required information about the physical container of this item is not available.")
+
+        mock_get_data.return_value = []
+        parsed = Processor().parse_batch([item["uri"]], "https://dimes.rockarch.org")[0]
         self.assertEqual(parsed["submit"], False)
         self.assertEqual(parsed["submit_reason"], "This item is currently unavailable for request. It will not be included in request. Reason: This item cannot be found.")
 
@@ -325,10 +364,12 @@ class TestRoutines(TestCase):
         data = {"scheduled_date": date.today().isoformat(), "items": random_list()}
         delivered = AeonRequester().get_request_data("readingroom", "https://dimes.rockarch.org", **data)
         self.assertTrue(isinstance(delivered, dict))
+        self.assertIn("GroupingIdentifier", delivered)
 
         data["format"] = "jpeg"
         delivered = AeonRequester().get_request_data("duplication", "https://dimes.rockarch.org", **data)
         self.assertTrue(isinstance(delivered, dict))
+        self.assertNotIn("GroupingIdentifier", delivered)
 
         request_type = "foo"
         with self.assertRaises(ValueError, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
@@ -391,9 +432,18 @@ class TestViews(TestCase):
         parsed = {"foo": "bar"}
         mock_parse.return_value = parsed
         self.assert_handles_routine(
-            {"item": random_string()}, "parse-request", ParseRequestView)
+            {"item": random_string()}, "parse-individual", ParseItemRequestView)
         self.assert_handles_exceptions(
-            mock_parse, "bar", "parse-request", ParseRequestView)
+            mock_parse, "bar", "parse-individual", ParseItemRequestView)
+
+    @patch("process_request.routines.Processor.parse_batch")
+    def test_parse_batch_view(self, mock_parse):
+        parsed = [{"foo": "bar"}]
+        mock_parse.return_value = parsed
+        self.assert_handles_routine(
+            {"item": [random_string()]}, "parse-batch", ParseBatchRequestView)
+        self.assert_handles_exceptions(
+            mock_parse, "bar", "parse-batch", ParseBatchRequestView)
 
     @patch("process_request.routines.AeonRequester.get_request_data")
     def test_deliver_readingroomrequest_view(self, mock_send):
