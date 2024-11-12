@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime
 
 import inflect
 import shortuuid
@@ -15,6 +16,16 @@ from .models import ReadingRoomCache
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = ["Open for research", "Open for scholarly research"]
 CLOSED_TEXT = ["Restricted"]
+
+
+def get_active_rights_acts(acts):
+    """Evaluates rights statement act end dates to determine if it is still active."""
+    current_date = datetime.now()
+    for idx, act in reversed(list(enumerate(acts))):
+        statement_end = datetime.strptime(act['end_date'], "%Y-%m-%d")
+        if (current_date > statement_end):
+            acts.pop(idx)
+    return acts
 
 
 def get_container_indicators(item_json):
@@ -260,9 +271,10 @@ def get_rights_status(item_json, client):
     status = None
     if item_json.get("rights_statements"):
         for stmnt in item_json["rights_statements"]:
-            if any([act["restriction"].lower() == "disallow" for act in stmnt.get("acts", [])]):
+            active_acts = get_active_rights_acts(stmnt.get("acts", []))
+            if any([act["restriction"].lower() == "disallow" for act in active_acts]):
                 status = "closed"
-            elif any([act["restriction"].lower() == "conditional" for act in stmnt.get("acts", [])]):
+            elif any([act["restriction"].lower() == "conditional" for act in active_acts]):
                 status = "conditional"
     elif [n for n in item_json.get("notes", []) if n.get("type") == "accessrestrict"]:
         notes = [n for n in item_json["notes"] if n.get("type") == "accessrestrict"]
