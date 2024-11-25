@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime
 
 import inflect
 import shortuuid
@@ -15,6 +16,16 @@ from .models import ReadingRoomCache
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = ["Open for research", "Open for scholarly research"]
 CLOSED_TEXT = ["Restricted"]
+
+
+def get_active_rights_acts(acts):
+    """Evaluates rights statement act end dates to determine if it is still active."""
+    current_date = datetime.now()
+    for idx, act in reversed(list(enumerate(acts))):
+        statement_end = datetime.strptime(act['end_date'], "%Y-%m-%d")
+        if (current_date > statement_end):
+            acts.pop(idx)
+    return acts
 
 
 def get_container_indicators(item_json):
@@ -171,40 +182,46 @@ def get_preferred_format(item_json):
     return preferred
 
 
-def get_restricted_in_container(container_uri, client):
+def get_restricted_in_container(container_uris, client):
     """Fetches information about other restricted items in the same container.
 
     Args:
-        container_uri (string): A URI for an ArchivesSpace Top Container.
+        container_uri (string): One or more URI for an ArchivesSpace Top Container.
+                                If multiple URIs are provided they are separated by
+                                a comma and a space.
 
     Returns:
         restricted (string): a comma-separated list of other restricted items in
             the same container.
     """
+    all_items = []
+    for container_uri in container_uris.split(", "):
+        this_page = 1
+        more = True
+        while more:
+            search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:\"{container_uri}\"&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
+            items_in_container = client.get(search_uri).json()
+            all_items += (items_in_container['results'])
+            this_page += 1
+            if this_page > items_in_container['last_page']:
+                more = False
+
     restricted = []
-    this_page = 1
-    more = True
-    while more:
-        escaped_url = container_uri.replace('/', '\\/')
-        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
-        items_in_container = client.get(search_uri).json()
-        for item in items_in_container["results"]:
-            item_json = json.loads(item["json"])
-            status = get_rights_status(item_json, client)
-            if not status:
-                for ancestor_uri in item["_resolved_ancestors"]:
-                    for ancestor in item["_resolved_ancestors"][ancestor_uri]:
-                        status = get_rights_status(json.loads(ancestor["json"]), client)
-                        if status:
-                            break
-            if status in ["closed", "conditional"]:
-                for instance in item_json["instances"]:
-                    sub_container = instance.get("sub_container", [])
-                    if all(["type_2" in sub_container, "indicator_2" in sub_container]):
-                        restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
-        this_page += 1
-        if this_page > items_in_container["last_page"]:
-            more = False
+    for item in all_items:
+        item_json = json.loads(item["json"])
+        status = get_rights_status(item_json, client)
+        if not status:
+            for ancestor_uri in item["_resolved_ancestors"]:
+                for ancestor in item["_resolved_ancestors"][ancestor_uri]:
+                    status = get_rights_status(json.loads(ancestor["json"]), client)
+                    if status:
+                        break
+        if status in ["closed", "conditional"]:
+            for instance in item_json["instances"]:
+                sub_container = instance.get("sub_container", [])
+                if all(["type_2" in sub_container, "indicator_2" in sub_container]):
+                    restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
+
     return ", ".join(restricted)
 
 
@@ -254,9 +271,10 @@ def get_rights_status(item_json, client):
     status = None
     if item_json.get("rights_statements"):
         for stmnt in item_json["rights_statements"]:
-            if any([act["restriction"].lower() == "disallow" for act in stmnt.get("acts", [])]):
+            active_acts = get_active_rights_acts(stmnt.get("acts", []))
+            if any([act["restriction"].lower() == "disallow" for act in active_acts]):
                 status = "closed"
-            elif any([act["restriction"].lower() == "conditional" for act in stmnt.get("acts", [])]):
+            elif any([act["restriction"].lower() == "conditional" for act in active_acts]):
                 status = "conditional"
     elif [n for n in item_json.get("notes", []) if n.get("type") == "accessrestrict"]:
         notes = [n for n in item_json["notes"] if n.get("type") == "accessrestrict"]
@@ -294,7 +312,7 @@ def get_rights_text(item_json, client):
 
 def get_resource_creators(resource, client):
     """Gets all creators of a resource record and concatenate them into a string
-    separated by commas.
+    separated by commas. URIs must be wrapped in double quotes.
 
     Args:
         resource (dict): resource record data.
@@ -304,8 +322,9 @@ def get_resource_creators(resource, client):
     """
     creators = []
     if resource.get("linked_agents"):
-        linked_agent_uris = [a["ref"].replace("/", "\\/") for a in resource["linked_agents"] if a["role"] == "creator"]
-        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={' OR '.join(linked_agent_uris)}"
+        linked_agent_uris = [a["ref"] for a in resource["linked_agents"] if a["role"] == "creator"]
+        query_param = f'\"{" OR ".join(linked_agent_uris)}\"'
+        search_uri = f"/repositories/{settings.ARCHIVESSPACE['repo_id']}/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q={query_param}"
         resp = client.get(search_uri)
         resp.raise_for_status()
         creators = resp.json()["results"]

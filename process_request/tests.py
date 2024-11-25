@@ -12,12 +12,13 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIRequestFactory
 
-from .helpers import (get_container_indicators, get_dates, get_file_versions,
-                      get_formatted_resource_id, get_instance_data,
-                      get_locations, get_parent_title, get_preferred_format,
-                      get_resource_creators, get_restricted_in_container,
-                      get_rights_info, get_rights_status, get_rights_text,
-                      get_size, indicator_to_integer, prepare_values)
+from .helpers import (get_active_rights_acts, get_container_indicators,
+                      get_dates, get_file_versions, get_formatted_resource_id,
+                      get_instance_data, get_locations, get_parent_title,
+                      get_preferred_format, get_resource_creators,
+                      get_restricted_in_container, get_rights_info,
+                      get_rights_status, get_rights_text, get_size,
+                      indicator_to_integer, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -55,12 +56,98 @@ class TestHelpers(TestCase):
                              password=settings.ARCHIVESSPACE["password"],
                              repository=settings.ARCHIVESSPACE["repo_id"]).client
 
+    def test_get_active_rights_acts(self):
+        """Assert """
+        acts = [
+            {
+                'start_date': '1886-01-01',
+                'end_date': '1967-12-31',
+                'created_by': 'aquarius',
+                'last_modified_by': 'aquarius',
+                'create_time': '2022-06-08T20:55:05Z',
+                'system_mtime': '2022-06-08T20:55:05Z',
+                'user_mtime': '2022-06-08T20:55:05Z',
+                'act_type': 'publish',
+                'restriction':
+                'disallow',
+                'jsonmodel_type':
+                'rights_statement_act',
+                'notes': []
+            },
+            {
+                'start_date': '1886-01-01',
+                'end_date': '2020-12-31',
+                'created_by': 'aquarius',
+                'last_modified_by': 'aquarius',
+                'create_time': '2022-06-08T20:55:05Z',
+                'system_mtime': '2022-06-08T20:55:05Z',
+                'user_mtime': '2022-06-08T20:55:05Z',
+                'act_type': 'publish',
+                'restriction':
+                'disallow',
+                'jsonmodel_type':
+                'rights_statement_act',
+                'notes': []
+            }]
+        output = get_active_rights_acts(acts)
+        self.assertEqual(output, [])
+
+        acts = [
+            {
+                'start_date': '1886-01-01',
+                'end_date': '1967-12-31',
+                'created_by': 'aquarius',
+                'last_modified_by': 'aquarius',
+                'create_time': '2022-06-08T20:55:05Z',
+                'system_mtime': '2022-06-08T20:55:05Z',
+                'user_mtime': '2022-06-08T20:55:05Z',
+                'act_type': 'publish',
+                'restriction':
+                'disallow',
+                'jsonmodel_type':
+                'rights_statement_act',
+                'notes': []
+            },
+            {
+                'start_date': '1886-01-01',
+                'end_date': '2070-12-31',
+                'created_by': 'aquarius',
+                'last_modified_by': 'aquarius',
+                'create_time': '2022-06-08T20:55:05Z',
+                'system_mtime': '2022-06-08T20:55:05Z',
+                'user_mtime': '2022-06-08T20:55:05Z',
+                'act_type': 'publish',
+                'restriction':
+                'disallow',
+                'jsonmodel_type':
+                'rights_statement_act',
+                'notes': []
+            }]
+        expected = [
+            {
+                'start_date': '1886-01-01',
+                'end_date': '2070-12-31',
+                'created_by': 'aquarius',
+                'last_modified_by': 'aquarius',
+                'create_time': '2022-06-08T20:55:05Z',
+                'system_mtime': '2022-06-08T20:55:05Z',
+                'user_mtime': '2022-06-08T20:55:05Z',
+                'act_type': 'publish',
+                'restriction':
+                'disallow',
+                'jsonmodel_type':
+                'rights_statement_act',
+                'notes': []
+            }]
+        output = get_active_rights_acts(acts)
+        self.assertEqual(output, expected)
+
     @patch("asnake.client.web_client.ASnakeClient")
     def test_get_resource_creators(self, mock_client):
         mock_client.get.return_value.json.return_value = {"results": [{"title": "Philanthropy Foundation"}]}
         obj_data = json_from_fixture("object_all.json")
         self.assertEqual(get_resource_creators(obj_data.get("ancestors")[-1].get("_resolved"), mock_client), "Philanthropy Foundation")
-        mock_client.get.assert_called_with("/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q=\\/agents\\/corporate_entities\\/123")
+        mock_client.get.assert_called_with('/repositories/2/search?fields[]=title&type[]=agent_person&type[]=agent_corporate_entity&type[]=agent_family&page=1&q="/agents/corporate_entities/123"')
 
     def test_get_dates(self):
         obj_data = json_from_fixture("object_all.json")
