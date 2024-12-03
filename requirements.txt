@@ -10,7 +10,7 @@ asgiref==3.8.1
     # via django
 attrs==24.2.0
     # via archivessnake
-boltons==24.0.0
+boltons==24.1.0
     # via archivessnake
 certifi==2024.8.30
     # via requests
@@ -50,7 +50,7 @@ propcache==0.2.0
     # via yarl
 psycopg2==2.9.10
     # via -r requirements.in
-pydantic==1.10.18
+pydantic==1.10.19
     # via inflect
 pyyaml==6.0.2
     # via
@@ -64,7 +64,7 @@ requests==2.32.3
     #   archivessnake
 shortuuid==1.0.13
     # via -r requirements.in
-sqlparse==0.5.1
+sqlparse==0.5.2
     # via django
 structlog==24.4.0
     # via archivessnake
@@ -77,7 +77,7 @@ urllib3==2.2.3
     # via requests
 vcrpy==5.1.0
     # via -r requirements.in
-wrapt==1.16.0
+wrapt==1.17.0
     # via vcrpy
-yarl==1.17.1
+yarl==1.18.0
     # via vcrpy
