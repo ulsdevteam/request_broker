@@ -74,7 +74,9 @@ typing-extensions==4.12.2
     #   multidict
     #   pydantic
 urllib3==2.2.3
-    # via requests
++    # via
++    #   requests
++    #   vcrpy
 vcrpy==7.0.0
     # via -r requirements.in
 wrapt==1.17.0
