@@ -325,7 +325,7 @@ class AeonRequester(object):
                 "ItemCitation_{}".format(request_prefix): i["ref_id"],
                 "ItemDate_{}".format(request_prefix): i["dates"],
                 "ItemInfo1_{}".format(request_prefix): i["title"],
-                "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
+                "ItemInfo2_{}".format(request_prefix): i["restrictions_text"],
                 "ItemInfo3_{}".format(request_prefix): i["uri"],
                 "ItemInfo4_{}".format(request_prefix): description,
                 "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
