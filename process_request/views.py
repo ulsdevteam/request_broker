@@ -136,7 +136,7 @@ class LinkResolverView(APIView):
             host = settings.DIMES_BASEURL
             repo = settings.ARCHIVESSPACE["repo_id"]
             uri = resolve_ref_id(repo, data, aspace.client)
-            response = redirect("{}{}".format(host, uri))
+            response = redirect("{}{}".format(host, uri), permanent=True)
             return response
         except Exception as e:
             return Response({"detail": str(e)}, status=500)
