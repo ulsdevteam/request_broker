@@ -471,4 +471,5 @@ def refresh_reading_room_cache():
     reading_rooms = aeon.get_reading_rooms()
     for reading_room in reading_rooms:
         reading_room["closures"] = aeon.get_closures(reading_room["id"])
+    ReadingRoomCache.objects.all().delete()
     return ReadingRoomCache.objects.update_or_create(defaults={'json': json.dumps(reading_rooms)})[0]

@@ -33,7 +33,13 @@ class AeonAPIClient(metaclass=ProxyMethods):
              "X-AEON-API-KEY": apikey})
 
     def get_reading_rooms(self):
-        return self.get("ReadingRooms").json()
+        reading_rooms = self.get("ReadingRooms").json()
+        # Only pass along locations with open hours
+        open_reading_rooms = []
+        for reading_room in reading_rooms:
+            if len(reading_room["openHours"]):
+                open_reading_rooms.append(reading_room)
+        return open_reading_rooms
 
     def get_closures(self, reading_room_id):
         return self.get("/".join(["ReadingRooms", str(reading_room_id), "Closures"])).json()

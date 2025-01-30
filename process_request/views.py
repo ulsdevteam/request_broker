@@ -153,6 +153,9 @@ class AeonReadingRoomsView(APIView):
             except ReadingRoomCache.DoesNotExist:
                 cached_reading_rooms = refresh_reading_room_cache()
                 cache_needs_refresh = False
+            except ReadingRoomCache.MultipleObjectsReturned:
+                cached_reading_rooms = ReadingRoomCache.objects.latest("timestamp")
+                cache_needs_refresh = True
             if cache_needs_refresh:
                 threading.Thread(target=refresh_reading_room_cache).start()
             return HttpResponse(cached_reading_rooms.json, content_type='application/json')
