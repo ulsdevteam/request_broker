@@ -28,29 +28,39 @@ msgid ""
 "request. Reason: Required information about the physical container of this "
 "item is not available."
 msgstr ""
+"This item may not be available for request, but an attempt will be made to include it in your "
+"request. Reason: Required information about the physical container of this "
+"item is not available."
 
 #: process_request/routines.py:113
 msgid ""
 "This item is currently unavailable for request. It will not be included in "
 "request. Reason: {}"
 msgstr ""
+"This item may be unavailable, but it will be included in your "
+"request. Reason: {}"
 
 #: process_request/routines.py:116
 msgid ""
 "This item is already available online. It will not be included in request."
 msgstr ""
+"This item is already available online, but it will be included in your request."
 
 #: process_request/routines.py:118
 msgid ""
 "This item may be currently unavailable for request. It will be included in "
 "request. Reason: {}"
 msgstr ""
+"This item may be restricted. We will follow up with you if needed for your "
+"request. Reason: {}"
 
 #: process_request/routines.py:134 process_request/routines.py:156
 msgid ""
 "This item is currently unavailable for request. It will not be included in "
 "request. Reason: This item cannot be found."
 msgstr ""
+"This item may unavailable, but we will try to include it in your "
+"request. Reason: This item cannot be found."
 
 #: process_request/routines.py:179
 msgid "My List from DIMES"

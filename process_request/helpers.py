@@ -14,7 +14,7 @@ from .clients import AeonAPIClient
 from .models import ReadingRoomCache
 
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
-OPEN_TEXT = ["Open for research", "Open for scholarly research"]
+OPEN_TEXT = ["Open for research", "Open for scholarly research", "No restrictions"]
 CLOSED_TEXT = ["Restricted"]
 
 
