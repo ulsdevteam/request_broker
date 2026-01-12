@@ -6,17 +6,17 @@
 #
 archivessnake==0.10.1
     # via -r requirements.in
-asgiref==3.8.1
+asgiref==3.11.0
     # via django
-attrs==24.3.0
+attrs==25.4.0
     # via archivessnake
-boltons==24.1.0
+boltons==25.0.0
     # via archivessnake
-certifi==2024.12.14
+certifi==2025.11.12
     # via requests
-charset-normalizer==3.4.1
+charset-normalizer==3.4.4
     # via requests
-django==4.2.17
+django==4.2.26
     # via
     #   -r requirements.in
     #   django-common-helpers
@@ -32,54 +32,55 @@ django-csp==3.8
     # via -r requirements.in
 django4-cron==0.5.1
     # via -r requirements.in
-djangorestframework==3.15.2
+djangorestframework==3.16.1
     # via -r requirements.in
-idna==3.10
+idna==3.11
     # via
     #   requests
     #   yarl
 inflect==6.0.5
     # via -r requirements.in
-more-itertools==10.5.0
+more-itertools==10.8.0
     # via archivessnake
-multidict==6.1.0
+multidict==6.7.0
     # via yarl
 ordered-set==4.1.0
     # via -r requirements.in
-propcache==0.2.1
+propcache==0.4.1
     # via yarl
-psycopg2==2.9.10
+psycopg2==2.9.11
     # via -r requirements.in
-pydantic==1.10.19
+pydantic==1.10.24
     # via inflect
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==3.11.0
+rapidfuzz==3.14.3
     # via archivessnake
-requests==2.32.3
+requests==2.32.5
     # via
     #   -r requirements.in
     #   archivessnake
 shortuuid==1.0.13
     # via -r requirements.in
-sqlparse==0.5.3
+sqlparse==0.5.4
     # via django
-structlog==24.4.0
+structlog==25.5.0
     # via archivessnake
-typing-extensions==4.12.2
+typing-extensions==4.15.0
     # via
     #   asgiref
     #   multidict
     #   pydantic
-urllib3==2.2.3
+    #   structlog
+urllib3==2.5.0
     # via
     #   requests
     #   vcrpy
 vcrpy==7.0.0
     # via -r requirements.in
-wrapt==1.17.0
+wrapt==2.0.1
     # via vcrpy
-yarl==1.18.3
+yarl==1.22.0
     # via vcrpy
